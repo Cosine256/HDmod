@@ -37,16 +37,17 @@ do
     oxface_texture_id = define_texture(oxface_texture_def)
 end
 
-local function hell_miniboss_set(uid, texture_id)
+local function hell_miniboss_set(uid, texture_id, is_horsehead)
     local ent = get_entity(uid)
     ent:set_texture(texture_id)
     local x, y, l = get_position(uid)
     -- user_data
     ent.user_data = {
         ent_type = HD_ENT_TYPE.MONS_HELL_MINIBOSS;
+        is_horsehead = is_horsehead;
     };
     --repurposed variables
-    ent.move_state = HELL_MINIBOSS_STATE.WALK_TO_PLAYER --logic
+    ent.move_state = HELL_MINIBOSS_STATE.JUMP_CUTSCENE --logic
     ent.price = 0 --cooldown so whip doesnt hit multiple times
     ent.cooldown_timer = HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER --sequences the jump and bomb attack
     ent.walk_pause_timer = HELL_MINIBOSS_AI_TIMER.WALK_PAUSE_TIMER --same as vanilla
@@ -184,6 +185,50 @@ local function hell_miniboss_update(ent)
         else
             ent.animation_frame = 0
         end
+    elseif ent.move_state == HELL_MINIBOSS_STATE.THROW_BOMB then --THROW BOMB
+        ent.cooldown_timer = ent.cooldown_timer - 1
+        if ent.cooldown_timer == HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-16 then
+            local x, y, l = get_position(ent.uid)
+            local move_dir = 1
+            if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then
+                move_dir = -1
+            end
+            spawn(ENT_TYPE.ITEM_BOMB, x+0.7*move_dir, y-0.1, l, 0.15*move_dir, 0.004)
+            commonlib.play_sound_at_entity(VANILLA_SOUND.PLAYER_TOSS_ROPE, ent.uid)
+        end
+        if ent.cooldown_timer == HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-35 then
+            ent.move_state = HELL_MINIBOSS_STATE.WALK_TO_PLAYER
+            ent.cooldown_timer = HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER
+            ent.chatting_to_uid = 0
+            ent.walk_pause_timer = 45 + math.random(-10, 10)
+        end
+        --animations
+        if ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-5 then
+            ent.animation_frame = 17
+        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-5 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-10 then
+            ent.animation_frame = 18
+        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-10 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-15 then
+            ent.animation_frame = 19
+        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-15 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-20 then
+            ent.animation_frame = 20
+        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-20 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-25 then
+            ent.animation_frame = 21
+        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-25 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-30 then
+            ent.animation_frame = 22
+        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-30 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-35 then
+            ent.animation_frame = 23
+        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-35 then
+            ent.animation_frame = 24
+        else
+            ent.animation_frame = 0
+        end
+    elseif ent.move_state == HELL_MINIBOSS_STATE.JUMP_CUTSCENE then -- CUTSCENE
+        -- Basically wait until an outside entity takes us off the ground (under regular circumstances this is from the Yama entity)
+        if not ent:can_jump() then
+            ent.move_state = HELL_MINIBOSS_STATE.JUMP
+            ent.state = 12
+            ent.cooldown_timer = HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER         
+        end
     end
 end
 local function take_damage_from_whip(ent, collision_ent)
@@ -197,7 +242,7 @@ end
 local function create_hell_miniboss(x, y, l, is_horsehead)
     is_horsehead = is_horsehead or false
     local hell_miniboss = spawn(ENT_TYPE.MONS_CAVEMAN_BOSS, x, y, l, 0, 0)
-    hell_miniboss_set(hell_miniboss, is_horsehead and horsehead_texture_id or oxface_texture_id)
+    hell_miniboss_set(hell_miniboss, is_horsehead and horsehead_texture_id or oxface_texture_id, is_horsehead)
     set_post_statemachine(hell_miniboss, hell_miniboss_update)
     set_pre_collision2(hell_miniboss, take_damage_from_whip)
 end

@@ -332,22 +332,26 @@ local function devil_set(self)
         audio:set_volume(1)
         audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, 1)   
         -- Play our own custom death noise (credits to greeni)
-        local audio = devil_defeat:play()
-        local x, y, _ = get_position(self.uid)
-        local sx, sy = screen_position(x, y)
-        local d = screen_distance(distance(self.uid, self.uid))
         if players[1] ~= nil then
-            d = screen_distance(distance(self.uid, players[1].uid))
+            if distance(self.uid, players[1].uid) < 13 then
+                local audio = devil_defeat:play()
+                local x, y, _ = get_position(self.uid)
+                local sx, sy = screen_position(x, y)
+                local d = screen_distance(distance(self.uid, self.uid))
+                if players[1] ~= nil then
+                    d = screen_distance(distance(self.uid, players[1].uid))
+                end
+                audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
+                audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
+                audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
+                audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
+                audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
+                audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, demon_sound_volume)
+                audio:set_volume(demon_sound_volume)
+                
+                audio:set_pause(false) 
+            end
         end
-        audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
-        audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
-        audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, demon_sound_volume)
-        audio:set_volume(demon_sound_volume)
-        
-        audio:set_pause(false) 
     end)
     -- Make the entity unstompable, if the player tries to stomp on the devil we will instead stun them
     self:set_pre_damage(function(self, other, damage_amount, stun_time, vx, vy, iframes)

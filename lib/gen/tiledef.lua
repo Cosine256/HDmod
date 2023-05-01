@@ -18,6 +18,7 @@ local pushblocklib = require 'lib.entities.pushblock'
 local idolplatformlib = require 'lib.entities.idol_platform'
 local ladderlib = require 'lib.entities.ladder'
 local succubuslib = require 'lib.entities.succubus'
+local yamalib = require 'lib.entities.king_yama'
 
 local module = {}
 
