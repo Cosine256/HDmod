@@ -359,7 +359,7 @@ local function devil_set(self)
         if other ~= nil then
             if other.type.search_flags == MASK.PLAYER then
                 -- Let the player stomp the devil if they have spike shoes
-                if not other:has_powerup(ENT_TYPE.ITEM_POWERUP_SPIKE_SHOES) then
+                if not other:has_powerup(ENT_TYPE.ITEM_POWERUP_SPIKE_SHOES) or self.user_data.state == DEVIL_STATE.CHARGE then
                     local px, py, _ = get_position(other.uid)
                     local sx, sy, _ = get_position(self.uid)
                     if py > sy then

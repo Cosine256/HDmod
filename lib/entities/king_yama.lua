@@ -25,7 +25,7 @@ local ANIMATION_INFO = {
     HEAD_SPIT = {
         start = 7;
         finish = 12;
-        speed = 6;
+        speed = 9;
     };
     HEAD_EGGPLANT = {
         start = 6;
@@ -46,16 +46,19 @@ local ANIMATION_INFO = {
 
 -- State enum
 local HEAD_STATE = {
-    IDLE = 1;
-    FLY = 2;
-    ATTACK = 3;
-    EGGPLANT = 4;
+    IDLE = 2;
+    FLY = 3;
+    IMP = 4;
+    ATTACK = 5;
+    EGGPLANT = 6;
+    RETURN = 7;
 }
 local HAND_STATE = {
     SLAM = 1;
     SWING = 2;
     OPEN = 3;
-    INTRO_SLAM = 4;
+    RETURN = 4;
+    INTRO_SLAM = 5;
 }
 local function animate_entity(self)
     if self.user_data.custom_animation then
@@ -82,6 +85,73 @@ set_post_entity_spawn(function(self)
 end, SPAWN_TYPE.ANY, 0, {ENT_TYPE.MONS_YAMA})
 ------------------------------------
 --------- YAMA'S HEAD --------------
+local function yama_return(self, return_state)
+    if self.overlay == nil then
+        local sx, sy, _ = get_position(self.uid)
+        local abs_x = (sx - self.user_data.home_x)
+        local abs_y = (sy - self.user_data.home_y)
+        local dist = math.sqrt((abs_x^2)+(abs_y^2))
+        local move_rate = 0.07
+        local movex = (abs_x/dist)*move_rate
+        local movey = (abs_y/dist)*move_rate
+        -- He'll get stuck if we cant move through walls
+        self.flags = clr_flag(self.flags, ENT_FLAG.COLLIDES_WALLS)
+        -- Minimum speed for movex and movey
+        if movex > 0 then
+            if movex < 0.015 then
+                movex = 0.015
+            end
+        elseif movex < 0 then
+            if movex > -0.015 then
+                movex = -0.015
+            end            
+        end
+        if movey > 0 then
+            if movey < 0.015 then
+                movey = 0.015
+            end
+        elseif movey < 0 then
+            if movey > -0.015 then
+                movey = -0.015
+            end            
+        end
+        if math.abs(abs_x) < 0.015 then
+            movex = 0
+        end
+        if math.abs(abs_y) < 0.069 then
+            movey = 0
+        end
+        if movex == 0 and movey == 0 then
+            self.user_data.state = return_state
+            self.flags = set_flag(self.flags, ENT_FLAG.COLLIDES_WALLS)
+            -- Close enough!
+            self.x = self.user_data.home_x
+            self.y = self.user_data.home_y
+            -- Sync up the attack timer to the opposite hand
+            if return_state == HAND_STATE.SLAM then
+                -- Stop the other hand from attacking temporarily to sync up with the other hand
+                if self.user_data.other_hand ~= nil then
+                    if type(self.user_data.other_hand.user_data) == "table" then
+                        if self.user_data.other_hand.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HAND then
+                            self.user_data.wait = true
+                            self.user_data.attack_timer = self.user_data.other_hand.user_data.attack_timer
+                        end
+                    end
+                end
+                -- Make the hand face the right direction
+                self.flags = set_flag(self.flags, ENT_FLAG.FACING_LEFT)
+                if self.user_data.left_hand then
+                    self.flags = clr_flag(self.flags, ENT_FLAG.FACING_LEFT)
+                end
+            end
+            -- For Yama's head, remove gravity once back on his head
+            if return_state == HEAD_STATE.IDLE then
+                self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
+            end
+        end
+        move_entity(self.uid, sx-movex, sy-movey, 0, 0)
+    end
+end
 local function yama_idle(self)
     -- Update animation
     self.user_data.animation_info = ANIMATION_INFO.HEAD_IDLE
@@ -157,21 +227,96 @@ local function yama_idle(self)
             self.user_data.cutscene_timer = self.user_data.cutscene_timer - 1
         end
     end
+    -- Phase 1 imp spit attack
+    if not self.user_data.phase2 then
+        local in_range = false
+        for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
+            local char = get_entity(v)
+            local _, y, _ = get_position(self.uid)
+            local _, py, _ = get_position(char.uid)
+            if py > y-3 then
+                in_range = true
+                break
+            end
+        end
+        -- This way if he's started an attack he will complete it instead of just stopping
+        if (in_range or self.user_data.imp_timer < 360) then
+            self.user_data.imp_timer = self.user_data.imp_timer - 1
+        end
+        if self.user_data.imp_timer == 0 then
+            -- Update animation info
+            self.user_data.animation_info = ANIMATION_INFO.HEAD_SPIT
+            self.user_data.animation_frame = self.user_data.animation_info.start
+            self.animation_frame = self.user_data.animation_info.start
+            -- Reset timer and spawn imp
+            self.user_data.imp_timer = 360
+            self.user_data.state = HEAD_STATE.IMP
+            set_timeout(function()
+                local imp = get_entity(spawn(ENT_TYPE.MONS_IMP, self.x, self.y, self.layer, 0, 0))
+                get_entity(imp.carrying_uid):destroy()
+            end, 25)
+        end
+    end
+end
+local function yama_head_imp(self)
+    self.user_data.animation_info = ANIMATION_INFO.HEAD_SPIT
+    -- End state at the end of the animation
+    if self.user_data.animation_frame == self.user_data.animation_info.finish and self.user_data.animation_timer == self.user_data.animation_info.speed-1 then
+        self.user_data.state = HEAD_STATE.IDLE
+    end
 end
 local function yama_head_update(self)
     -- Brick the base entity's AI. We're going full LUA for this!
-    self.state = 30
-    self.move_state = 30
+    self.state = 18
+    self.move_state = 0
     self.lock_input_timer = 5
     -- STATEMACHINE
     local d = self.user_data
     if d.state == HEAD_STATE.IDLE then
         yama_idle(self)
+    elseif d.state == HEAD_STATE.RETURN then
+        yama_return(self, HEAD_STATE.IDLE)
+    elseif d.state == HEAD_STATE.IMP then
+        yama_head_imp(self)
     elseif d.state == HEAD_STATE.FLY then
         
     elseif d.state == HEAD_STATE.ATTACK then
 
     elseif d.state == HEAD_STATE.EGGPLANT then
+    end
+    -- We need gravity to be able to throw this entity
+    if not self.user_data.phase2 then
+        if self.overlay ~= nil then
+            self.flags = clr_flag(self.flags, ENT_FLAG.NO_GRAVITY)
+        else
+            self.velocityy = 0
+            self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
+        end
+    end
+    -- Check for phase2
+    -- Less than 21 health
+    if self.health <= 20 then
+        self.user_data.phase2 = true
+    end
+    -- If both hands are dead phase2 starts no matter what
+    local lefthand = false
+    local righthand = false
+    if self.user_data.left_hand ~= nil then
+        if type(self.user_data.left_hand.user_data) == "table" then
+            if self.user_data.left_hand.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HAND then
+                lefthand = true
+            end
+        end
+    end
+    if self.user_data.right_hand ~= nil then
+        if type(self.user_data.right_hand.user_data) == "table" then
+            if self.user_data.right_hand.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HAND then
+                righthand = true 
+            end
+        end
+    end
+    if not lefthand and not righthand then
+        self.user_data.phase2 = true
     end
     -- Custom animation
     animate_entity(self)
@@ -191,13 +336,21 @@ local function yama_head_set(self)
         state = HEAD_STATE.IDLE;
         cutscene_timer = 800; -- Cutscene for Yama is automatically played whenever he's spawned in.
         fireball_timer = 360; -- When 0 Yama will shoot fireballs
+        imp_timer = 360; -- When 0 Yama will spit an imp out of his mouth
 
         target = nil; -- Points to the entity yama will chase in phase 2
+
+        phase2 = false; -- Used to check if Yama is in phase 2
 
         blackbars = nil; -- Blackbar entity used in the cutscene
 
         home_x = self.x;
         home_y = self.y;
+
+        -- Short for "overwritten". Since disabling gravity completely messes up picking up an entity, we need to use this value to change and modify the position
+        ox = self.x;
+        oy = self.y;
+
 
         left_hand = module.create_yama_hand(self.x-2.73, self.y -1.2, self.layer);
         right_hand = module.create_yama_hand(self.x+2.73, self.y -1.2, self.layer);
@@ -210,12 +363,15 @@ local function yama_head_set(self)
     self.width = 2
     self.height = 3
     -- Since these bosses are so mechanically similar we're just copying Tiamat's hitboxes
-    self.hitboxx = get_type(ENT_TYPE.MONS_TIAMAT).hitboxx
+    self.hitboxx = get_type(ENT_TYPE.MONS_TIAMAT).hitboxx*1.5
     self.hitboxy = get_type(ENT_TYPE.MONS_TIAMAT).hitboxy
     -- Flags
-    self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
     self.flags = clr_flag(self.flags, ENT_FLAG.CAN_BE_STOMPED)
+    self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
     self.flags = set_flag(self.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+    self.flags = set_flag(self.flags, ENT_FLAG.PICKUPABLE)
+    self.flags = set_flag(self.flags, ENT_FLAG.THROWABLE_OR_KNOCKBACKABLE)
+    self.flags = clr_flag(self.flags, ENT_FLAG.USABLE_ITEM)
     -- This stops Yama's head from being pushed by shields
     self.more_flags = set_flag(self.more_flags, 4)
     -- Make hands face the appropriate direction
@@ -223,20 +379,37 @@ local function yama_head_set(self)
     self.user_data.right_hand.flags = set_flag(self.user_data.right_hand.flags, ENT_FLAG.FACING_LEFT)
     -- Make right hand "lethal" by default
     self.user_data.right_hand.user_data.lethal = true
-    -- Because of this, make left hand lethal if right hand dies
-    self.user_data.right_hand:set_pre_kill(function()
-        if self.user_data.left_hand ~= nil then
-            -- Make sure the left hand is still a hand
-            if self.user_data.left_hand.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HAND then
-                self.user_data.left_hand.user_data.lethal = true
-            end
-        end
-    end)
     -- Set self as the "yama" for these hands
     self.user_data.left_hand.user_data.yama = self
     self.user_data.right_hand.user_data.yama = self
+    self.user_data.left_hand.user_data.other_hand = self.user_data.right_hand
+    self.user_data.right_hand.user_data.other_hand = self.user_data.left_hand
+    self.user_data.left_hand.user_data.left_hand = true
     -- Statemachine
     self:set_post_update_state_machine(yama_head_update)
+    -- Animation frame gets overriden on damage
+    self:set_post_damage(animate_entity)
+    -- Trick character statemachines into thinking the entity can be picked up (entities with no gravity flagged cant be picked up)
+    set_timeout(function()
+        for _ , v in ipairs(get_entities_by({}, MASK.PLAYER, LAYER.BOTH)) do
+            local char = get_entity(v)
+            local real_standing_uid = -1
+            char:set_pre_update_state_machine(function()
+                real_standing_uid = self.standing_on_uid
+                self.standing_on_uid = char.standing_on_uid
+                -- We also need to move his head upwards to match the pickup hitbox
+                if test_flag(self.flags, ENT_FLAG.NO_GRAVITY) then
+                    self.y = self.y+1 
+                end
+            end)
+            char:set_post_update_state_machine(function()
+                self.standing_on_uid = real_standing_uid
+                if test_flag(self.flags, ENT_FLAG.NO_GRAVITY) then
+                    self.y = self.y-1 
+                end
+            end)
+        end
+    end, 1)
 end
 ------------------------------------
 --------- YAMA'S HANDS -------------
@@ -269,32 +442,47 @@ local function hand_slam(self)
        self.user_data.attack_timer = self.user_data.attack_timer - 1
     end
     -- Sequence
-    -- Have the hands rise up
-    if commonlib.in_range(self.user_data.attack_timer, 100, 200) then
-        self.y = self.y + 0.013
-   end
-    -- At 100 frames, slam down
-    if self.user_data.attack_timer < 100 then
-        self.y = self.y - 0.14
-        -- Once we hit some kind of floor, go back up to 280 for a short cooldown
-        if self:can_jump() then
-            self.user_data.attack_timer = 280
-            -- Slam SFX
-            slam(self)
-            -- Skulls
-            if self.user_data.lethal then
-                -- Find players
-                for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-                    local char = get_entity(v)
-                    local px, py, _ = get_position(v)
-                    for i=-1, 1 do 
-                        local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+i, 122.5, self.layer, 0, 0))
-                        skull.angle = math.random(0, 51)/5
+    if self.overlay == nil and not self.user_data.wait then
+        if commonlib.in_range(self.user_data.attack_timer, 100, 200) then
+            self.y = self.y + 0.013
+        end
+        -- At 100 frames, slam down
+        if self.user_data.attack_timer < 100 then
+            self.y = self.y - 0.14
+            -- Make the hands able to damage the player
+            if not self:can_jump() then
+                self.flags = clr_flag(self.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+            end
+            -- Once we hit some kind of floor, go back up to 280 for a short cooldown
+            if self:can_jump() then
+                self.user_data.attack_timer = 280
+                self.flags = set_flag(self.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+                -- Slam SFX
+                slam(self)
+                -- Skulls
+                if true then
+                    -- Find players
+                    for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
+                        local char = get_entity(v)
+                        local px, py, _ = get_position(v)
+                        for i=-1, 1 do 
+                            local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+i, 122.5, self.layer, 0, 0))
+                            skull.angle = math.random(0, 51)/5
+                        end
+                    end
+                end
+                -- Clear the opposite hands wait + sync
+                if self.user_data.other_hand ~= nil then
+                    if type(self.user_data.other_hand.user_data) == "table" then
+                        if self.user_data.other_hand.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HAND then
+                            self.user_data.other_hand.user_data.wait = false
+                            self.user_data.other_hand.user_data.attack_timer = self.user_data.attack_timer
+                        end
                     end
                 end
             end
         end
-   end
+    end
 end
 local function hand_slam_intro(self)
     -- Update animation
@@ -347,19 +535,30 @@ local function hand_slam_intro(self)
 end
 local function yama_hand_update(self)
     -- Brick the base entity's AI. We're going full LUA for this!
-    self.state = 30
-    self.move_state = 30
+    self.state = 18
+    self.move_state = 0
     self.lock_input_timer = 5
-    -- Because of how Yama's hands are on the texture sheet we need to shift them up a bit
-    self.rendering_info.y = self.rendering_info.y-0.5
     -- STATEMACHINE
     local d = self.user_data
     if d.state == HAND_STATE.SLAM then
         hand_slam(self)
+    elseif d.state == HAND_STATE.RETURN then
+        yama_return(self, HAND_STATE.SLAM)
+        self.flags = set_flag(self.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
     elseif d.state == HAND_STATE.SWING then
     elseif d.state == HAND_STATE.OPEN then
     elseif d.state == HAND_STATE.INTRO_SLAM then
         hand_slam_intro(self)
+    end
+    -- We need gravity to be able to throw this entity
+    if self.overlay ~= nil then
+        self.flags = clr_flag(self.flags, ENT_FLAG.NO_GRAVITY)
+    else
+        self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
+    end
+    -- Override state if we're being held
+    if self.overlay ~= nil then
+        d.state = HAND_STATE.RETURN
     end
     -- Custom animation
     animate_entity(self)
@@ -381,8 +580,14 @@ local function yama_hand_set(self)
         lethal = false; -- When true this will be the hand that summons skulls when smashing
 
         attack_timer = 365; -- Initially used for the cutscene at the start, so we add extra frames
-        home_x = 0;
-        home_y = 0;
+
+        wait = false; -- When true Yama won't perform a slam attack. used to sync the hands together if they ever get moved
+
+        home_x = self.x;
+        home_y = self.y;
+
+        left_hand = false;
+        other_hand = nil;
 
         yama = nil;
 
@@ -397,10 +602,31 @@ local function yama_hand_set(self)
     self.hitboxx = get_type(ENT_TYPE.MONS_TIAMAT).hitboxx*0.9
     self.hitboxy = get_type(ENT_TYPE.MONS_TIAMAT).hitboxy*0.9
     -- Flags
-    self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
     self.flags = clr_flag(self.flags, ENT_FLAG.CAN_BE_STOMPED)
+    self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
     self.flags = set_flag(self.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+    self.flags = set_flag(self.flags, ENT_FLAG.PICKUPABLE)
+    self.flags = set_flag(self.flags, ENT_FLAG.THROWABLE_OR_KNOCKBACKABLE)
+    self.flags = clr_flag(self.flags, ENT_FLAG.USABLE_ITEM)
+
+    -- Statemachine
     self:set_post_update_state_machine(yama_hand_update)
+    -- Animation frame gets overriden on damage
+    self:set_post_damage(animate_entity)
+    -- Trick character statemachines into thinking the entity can be picked up (entities with no gravity flagged cant be picked up)
+    set_timeout(function()
+        for _ , v in ipairs(get_entities_by({}, MASK.PLAYER, LAYER.BOTH)) do
+            local char = get_entity(v)
+            local real_standing_uid = -1
+            char:set_pre_update_state_machine(function()
+                real_standing_uid = self.standing_on_uid
+                self.standing_on_uid = char.standing_on_uid
+            end)
+            char:set_post_update_state_machine(function()
+                self.standing_on_uid = real_standing_uid
+            end)
+        end
+    end, 1)
 end
 ------------------------------------
 --------- MODULE SETUP -------------
@@ -415,6 +641,6 @@ function module.create_yama_hand(x, y, l)
     yama_hand_set(yama)
     return yama
 end
-optionslib.register_entity_spawner("Spawn Yama Head", module.create_yama_hand, false)
+optionslib.register_entity_spawner("Spawn Yama Hand", module.create_yama_hand, false)
 
 return module

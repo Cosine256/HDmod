@@ -78,7 +78,7 @@ local function hell_miniboss_update(ent)
                 ent.chatting_to_uid = 1
             end
             --if the player is close enough, do an attack
-            if math.abs(px-x) <= 4 then
+            if math.abs(px-x) <= 4 and math.abs(py-y) <= 6 then
                 ent.move_state = HELL_MINIBOSS_STATE.JUMP
                 ent.state = 12
                 if math.random(3) == 1 then
