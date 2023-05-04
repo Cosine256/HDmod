@@ -12,8 +12,12 @@ do
     yama_texture_id = define_texture(yama_texture_def)
 end
 -- Sound effect path
+local fart = create_sound('res/sounds/fart.wav')
 local sfx = create_sound('')
-local sfx_volume = 0.25
+local sfx_volume = 0.5
+-- Custom ent type (we need yama's pieces to be fireproof)
+local yama_piece = EntityDB:new(ENT_TYPE.MONS_AMMIT)
+yama_piece.properties_flags = set_flag(yama_piece.properties_flags, 8)
 
 -- Animations
 local ANIMATION_INFO = {
@@ -56,9 +60,10 @@ local HEAD_STATE = {
 local HAND_STATE = {
     SLAM = 1;
     SWING = 2;
-    OPEN = 3;
-    RETURN = 4;
-    INTRO_SLAM = 5;
+    MAGMARS = 3;
+    OPEN = 4;
+    RETURN = 5;
+    INTRO_SLAM = 6;
 }
 local function animate_entity(self)
     if self.user_data.custom_animation then
@@ -181,6 +186,16 @@ local function yama_idle(self)
                 state.camera.focus_offset_y = state.camera.focus_offset_y + 0.2 
             end
         end
+        -- Skip cutscene
+        if self.user_data.cutscene_timer < 700 and self.user_data.cutscene_timer > 20 then
+            for _, v in ipairs(get_entities_by({}, MASK.PLAYER, self.layer)) do
+                local char = get_entity(v)
+                -- Jump button
+                if char.input.buttons == 1 then
+                    self.user_data.cutscene_timer = 1
+                end
+            end
+        end
         if self.user_data.cutscene_timer == 1 then
             -- Trigger horse and Ox guy
             set_timeout(function()
@@ -234,13 +249,13 @@ local function yama_idle(self)
             local char = get_entity(v)
             local _, y, _ = get_position(self.uid)
             local _, py, _ = get_position(char.uid)
-            if py > y-3 then
+            if py > y-5 then
                 in_range = true
                 break
             end
         end
         -- This way if he's started an attack he will complete it instead of just stopping
-        if (in_range or self.user_data.imp_timer < 360) then
+        if (in_range or self.user_data.imp_timer < 360) and self.user_data.missing_hand then
             self.user_data.imp_timer = self.user_data.imp_timer - 1
         end
         if self.user_data.imp_timer == 0 then
@@ -322,6 +337,7 @@ local function yama_head_update(self)
     animate_entity(self)
 end
 local function yama_head_set(self)
+    self.type = yama_piece
     -- Userdata
     self.user_data = {
         ent_type = HD_ENT_TYPE.MONS_YAMA_HEAD;
@@ -341,6 +357,7 @@ local function yama_head_set(self)
         target = nil; -- Points to the entity yama will chase in phase 2
 
         phase2 = false; -- Used to check if Yama is in phase 2
+        missing_hand = false; -- If a hand dies this will be set to true
 
         blackbars = nil; -- Blackbar entity used in the cutscene
 
@@ -377,8 +394,6 @@ local function yama_head_set(self)
     -- Make hands face the appropriate direction
     self.user_data.left_hand.flags = clr_flag(self.user_data.left_hand.flags, ENT_FLAG.FACING_LEFT)
     self.user_data.right_hand.flags = set_flag(self.user_data.right_hand.flags, ENT_FLAG.FACING_LEFT)
-    -- Make right hand "lethal" by default
-    self.user_data.right_hand.user_data.lethal = true
     -- Set self as the "yama" for these hands
     self.user_data.left_hand.user_data.yama = self
     self.user_data.right_hand.user_data.yama = self
@@ -422,19 +437,40 @@ local function slam(self)
     audio:set_volume(0.65)
     audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
     audio:set_pitch(math.random(60, 80)/100)
+    -- Joke fart sound
+    local audio = fart:play()
+    local x, y, _ = get_position(self.uid)
+    local sx, sy = screen_position(x, y)
+    local d = screen_distance(distance(self.uid, self.uid))
+    if players[1] ~= nil then
+        d = screen_distance(distance(self.uid, players[1].uid))
+    end
+    audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
+    audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
+    audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
+    audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
+    audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
+    audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, sfx_volume)
+    audio:set_volume(sfx_volume)
+    audio:set_pause(false)
 end
 local function hand_slam(self)
     -- Update animation
     self.user_data.animation_info = ANIMATION_INFO.HAND_IDLE
     -- Slam
     local in_range = false
+    local closest_player_distance = 999
     for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
         local char = get_entity(v)
         local _, y, _ = get_position(self.uid)
         local _, py, _ = get_position(char.uid)
-        if py > y-3 then
+        -- calculate closest player distance
+        local dist = distance(self.uid, char.uid)
+        if dist < closest_player_distance then
+            closest_player_distance = dist
+        end
+        if py > y-5 then
             in_range = true
-            break
         end
     end
     -- This way if he's started an attack he will complete it instead of just stopping
@@ -443,16 +479,35 @@ local function hand_slam(self)
     end
     -- Sequence
     if self.overlay == nil and not self.user_data.wait then
+        -- Decide a special attack if the player is near
+        if self.user_data.attack_timer == 200 and closest_player_distance < 4 then
+            local roll = math.random(3)
+            if roll == 1 then
+                -- MAGMAR SPAWNING HAND STATE
+                -- Since I programmed this in the complete wrong way, we will hijack here and switch states and clear some timers
+                self.user_data.state = HAND_STATE.MAGMARS
+                self.user_data.attack_timer = 0
+                -- Update animation info
+                self.user_data.animation_info = ANIMATION_INFO.HAND_OPEN
+                self.user_data.animation_frame = self.user_data.animation_info.start
+                -- Force the other hand to wait if we pick this attack
+                if self.user_data.other_hand ~= nil then
+                    if type(self.user_data.other_hand.user_data) == "table" then
+                        if self.user_data.other_hand.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HAND then
+                            self.user_data.other_hand.user_data.wait = true
+                            self.user_data.other_hand.user_data.attack_timer = self.user_data.attack_timer
+                        end
+                    end
+                end
+                return
+            end
+        end
         if commonlib.in_range(self.user_data.attack_timer, 100, 200) then
             self.y = self.y + 0.013
         end
         -- At 100 frames, slam down
         if self.user_data.attack_timer < 100 then
             self.y = self.y - 0.14
-            -- Make the hands able to damage the player
-            if not self:can_jump() then
-                self.flags = clr_flag(self.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
-            end
             -- Once we hit some kind of floor, go back up to 280 for a short cooldown
             if self:can_jump() then
                 self.user_data.attack_timer = 280
@@ -481,7 +536,60 @@ local function hand_slam(self)
                     end
                 end
             end
+            -- Make the hands able to damage the player
+            if not self:can_jump() and self.user_data.attack_timer > 70 then
+                self.flags = clr_flag(self.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+            end
         end
+    end
+end
+local function hand_magmars(self)
+    self.user_data.attack_timer = self.user_data.attack_timer + 1
+    -- Lock animation when within the "attack range"
+    self.user_data.custom_animation = true
+    if self.user_data.attack_timer > 21 and self.user_data.attack_timer < 110 then
+        self.user_data.custom_animation = false
+        self.user_data.animation_frame = 18
+        self.animation_frame = 18
+        -- Whenever the counter is divisible by 25, spawn a magmaman
+        if math.fmod(self.user_data.attack_timer, 25) == 1 then
+            local m = get_entity(spawn(ENT_TYPE.MONS_MAGMAMAN, self.x, self.y+0.1, self.layer, math.random(-35, 35)/100, 0.235))
+            -- Joke fart sound
+            local audio = fart:play()
+            local x, y, _ = get_position(self.uid)
+            local sx, sy = screen_position(x, y)
+            local d = screen_distance(distance(self.uid, self.uid))
+            if players[1] ~= nil then
+                d = screen_distance(distance(self.uid, players[1].uid))
+            end
+            audio:set_parameter(VANILLA_SOUND_PARAM.POS_SCREEN_X, sx)
+            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X, math.abs(sx)*1.5)
+            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y, math.abs(sy)*1.5)
+            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_Z, 0.0)
+            audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
+            audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, sfx_volume)
+            audio:set_volume(sfx_volume)
+            audio:set_pause(false)
+        end
+    end
+    -- When the animation ends go to the "closed hand" animation
+    if self.user_data.animation_frame == self.user_data.animation_info.finish and self.user_data.animation_timer == self.user_data.animation_info.speed - 1 then
+        self.user_data.animation_info = ANIMATION_INFO.HAND_IDLE
+        self.user_data.animation_frame = self.user_data.animation_info.start
+        self.animation_frame = self.user_data.animation_info.start
+    end
+    -- Slooowly rise
+    if self.user_data.attack_timer < 110 and self.user_data.attack_timer > 21 then
+        self.y = self.y + 0.008
+    end
+    -- Go back down
+    if self.user_data.attack_timer > 110 then
+        self.y = self.y - 0.07
+    end
+    -- End state when touching ground
+    if self:can_jump() then
+        self.user_data.attack_timer = 280
+        self.user_data.state = HAND_STATE.SLAM
     end
 end
 local function hand_slam_intro(self)
@@ -545,6 +653,8 @@ local function yama_hand_update(self)
     elseif d.state == HAND_STATE.RETURN then
         yama_return(self, HAND_STATE.SLAM)
         self.flags = set_flag(self.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+    elseif d.state == HAND_STATE.MAGMARS then
+        hand_magmars(self)
     elseif d.state == HAND_STATE.SWING then
     elseif d.state == HAND_STATE.OPEN then
     elseif d.state == HAND_STATE.INTRO_SLAM then
@@ -564,6 +674,7 @@ local function yama_hand_update(self)
     animate_entity(self)
 end
 local function yama_hand_set(self)
+    self.type = yama_piece
     -- Userdata
     self.user_data = {
         ent_type = HD_ENT_TYPE.MONS_YAMA_HAND;
@@ -613,6 +724,16 @@ local function yama_hand_set(self)
     self:set_post_update_state_machine(yama_hand_update)
     -- Animation frame gets overriden on damage
     self:set_post_damage(animate_entity)
+    -- Update if one of yama's hands is missing
+    self:set_pre_kill(function(self)
+        if self.user_data.yama ~= nil then
+            if type(self.user_data.yama.user_data) == "table" then
+                if self.user_data.yama.user_data.ent_type == ENT_TYPE.MONS_YAMA_HEAD then
+                    self.user_data.yama.user_data.missing_hand = true
+                end
+            end
+        end
+    end)
     -- Trick character statemachines into thinking the entity can be picked up (entities with no gravity flagged cant be picked up)
     set_timeout(function()
         for _ , v in ipairs(get_entities_by({}, MASK.PLAYER, LAYER.BOTH)) do
@@ -628,6 +749,16 @@ local function yama_hand_set(self)
         end
     end, 1)
 end
+-- Stop Magmamen from doing the onfire effect
+set_post_entity_spawn(function(ent)
+    set_pre_collision2(ent.uid, function(col, col2)
+        if type(col2.user_data) == "table" then
+            if col2.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HEAD or col2.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HAND then
+                return true
+            end
+        end
+    end)
+end, SPAWN_TYPE.ANY, 0, {ENT_TYPE.MONS_MAGMAMAN})
 ------------------------------------
 --------- MODULE SETUP -------------
 function module.create_yama_head(x, y, l)
