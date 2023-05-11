@@ -46,6 +46,8 @@ local function hell_miniboss_set(uid, texture_id, is_horsehead)
         ent_type = HD_ENT_TYPE.MONS_HELL_MINIBOSS;
         is_horsehead = is_horsehead;
     };
+    -- shorten their hitbox to reflect their sprites
+    ent.hitboxy = ent.hitboxy*1
     --repurposed variables
     ent.move_state = HELL_MINIBOSS_STATE.JUMP_CUTSCENE --logic
     ent.price = 0 --cooldown so whip doesnt hit multiple times
