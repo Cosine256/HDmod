@@ -418,7 +418,6 @@ local function yama_idle(self)
                 local char = get_entity(v)
                 char.flags = clr_flag(char.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
                 char.more_flags = clr_flag(char.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
-                char.invincibility_frames_timer = 180
             end
             -- Kill black bars, enable hud + player movement
             self.user_data.blackbars:kill(false, nil)
