@@ -363,7 +363,7 @@ local function devil_set(self)
                 if (not other:has_powerup(ENT_TYPE.ITEM_POWERUP_SPIKE_SHOES)) then
                     local px, py, _ = get_position(other.uid)
                     local sx, sy, _ = get_position(self.uid)
-                    if (py > sy) and self.user_data.state ~= DEVIL_STATE.CHARGE then
+                    if (py > sy) and self.user_data.state ~= DEVIL_STATE.CHARGE and self.frozen_timer ~= 0 then
                         other:damage(self.uid, 1, 100, 0.08, 0, 30)
                         return true
                     end
