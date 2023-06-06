@@ -79,7 +79,6 @@ module.HD_TILENAME = {
 				},
 			}
 		},
-		-- hd_type = hdtypelib.HD_ENT.TRAP_SPIKEBALL
 		-- spawn method for plasma cannon in HD spawned a tile under it, stylized
 		description = "Spikeball",
 	},
