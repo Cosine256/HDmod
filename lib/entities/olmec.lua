@@ -1,4 +1,6 @@
-local hdtypelib = require 'lib.entities.hdtype'
+local scorpionflylib = require 'lib.entities.scorpionfly'
+local snaillib = require 'lib.entities.snail'
+
 local module = {}
 
 local HELL_Y = 86
@@ -82,7 +84,68 @@ local function onframe_olmec_cutscene() -- **Move to set_interval() that you can
 end
 
 local function olmec_attack(x, y, l)
-	hdtypelib.create_hd_type(hdtypelib.HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
+	local type = ENT_TYPE.ITEM_TIAMAT_SHOT
+	---@type TiamatShot
+	local entity = get_entity(spawn(type, x, y, l, 0, 150))
+	entity.flags = set_flag(entity.flags, ENT_FLAG.COLLIDES_WALLS)
+	entity.flags = clr_flag(entity.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
+	entity.flags = clr_flag(entity.flags, ENT_FLAG.NO_GRAVITY)
+
+	local set_velocity
+	set_timeout(function ()
+		---@param entity Movable
+		set_post_statemachine(entity.uid, function (entity)
+			if not set_velocity then
+
+				local xvel = prng:random_int(7, 30, PRNG_CLASS.PARTICLES)/100
+				if prng:random_chance(2, PRNG_CLASS.PARTICLES) then xvel = -xvel end
+				entity.velocityx = xvel
+
+				entity.velocityy = prng:random_int(5, 10, PRNG_CLASS.PARTICLES)/100
+
+				message("Olmec behavior 'YEET' velocityx: " .. tostring(entity.velocityx))
+				set_velocity = true
+			end
+			if (entity.standing_on_uid ~= -1) then
+				kill_entity(entity.uid)
+				-- local chance = prng:random_int(1, 6, PRNG_CLASS.AI)
+				-- x, y, l = entity.x, entity.y, entity.layer
+				-- if chance == 1 then
+				-- 	if prng:random_chance(8, PRNG_CLASS.AI) then
+				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.COBRA, x, y, l)
+				-- 	else
+				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.SNAKE, x, y, l)
+				-- 	end
+				-- elseif chance == 2 then
+				-- 	spawn_entity_snapped_to_floor(ENT_TYPE.SPIDER, x, y, l)
+				-- elseif chance == 3 then
+				-- 	if prng:random_chance(8, PRNG_CLASS.AI) then
+				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.BEE, x, y, l)
+				-- 	else
+				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.BAT, x, y, l)
+				-- 	end
+				-- elseif chance == 4 then
+				-- 	if prng:random_chance(8, PRNG_CLASS.AI) then
+				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.FIREFROG, x, y, l)
+				-- 	else
+				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.FROG, x, y, l)
+				-- 	end
+				-- elseif chance == 5 then
+				-- 	spawn_entity_snapped_to_floor(ENT_TYPE.MONKEY, x, y, l)
+				-- elseif chance == 6 then
+				-- 	if prng:random_chance(8, PRNG_CLASS.AI) then
+				-- 		if prng:random_chance(4, PRNG_CLASS.AI) then
+				-- 			scorpionflylib.create_scorpionfly(x, y, l)
+				-- 		else
+				-- 			spawn_entity_snapped_to_floor(ENT_TYPE.SCORPION, x, y, l)
+				-- 		end
+				-- 	else
+				-- 		snaillib.create_snail(x, y, l)
+				-- 	end
+				-- end
+			end
+		end)
+	end, 25)
 end
 
 local function onframe_olmec_behavior()

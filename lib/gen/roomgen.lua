@@ -21,7 +21,6 @@ local function init_onlevel()
 	FRAG_PREVENTION_UID = nil
 
 	createlib.init()
-	hdtypelib.init()
 	botdlib.init()
 	wormtonguelib.init()
 	ghostlib.init()
