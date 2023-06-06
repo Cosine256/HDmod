@@ -103,50 +103,52 @@ local function olmec_attack(x, y, l)
 
 				entity.velocityy = prng:random_int(5, 10, PRNG_CLASS.PARTICLES)/100
 
-				message("Olmec behavior 'YEET' velocityx: " .. tostring(entity.velocityx))
+				-- message("Olmec behavior 'YEET' velocityx: " .. tostring(entity.velocityx))
 				set_velocity = true
 			end
 			if (entity.standing_on_uid ~= -1) then
+				local chance = prng:random_int(1, 6, PRNG_CLASS.AI)
+				x, y, l = get_position(entity.uid)
+				if chance == 1 then
+					if prng:random_chance(8, PRNG_CLASS.AI) then
+						spawn_entity(ENT_TYPE.MONS_COBRA, x, y, l, 0, 0)
+					else
+						spawn_entity(ENT_TYPE.MONS_SNAKE, x, y, l, 0, 0)
+					end
+				elseif chance == 2 then
+					spawn_entity(ENT_TYPE.MONS_SPIDER, x, y, l, 0, 0)
+				elseif chance == 3 then
+					if prng:random_chance(8, PRNG_CLASS.AI) then
+						spawn_entity(ENT_TYPE.MONS_BEE, x, y, l, 0, 0)
+					else
+						spawn_entity(ENT_TYPE.MONS_BAT, x, y, l, 0, 0)
+					end
+				elseif chance == 4 then
+					if prng:random_chance(8, PRNG_CLASS.AI) then
+						spawn_entity(ENT_TYPE.MONS_FIREFROG, x, y, l, 0, 0)
+					else
+						spawn_entity(ENT_TYPE.MONS_FROG, x, y, l, 0, 0)
+					end
+				elseif chance == 5 then
+					spawn_entity(ENT_TYPE.MONS_MONKEY, x, y, l, 0, 0)
+				elseif chance == 6 then
+					if prng:random_chance(8, PRNG_CLASS.AI) then
+						if prng:random_chance(4, PRNG_CLASS.AI) then
+							scorpionflylib.create_scorpionfly(x, y, l)
+						else
+							spawn_entity(ENT_TYPE.MONS_SCORPION, x, y, l, 0, 0)
+						end
+					else
+						snaillib.create_snail(x, y, l)
+					end
+				end
 				kill_entity(entity.uid)
-				-- local chance = prng:random_int(1, 6, PRNG_CLASS.AI)
-				-- x, y, l = entity.x, entity.y, entity.layer
-				-- if chance == 1 then
-				-- 	if prng:random_chance(8, PRNG_CLASS.AI) then
-				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.COBRA, x, y, l)
-				-- 	else
-				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.SNAKE, x, y, l)
-				-- 	end
-				-- elseif chance == 2 then
-				-- 	spawn_entity_snapped_to_floor(ENT_TYPE.SPIDER, x, y, l)
-				-- elseif chance == 3 then
-				-- 	if prng:random_chance(8, PRNG_CLASS.AI) then
-				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.BEE, x, y, l)
-				-- 	else
-				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.BAT, x, y, l)
-				-- 	end
-				-- elseif chance == 4 then
-				-- 	if prng:random_chance(8, PRNG_CLASS.AI) then
-				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.FIREFROG, x, y, l)
-				-- 	else
-				-- 		spawn_entity_snapped_to_floor(ENT_TYPE.FROG, x, y, l)
-				-- 	end
-				-- elseif chance == 5 then
-				-- 	spawn_entity_snapped_to_floor(ENT_TYPE.MONKEY, x, y, l)
-				-- elseif chance == 6 then
-				-- 	if prng:random_chance(8, PRNG_CLASS.AI) then
-				-- 		if prng:random_chance(4, PRNG_CLASS.AI) then
-				-- 			scorpionflylib.create_scorpionfly(x, y, l)
-				-- 		else
-				-- 			spawn_entity_snapped_to_floor(ENT_TYPE.SCORPION, x, y, l)
-				-- 		end
-				-- 	else
-				-- 		snaillib.create_snail(x, y, l)
-				-- 	end
-				-- end
 			end
 		end)
-	end, 25)
+	end, 40)
 end
+
+
 
 local function onframe_olmec_behavior()
 	---@type Olmec
@@ -158,7 +160,7 @@ local function onframe_olmec_behavior()
 			local x, y, l = get_position(OLMEC_UID)
 			-- 1/3 random chance each time olmec groundpounds, shoots 3 out in random directions upwards.
 			-- if prng:random_chance(3, PRNG_CLASS.PARTICLES) then
-				-- # TODO: This currently fires twice, even though we call it once. Fix that. Idea: Use a timeout variable to check time to refire.
+				-- # TOFIX: This currently fires twice, even though we call it once. Fix that. Idea: Use a timeout variable to check time to refire.
 				olmec_attack(x, y+2, l)
 				-- olmec_attack(x, y+2.5, l)
 				-- olmec_attack(x, y+2.5, l)
