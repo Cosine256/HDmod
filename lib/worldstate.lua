@@ -46,7 +46,7 @@ set_callback(function(draw_ctx)
 		-- overlaps with player 1
 		local door_entrance_ent = get_entity(camplib.DOOR_TUTORIAL_UID)
 		local door_testing_entered_text = "false"
-		if door_entrance_ent:overlaps_with(get_entity(players[1].uid)) == true then
+		if door_entrance_ent:overlaps_with(get_entity([1].uid)) == true then
 			door_testing_entered_text = "true"
 			color = green
 		else door_testing_entered_text = "false" end
@@ -57,11 +57,11 @@ set_callback(function(draw_ctx)
 
 		-- if player 1 state is entering
 		local player_entering_text = "false"
-		if players[1].state == CHAR_STATE.ENTERING then
+		if [1].state == CHAR_STATE.ENTERING then
 			player_entering_text = "true"
 			color = green
 		else door_testing_entered_text = "false" end
-		draw_ctx:draw_text(text_x, text_y, 0, "players[1].state == CHAR_STATE.ENTERING: " .. player_entering_text, color)
+		draw_ctx:draw_text(text_x, text_y, 0, "[1].state == CHAR_STATE.ENTERING: " .. player_entering_text, color)
 
 	end
 end, ON.GUIFRAME)

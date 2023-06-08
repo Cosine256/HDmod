@@ -97,81 +97,185 @@ module.english = {
         };
         --PEOPLE
         people = {
-            tun = {
-                name = "TUN";
+            shopkeeper = {
+                name = "SHOPKEEPER";
                 desc1 = "";
-                desc2 = "She was the first to explore the";
-                desc3 = "Darkside and wants to learn";
-                desc4 = " more about it.";
+                desc2 = "A card-carrying member of the";
+                desc3 = "Shopkeeper's Association. He HATES";
+                desc4 = "shoplifting above all else!";
                 desc5 = "";
             };
-            yin = {
-                name = "YIN";
+            yang = {
+                name = "YANG";
                 desc1 = "";
-                desc2 = "A deranged criminal and avid hunter";
-                desc3 = "who fled to the moon after becoming ";
-                desc4 = "wanted on all 7 continents,";
-                desc5 = "including Antarctica, somehow.";
-            };
-            arms_dealer = {
-                name = "ARMS DEALER";
-                desc1 = "";
-                desc2 = "He sells rare weapons as a side";
-                desc3 = "hustle. Things wouldn't end well if";
-                desc4 = "Madame Tusk ever found out.";
+                desc2 = "The first to explore the original";
+                desc3 = "caves. Something compelled him to ";
+                desc4 = "come back.";
                 desc5 = "";
             };
-            bounty_hunter = {
-                name = "THE BOUNTY HUNTER";
+            hired_hand = {
+                name = "HIRED HAND";
                 desc1 = "";
-                desc2 = "She made her fortune handling the";
-                desc3 = "grudges of others. You've done";
-                desc4 = "someone wrong to come across her.";
+                desc2 = "He was trapped in The Caves for a";
+                desc3 = "very long time and is eager to be";
+                desc4 = "free once again.";
                 desc5 = "";
             };
-            beg = {
-                name = "BEG";
+            terra_tunnel = {
+                name = "TERRA TUNNEL";
+                desc1 = "";
+                desc2 = "She met Manfred many years ago, ";
+                desc3 = "when she rescued him from a cave-in.";
+                desc4 = "Together they've built a thriving";
+                desc5 = "shortcut building business!";
+            };
+            viking = {
+                name = "HAGRID";
+                desc1 = "";
+                desc2 = "His time as a viking well prepared";
+                desc3 = "him for the challenges of The Caves.";
+                desc4 = "He was on board as soon as he heard";
+                desc5 = "there would be treausre.";
+            };
+            meat_boy = {
+                name = "MEAT MAN";
+                desc1 = "";
+                desc2 = "He was found growing inside of the";
+                desc3 = "Worm. Whether or not he is indeed";
+                desc4 = "human is unknown.";
+                desc5 = "";
+            };
+            inuk = {
+                name = "TONRAQ";
+                desc1 = "";
+                desc2 = "He's lived in the Ice Caves for ";
+                desc3 = "many years and is intimately familiar";
+                desc4 = "with its dangers.";
+                desc5 = "";
+            };
+            aztec = {
+                name = "YAOTL";
+                desc1 = "";
+                desc2 = "One of Kali's most devout followers.";
+                desc3 = "Allegedly, he maintains a youthful";
+                desc4 = "appearance by drinking from the Kapala.";
+                desc5 = "";
+            }; 
+            mariachi = {
+                name = "ENRIQUE";
+                desc1 = "";
+                desc2 = "After becoming fed up with his job";
+                desc3 = "as a mailman, he set out to the caves";
+                desc4 = "in hopes of striking it rich.";
+                desc5 = "";
+            }; 
+            black = {
+                name = "VAN HORSING";
+                desc1 = "";
+                desc2 = "A seasoned adventurer who took Yang's";
+                desc3 = "initiative to re-explore The Caves as";
+                desc4 = "an opportunity to continue his hunt ";
+                desc5 = "for Vlad.";
+            }; 
+            carl = {
+                name = "CARL";
+                desc1 = "";
+                desc2 = "A monster native to The Caves. He";
+                desc3 = "doesn't quite understand why The";
+                desc4 = "Spelunkers care so much for treasure.";
+                desc5 = "";
+            }; 
+            robot = {
+                name = "ROBOT";
+                desc1 = "";
+                desc2 = "An advanced automaton built by";
+                desc3 = "Tiamat's firstborn. It's learning";
+                desc4 = "algorithm has fixated on a particular";
+                desc5 = "species of nightshade...";
+            }; 
+            gustaf = {
+                name = "GUSTAF";
                 desc1 = "";
                 desc2 = "";
-                desc3 = "Hundun's favorite.";
+                desc3 = "gustaf.";
                 desc4 = "";
                 desc5 = "";
-            };
+            }; 
+            bearguy = {
+                name = "ANDY";
+                desc1 = "";
+                desc2 = "With his warm and friendly exterior,";
+                desc3 = "you wouldn't think he'd be such a";
+                desc4 = "skilled Spelunker! It's almost as if he";
+                desc5 = "designed The Caves himself...";
+            }; 
         };
         --BESTIARY
         bestiary = {
-            quillback_wannabe = {
-                name = "SCALEBACK";
+            snake = {
+                name = "SNAKE";
                 desc1 = "";
-                desc2 = "A major cause of the Horned Lizard";
-                desc3 = "extinction was Quillback's followers";
-                desc4 = "attempting to copy his swagger.";
+                desc2 = "";
+                desc3 = "Lean, green, slitherin' machines.";
+                desc4 = "Simplstic and ever hissing.";
                 desc5 = "";
             };
-            machine_made = {
-                name = "MACHINE MADE";
+            cobra = {
+                name = "COBRA";
                 desc1 = "";
-                desc2 = "These robots were a failed";
-                desc3 = "attempt at re-creating the";
-                desc4 = "monsters that inhabit the moon.";
+                desc2 = "";
+                desc3 = "Adaptation has caused their spit";
+                desc4 = "to become even more potent and rude!";
                 desc5 = "";
             };
-            quillback_honorbound = {
-                name = "QUILLBACK";
+            spider = {
+                name = "SPIDER";
                 desc1 = "";
-                desc2 = "He's learned some new tricks after";
-                desc3 = "being made a fool of so many times";
-                desc4 = "in the Dwelling.";
+                desc2 = "";
+                desc3 = "Oversized jumping siders that are";
+                desc4 = "known for their ambush tactics.";
                 desc5 = "";
             };
-            gigaspider = {
-                name = "GIGA SPIDER";
+            hang_spider = {
+                name = "HANG SPIDER";
                 desc1 = "";
-                desc2 = "Unfortunately, you're the perfect";
-                desc3 = "snacking-size for this terrifyingly";
-                desc4 = "huge spider.";
+                desc2 = "To live to bungee, to die to bungee.";
+                desc3 = "These spiders have life all figured";
+                desc4 = "out, for without the hang, they're";
+                desc5 = "just spiders.";
+            };
+            bat = {
+                name = "BAT";
+                desc1 = "";
+                desc2 = "";
+                desc3 = "These persistent little pests never";
+                desc4 = "fail to get on anyone's nerves.";
                 desc5 = "";
-            }
+            };
+            caveman = {
+                name = "CAVEMAN";
+                desc1 = "";
+                desc2 = "Perhaps to know less is the secret";
+                desc3 = "as to how these hominids thrive and";
+                desc4 = "establish cultures in the ever-";
+                desc5 = "changing Caves.";
+            };
+            scorpion = {
+                name = "SCORPION";
+                desc1 = "";
+                desc2 = "It takes great comfort exposing";
+                desc3 = "itself more often in these";
+                desc4 = "districts.";
+                desc5 = "";
+            };
+            skeleton = {
+                name = "SKELETON";
+                desc1 = "";
+                desc2 = "Restless bones that never stop to ";
+                desc3 = "ruin the expeditions of others, for";
+                desc4 = "they themselves failed some point.";
+                desc5 = "";
+            };
         };
         --ITEMS
         items = {
@@ -183,62 +287,6 @@ module.english = {
                 desc4 = "monster, it has a strange aura.";
                 desc5 = "";
             };
-            ammo = {
-                name = "AMMO";
-                desc1 = "";
-                desc2 = "How does the same ammo work";
-                desc3 = "on so many different weapons?";
-                desc4 = "Why is ammo even needed at all?";
-                desc5 = "Best not to think about it.";
-            };
-            key_compass = {
-                name = "HUNTER'S COMPASS";
-                desc1 = "";
-                desc2 = "This specialized tool will";
-                desc3 = "point towards the Darkside";
-                desc4 = "Key of the current level.";
-                desc5 = "";
-            };
-            butterflyknife = {
-                name = "BUTTERFLY KNIFE";
-                desc1 = "";
-                desc2 = "Stabbing monsters in the back";
-                desc3 = "with this knife will kill them";
-                desc4 = "instantly and reward bonus XP.";
-                desc5 = "Surprise!";
-            };
-            butcherknife = {
-                name = "BUTCHER'S KNIFE";
-                desc1 = "";
-                desc2 = "This oversized blade has the";
-                desc3 = "strange ability to turn its";
-                desc4 = "victims into health pickups!";
-                desc5 = "";
-            };
-            cursegun = {
-                name = "CURSE GUN";
-                desc1 = "";
-                desc2 = "A crude tool made using an old web";
-                desc3 = "gun and a cursed pot. Cursed monsters";
-                desc4 = "will drop significantly more XP than";
-                desc5 = "regular monsters.";
-            };
-            maggotgun = {
-                name = "MAGGOT GUN";
-                desc1 = "";
-                desc2 = "";
-                desc3 = "The Queen of a parasitic insect";
-                desc4 = "colony. Gross but powerful!";
-                desc5 = "";
-            };
-            blade_of_chaos = {
-                name = "BLADE OF CHAOS";
-                desc1 = "";
-                desc2 = "A highly unpredictable and weak";
-                desc3 = "weapon. Only a fool would use this.";
-                desc4 = "";
-                desc5 = "";
-            };
         };
         traps = {
             grinder = {
@@ -248,72 +296,6 @@ module.english = {
                 desc3 = "metal and people alike into mush.";
                 desc4 = "Watch your step!";
                 desc5 = "";
-            };
-            elevator = {
-                name = "ELEVATOR";
-                desc1 = "";
-                desc2 = "";
-                desc3 = "For robots, elevators are much";
-                desc4 = "easier to navigate than stairs.";
-                desc5 = "";
-            };
-            teleporter = {
-                name = "TELEPORTER PAD";
-                desc1 = "";
-                desc2 = "";
-                desc3 = "Whoever built this factory must";
-                desc4 = "have refined teleporter tech!";
-                desc5 = "";
-            };
-        };
-        enemy_types = {
-            explosive = {
-                name = "EXPLOSIVE";
-                desc1 = "";
-                desc2 = "The forces of chaos have";
-                desc3 = "a significant influence on";
-                desc4 = "the monsters of the Darkside.";
-                desc5 = "";
-            };
-            armored = {
-                name = "ARMORED";
-                desc1 = "";
-                desc2 = "The shield disappears when";
-                desc3 = "the monster is defeated. How";
-                desc4 = "did they learn to use it?";
-                desc5 = "";
-            };
-            ghostly = {
-                name = "GHOSTLY";
-                desc1 = "";
-                desc2 = "Some kind of curse that allows";
-                desc3 = "the sufferer to corporealize";
-                desc4 = "at will. Perhaps a blessing?";
-                desc5 = "";
-            };
-            gilded = {
-                name = "GILDED";
-                desc1 = "";
-                desc2 = "A curse created by Anubis to";
-                desc3 = "punish greedy explorers for";
-                desc4 = "their violence.";
-                desc5 = "";
-            };
-            infested = {
-                name = "INFESTED";
-                desc1 = "";
-                desc2 = "A parasitic colony of flies";
-                desc3 = "causes the garish green tint";
-                desc4 = "and noxious gasses.";
-                desc5 = "";
-            };
-            shadow = {
-                name = "SHADOW";
-                desc1 = "";
-                desc2 = "They are unable to be stunned";
-                desc3 = "and have twice the normal health.";
-                desc4 = "Their existence is a mystery, even";
-                desc5 = "to themselves.";
             };
         };
     };

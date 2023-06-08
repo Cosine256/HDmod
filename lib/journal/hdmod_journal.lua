@@ -17,6 +17,8 @@ string_ids = -- optimizations: hash_to_stringid only needs to be called once (pr
     killed_by = hash_to_stringid(0xa217f155),
     killed = hash_to_stringid(0xfc17292a),
     N_A = hash_to_stringid(0x9a293191),
+    journal_get = hash_to_stringid(0xb7fb6d15),
+    journal_entry_added = hash_to_stringid(0xbc429789),
 }
 
 --thank you mr. auto for this incredibly helpful function!
@@ -32,9 +34,20 @@ function setup_page(x, y, render_ctx, page_type, page_number)
     
     if page_number ~= nil then -- draw page number in the corner if needed
         -- format the "Entry {number}"
-        -- text = string.format(get_string(string_ids.page_number), page_number)
+        -- Get the actual number using our weird fake page id system
+        pn_offset = 100
+        if page_type == JOURNAL_PAGE_TYPE.PEOPLE then 
+            pn_offset = 180
+        elseif page_type == JOURNAL_PAGE_TYPE.BESTIARY then
+            pn_offset = 300
+        elseif page_type == JOURNAL_PAGE_TYPE.ITEMS then
+            pn_offset = 400
+        elseif page_type == JOURNAL_PAGE_TYPE.TRAPS then
+            pn_offset = 500
+        end
+        text = string.format(get_string(string_ids.page_number), page_number.page_number-pn_offset)
         -- it's a little bit off, but that's the best i could do by eye, not sure if the font is right anyway
-        -- render_ctx:draw_text(text, x + 0.644 * side_multiply, 0.7137 + 0.005 * side_multiply, 0.00093, 0.0005, Color:new(), aligment, VANILLA_FONT_STYLE.ITALIC)
+        render_ctx:draw_text(text, x + 0.644 * side_multiply, 0.7137 + 0.005 * side_multiply, 0.00093, 0.0005, Color:new(), aligment, VANILLA_FONT_STYLE.ITALIC)
     end
     
     if (page_type >= JOURNAL_PAGE_TYPE.PLACES and page_type <= JOURNAL_PAGE_TYPE.TRAPS) or page_type == JOURNAL_PAGE_TYPE.STORY then
@@ -117,17 +130,17 @@ function setup_page(x, y, render_ctx, page_type, page_number)
                 end
                 render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_PLACE_0, row, column, dest, Color:white())
             end
-        elseif page_type == JOURNAL_PAGE_TYPE.PEOPLE then
+        elseif page_type == JOURNAL_PAGE_TYPE.PEOPLE and page_number.page_number > 20 then
             local true_page_number = page_number.page_number-200
-            local page_name = c.people[true_page_number].name
-            local desc1 = c.people[true_page_number].desc1
-            local desc2 = c.people[true_page_number].desc2
-            local desc3 = c.people[true_page_number].desc3
-            local desc4 = c.people[true_page_number].desc4
-            local desc5 = c.people[true_page_number].desc5
-            local row = c.people[true_page_number].row
-            local column = c.people[true_page_number].column
-            local entry_seen = save_data.journal.places[true_page_number]
+            local page_name = journal_data.info.people[true_page_number].name
+            local desc1 = journal_data.info.people[true_page_number].desc1
+            local desc2 = journal_data.info.people[true_page_number].desc2
+            local desc3 = journal_data.info.people[true_page_number].desc3
+            local desc4 = journal_data.info.people[true_page_number].desc4
+            local desc5 = journal_data.info.people[true_page_number].desc5
+            local row = journal_data.info.people[true_page_number].row
+            local column = journal_data.info.people[true_page_number].column
+            local entry_seen = journal_data.journal_data.people[true_page_number]
             if not entry_seen then
                 page_name = hdmod_string.journal.undiscovered.name
                 desc1 = hdmod_string.journal.undiscovered.desc1
@@ -155,24 +168,32 @@ function setup_page(x, y, render_ctx, page_type, page_number)
             if x > 0 then
                 dest = AABB:new(0.08, 0.35, 0.38, 0.075)
             end
-            if entry_seen then
-                render_ctx:draw_screen_texture(999, row, column, dest, Color:white())
-            end          
+            if entry_seen and not journal_data.info.people[true_page_number].big then
+                render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_PEOPLE_0, row, column, dest, Color:white())
+            elseif entry_seen then
+                dest = AABB:new(-0.17, 0.46, 0.26, 0.075)
+                if x > 0 then
+                    dest = AABB:new(-0.26, 0.46, 0.17, 0.075)
+                end
+                render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_PEOPLE_1, row, column, dest, Color:white())
+            end
         elseif page_type == JOURNAL_PAGE_TYPE.BESTIARY then
             local true_page_number = page_number.page_number-300
-            local page_name = c.bestiary[true_page_number].name
-            local desc1 = c.bestiary[true_page_number].desc1
-            local desc2 = c.bestiary[true_page_number].desc2
-            local desc3 = c.bestiary[true_page_number].desc3
-            local desc4 = c.bestiary[true_page_number].desc4
-            local desc5 = c.bestiary[true_page_number].desc5
-            local row = c.bestiary[true_page_number].row
-            local column = c.bestiary[true_page_number].column
-            local texture = c.bestiary[true_page_number].texture
-            local big = c.bestiary[true_page_number].big
-            local killed = tostring(save_data.journal.places[true_page_number])
-            local killedby = tostring(save_data.journal.places[true_page_number])
-            local entry_seen = save_data.journal.places[true_page_number]
+            local page_name = journal_data.info.bestiary[true_page_number].name
+            local desc1 = journal_data.info.bestiary[true_page_number].desc1
+            local desc2 = journal_data.info.bestiary[true_page_number].desc2
+            local desc3 = journal_data.info.bestiary[true_page_number].desc3
+            local desc4 = journal_data.info.bestiary[true_page_number].desc4
+            local desc5 = journal_data.info.bestiary[true_page_number].desc5
+            local row = journal_data.info.bestiary[true_page_number].row
+            local column = journal_data.info.bestiary[true_page_number].column
+            local bg_row = journal_data.info.bestiary[true_page_number].bg_row
+            local bg_column = journal_data.info.bestiary[true_page_number].bg_column
+            local texture = journal_data.info.bestiary[true_page_number].texture
+            local big = journal_data.info.bestiary[true_page_number].big
+            local killed = tostring(journal_data.journal_data.bestiary_killed[true_page_number])
+            local killedby = tostring(journal_data.journal_data.bestiary_killed_by[true_page_number])
+            local entry_seen = journal_data.journal_data.bestiary[true_page_number]
             if not entry_seen then
                 page_name = hdmod_string.journal.undiscovered.name
                 desc1 = hdmod_string.journal.undiscovered.desc1
@@ -181,7 +202,6 @@ function setup_page(x, y, render_ctx, page_type, page_number)
                 desc4 = hdmod_string.journal.undiscovered.desc4
                 desc5 = hdmod_string.journal.undiscovered.desc5
             end
-            --TODO we should figure out how to recreate the "undiscovered" journal entries
             --text
             render_ctx:draw_text(page_name, -0.25 * side_multiply, -0.12, 0.0022, 0.0011, Color:white(), VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
             render_ctx:draw_text(desc1, -0.25 * side_multiply, -0.28, 0.00176, 0.00088, Color:black(), VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.ITALIC)
@@ -199,7 +219,7 @@ function setup_page(x, y, render_ctx, page_type, page_number)
             if x > 0 then
                 dest = AABB:new(-0.42, 0.65, 0.33, -0.03)
             end
-            render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_BG_0, 0, 0, dest, Color:white())  
+            render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_BG_0, bg_row, bg_column, dest, Color:white())  
             --draw monster 
             if entry_seen then
                 dest = AABB:new(-0.08, 0.35, 0.22, 0.075)
@@ -353,15 +373,19 @@ set_callback(function(chapter, pages)
         return pages
     end
     if chapter == JOURNALUI_PAGE_SHOWN.PEOPLE then
-        pages = {}
-        for i=1, 2 do
-            pages[i] = 200+i
+        -- For player skin mod compatability, we are keeping the first 20 entries
+        for i=1, 14 do
+            pages[i+20] = 200+i
+        end
+        -- Remove the extra pages
+        for i=35, 38 do
+            pages[i] = nil
         end
         return pages
     end
     if chapter == JOURNALUI_PAGE_SHOWN.BESTIARY then
         pages = {}
-        for i=1, 2 do
+        for i=1, 54 do
             pages[i] = 300+i
         end
         return pages
@@ -389,9 +413,15 @@ set_callback(function(chapter, pages)
     end
 end, ON.POST_LOAD_JOURNAL_CHAPTER)
 function show_journal_popup(chapter, entry)
+    -- Change the string to always say "new journal entry added" instead of "you got the journal!"
+    change_string(string_ids.journal_get, get_string(string_ids.journal_entry_added))
     game_manager.save_related.journal_popup_ui.timer = 500
     game_manager.save_related.journal_popup_ui.chapter_to_show = chapter
     game_manager.save_related.journal_popup_ui.entry_to_show = entry
+    -- Change it back
+    set_timeout(function()
+        change_string(string_ids.journal_get, get_string(string_ids.journal_get))
+    end, 2)
 end
 set_callback(function(render_ctx, page_type, page)
     --remove the % completion from the journal

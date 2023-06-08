@@ -19,6 +19,9 @@ local function critterrat_set(uid)
     local ent = get_entity(uid)
     ent:set_texture(critterrat_texture_id)
     ent.walk_pause_timer = prng:random_int(150, 300, PRNG_CLASS.AI) --randomize this so they dont all stand up at the same time
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_CRITTERRAT;
+    }
 end
 local function critterrat_update(ent)
     --flip entity based on movex
