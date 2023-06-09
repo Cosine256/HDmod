@@ -5,13 +5,17 @@ local module = {}
 local ANIMATION_FRAMES_ENUM = {
     FACE = 1,
     BLOCK_DECO = 2,
-	TREETOP = 3,
+	TREETOP_FRONT_CENTER = 3,
+	TREETOP_FRONT_SIDE = 4,
+	TREETOP_BACK = 5,
 }
 
 local ANIMATION_FRAMES_RES = {
     { 0 },
     { 1, 2, 3 },
-    { 0, 1, 2, 3 },
+    { 0 },
+    { 1 },
+    { 2, 3 },
 }
 
 local top_texture_id
@@ -45,13 +49,13 @@ local function apply_properties_to_topbranch_and_deco(branch, front_deco)
 	local left = test_flag(branch.flags, ENT_FLAG.FACING_LEFT)
 
 	front_deco:set_texture(top_texture_id)
-	front_deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP][2]
+	front_deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_FRONT_SIDE][1]
 	front_deco.x = left and 0.03 or -0.03
 	front_deco.y = 0.15
 
 	local back_deco = get_entity(spawn_entity_over(ENT_TYPE.DECORATION_TREETRUNK_TOPBACK, branch.uid, 0, 1.025))
 	back_deco:set_texture(top_texture_id)
-	back_deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP][4]
+	back_deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_BACK][2]
 	if left then flip_entity(back_deco.uid) end
 end
 
@@ -100,10 +104,10 @@ local function add_top_branches(treetop_uid)
 			local deco = get_entity(deco_uid)
 			deco:set_texture(top_texture_id)
 			if deco.type.id == ENT_TYPE.DECORATION_TREETRUNK_TOPFRONT then
-				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP][1]
+				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_FRONT_CENTER][1]
 				deco.y = 0.15
 			else
-				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP][3]
+				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_BACK][1]
 			end
 		end
 	end
