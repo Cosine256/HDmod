@@ -14,15 +14,24 @@ local ANIMATION_FRAMES_RES = {
     { 0 },
     { 1, 2, 3 },
     { 0 },
-    { 1 },
-    { 2, 3 },
+    { 2 },
+    { 3, 4 },
 }
 
+local top_center_texture_id
 local top_texture_id
 local restless_texture_id
 do
+	local top_center_texture_def = TextureDefinition.new()
+	top_center_texture_def.width = 384
+	top_center_texture_def.height = 256
+	top_center_texture_def.tile_width = 256
+	top_center_texture_def.tile_height = 128
+	top_center_texture_def.texture_path = "res/treetop.png"
+	top_center_texture_id = define_texture(top_center_texture_def)
+
 	local top_texture_def = TextureDefinition.new()
-	top_texture_def.width = 256
+	top_texture_def.width = 384
 	top_texture_def.height = 256
 	top_texture_def.tile_width = 128
 	top_texture_def.tile_height = 128
@@ -102,11 +111,14 @@ local function add_top_branches(treetop_uid)
 		decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
 		for _, deco_uid in pairs(entity_get_items_by(treetop_uid, {ENT_TYPE.DECORATION_TREETRUNK_TOPFRONT, ENT_TYPE.DECORATION_TREETRUNK_TOPBACK}, MASK.DECORATION)) do
 			local deco = get_entity(deco_uid)
-			deco:set_texture(top_texture_id)
 			if deco.type.id == ENT_TYPE.DECORATION_TREETRUNK_TOPFRONT then
+				deco:set_texture(top_center_texture_id)
 				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_FRONT_CENTER][1]
+				deco.width = 2
+				deco:set_draw_depth(10)
 				deco.y = 0.15
 			else
+				deco:set_texture(top_texture_id)
 				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_BACK][1]
 			end
 		end
