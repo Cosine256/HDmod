@@ -510,10 +510,36 @@ function module.is_valid_spikeball_spawn(x, y, l)
 	)
 end
 
--- # TOFIX: Prevent arrowtraps from spawning in front of tikitraps (or prevent tiki traps from spawning in front of arrow traps)
+local function is_invalid_block_against_arrowtrap(x, y, l)
+	local uid = get_grid_entity_at(x, y, l)
+	if uid ~= -1
+		and commonlib.has(
+			{
+				ENT_TYPE.FLOOR_TOTEM_TRAP,
+				ENT_TYPE.FLOOR_LION_TRAP,
+				ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP
+			},
+			get_entity(uid).type.id
+		)
+	then
+		return true
+	end
+	return is_anti_trap_at(x, y)
+end
+
 function module.is_valid_arrowtrap_spawn(x, y, l)
 	local rx, _ = get_room_index(x, y)
     if y == state.level_gen.spawn_y and (rx >= state.level_gen.spawn_room_x-1 and rx <= state.level_gen.spawn_room_x+1) then return false end
+	
+	-- Prevent arrowtraps from spawning in front of tikitraps and crushtraps
+	if (
+		is_invalid_block_against_arrowtrap(x-1, y, l)
+		or is_invalid_block_against_arrowtrap(x+1, y, l)
+	) then
+		-- message("arrowtrap avoided other trap")
+		return false
+	end
+
     local floor = get_grid_entity_at(x, y, l)
     local left = module.is_solid_grid_entity(x-1, y, l)
     local left2 = module.is_solid_grid_entity(x-2, y, l)
@@ -553,7 +579,7 @@ end
 
 function module.is_valid_tikitrap_spawn(x, y, l)
 	-- need subchunkid of what room we're in
-	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	--prevent spawing in lake
 	if roomy > 4 then return false end
 
@@ -591,6 +617,17 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	local right = get_grid_entity_at(x+1, y, l)
 	local num_of_blocks = 0
 	local avoid_both_top = false
+
+	-- is not up against an arrowtrap?
+	if (
+		(topleft ~= -1 and get_entity(topleft).type.id == ENT_TYPE.FLOOR_ARROW_TRAP)
+		or (topright ~= -1 and get_entity(topright).type.id == ENT_TYPE.FLOOR_ARROW_TRAP)
+		or (left ~= -1 and get_entity(left).type.id == ENT_TYPE.FLOOR_ARROW_TRAP)
+		or (right ~= -1 and get_entity(right).type.id == ENT_TYPE.FLOOR_ARROW_TRAP)
+	) then
+		-- message("tikitrap avoided arrowtrap")
+		return false
+	end
 
 	if (
 		topleft ~= -1
@@ -652,7 +689,11 @@ local function is_invalid_block_against_crushtrap(x, y, l)
 	local uid = get_grid_entity_at(x, y, l)
 	if uid == -1 then return true end
 	if is_anti_trap_at(x, y) then return true end
-	return (get_entity(uid).type.id == ENT_TYPE.FLOOR_ARROW_TRAP)
+	if (get_entity(uid).type.id == ENT_TYPE.FLOOR_ARROW_TRAP) then
+		-- message("crushtrap avoided arrowtrap")
+		return true
+	end
+	return false
 end
 
 function module.is_valid_crushtrap_spawn(x, y, l)
