@@ -166,8 +166,18 @@ local function default_ground_monster_condition(x, y, l)
 	and not is_liquid_at(x, y)
 end
 
+local function is_ladder_tile_at(x, y)
+	local lvlcode = locatelib.get_levelcode_at_gpos(x, y)
+	return lvlcode == "G"
+	or lvlcode == "H"
+	or lvlcode == "L"
+	or lvlcode == "P"
+	or lvlcode == "Q"
+end
+
 local function default_ceiling_entity_condition(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
+	and not is_ladder_tile_at(x, y)
 	and module.is_solid_grid_entity(x, y+1, l)
 	and get_grid_entity_at(x, y-1, l) == -1
 	and get_grid_entity_at(x, y-2, l) == -1
@@ -177,6 +187,7 @@ end
 
 local function default_hell_ceiling_entity_condition(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
+	and not is_ladder_tile_at(x, y)
 	and module.is_solid_grid_entity(x, y+1, l)
 	and get_grid_entity_at(x, y-1, l) == -1
 	and detect_entrance_room_template(x, y, l) == false
@@ -778,6 +789,7 @@ end
 
 function module.is_valid_bacterium_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
+	and not is_ladder_tile_at(x, y)
 	and not is_liquid_at(x, y)
 	and (
 		module.is_solid_grid_entity(x, y+1, l)
