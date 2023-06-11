@@ -44,8 +44,17 @@ local function cutscene_move_cavemen()
 			-- set_timeout() accounts for pausing the game while set_global_timeout() does not
 	-- **consider problems for skipping the cutscene
 	local cavemen = get_entities_by_type(ENT_TYPE.MONS_CAVEMAN)
-	for i, caveman in ipairs(cavemen) do
-		move_entity(caveman, 17.500+i, 98.05, 0, 0)--99.05, 0, 0)
+	for i = 1, #cavemen, 1 do
+		local entity = get_entity(cavemen[i])
+		move_entity(entity.uid, 17.500+i, 98.05, 0, 0)--99.05, 0, 0)
+		entity.move_state = 1
+		entity.animation_frame = 64
+		
+		-- prevent these cavemen from picking anything up during the cutscene
+		---@type self Caveman
+		entity:set_post_update_state_machine(function (self)
+			self.can_pick_up_timer = 10
+		end)
 	end
 end
 
