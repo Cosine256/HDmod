@@ -1,4 +1,6 @@
-local hdtypelib = require 'lib.entities.hdtype'
+local scorpionflylib = require 'lib.entities.scorpionfly'
+local snaillib = require 'lib.entities.snail'
+
 local module = {}
 
 local HELL_Y = 86
@@ -81,26 +83,106 @@ local function onframe_olmec_cutscene() -- **Move to set_interval() that you can
 	end
 end
 
+replace_drop(DROP.TIAMAT_BAT, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_BEE, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_CAVEMAN, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_COBRA, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_HERMITCRAB, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_MONKEY, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_MOSQUITO, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_OCTOPUS, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_OLMITE, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_SCORPION, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_SNAKE, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_UFO, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_YETI, ENT_TYPE.FX_SHADOW)
+
 local function olmec_attack(x, y, l)
-	hdtypelib.create_hd_type(hdtypelib.HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
+	local type = ENT_TYPE.ITEM_TIAMAT_SHOT
+	---@type TiamatShot
+	local entity = get_entity(spawn(type, x, y, l, 0, 150))
+	entity.flags = set_flag(entity.flags, ENT_FLAG.COLLIDES_WALLS)
+	entity.flags = clr_flag(entity.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
+	entity.flags = clr_flag(entity.flags, ENT_FLAG.NO_GRAVITY)
+
+	local set_velocity
+	set_timeout(function ()
+		---@param entity Movable
+		set_post_statemachine(entity.uid, function (entity)
+			if not set_velocity then
+
+				local xvel = prng:random_int(7, 30, PRNG_CLASS.PARTICLES)/100
+				if prng:random_chance(2, PRNG_CLASS.PARTICLES) then xvel = -xvel end
+				entity.velocityx = xvel
+				entity.velocityy = prng:random_int(5, 10, PRNG_CLASS.PARTICLES)/100
+
+				-- message("Olmec behavior 'YEET' velocityx: " .. tostring(entity.velocityx))
+				set_velocity = true
+			end
+			if (entity.standing_on_uid ~= -1) then
+				kill_entity(entity.uid)
+			end
+		end)
+	end, 40)
+	entity:set_post_kill(function (entity)
+		local chance = prng:random_int(1, 6, PRNG_CLASS.AI)
+		x, y, l = get_position(entity.uid)
+		if chance == 1 then
+			if prng:random_chance(8, PRNG_CLASS.AI) then
+				spawn_entity(ENT_TYPE.MONS_COBRA, x, y, l, 0, 0)
+			else
+				spawn_entity(ENT_TYPE.MONS_SNAKE, x, y, l, 0, 0)
+			end
+		elseif chance == 2 then
+			spawn_entity(ENT_TYPE.MONS_SPIDER, x, y, l, 0, 0)
+		elseif chance == 3 then
+			if prng:random_chance(8, PRNG_CLASS.AI) then
+				spawn_entity(ENT_TYPE.MONS_BEE, x, y, l, 0, 0)
+			else
+				spawn_entity(ENT_TYPE.MONS_BAT, x, y, l, 0, 0)
+			end
+		elseif chance == 4 then
+			if prng:random_chance(8, PRNG_CLASS.AI) then
+				spawn_entity(ENT_TYPE.MONS_FIREFROG, x, y, l, 0, 0)
+			else
+				spawn_entity(ENT_TYPE.MONS_FROG, x, y, l, 0, 0)
+			end
+		elseif chance == 5 then
+			spawn_entity(ENT_TYPE.MONS_MONKEY, x, y, l, 0, 0)
+		elseif chance == 6 then
+			if prng:random_chance(8, PRNG_CLASS.AI) then
+				if prng:random_chance(4, PRNG_CLASS.AI) then
+					scorpionflylib.create_scorpionfly(x, y, l)
+				else
+					spawn_entity(ENT_TYPE.MONS_SCORPION, x, y, l, 0, 0)
+				end
+			else
+				snaillib.create_snail(x, y, l)
+			end
+		end
+		commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_SORCERESS_ATK_SPAWN, entity.uid, 1, false)
+	end)
 end
 
+
+local has_hit_floor = false
 local function onframe_olmec_behavior()
 	---@type Olmec
 	local olmec = get_entity(OLMEC_UID)
 	if olmec ~= nil then
 		-- Enemy Spawning: Detect when olmec is about to smash down
-		if olmec.velocityy > -0.400 and olmec.velocityx == 0 and OLMEC_STATE == OLMEC_SEQUENCE.FALL then
+		-- set has_hit_floor when olmec's move_state goes from 4 to 0
+		local move_state = get_entity(OLMEC_UID).move_state
+		if move_state == 0 and OLMEC_STATE == OLMEC_SEQUENCE.FALL then
 			OLMEC_STATE = OLMEC_SEQUENCE.STILL
 			local x, y, l = get_position(OLMEC_UID)
-			-- 1/3 random chance each time olmec groundpounds, shoots 3 out in random directions upwards.
-			-- if prng:random_chance(3, PRNG_CLASS.PARTICLES) then
-				-- # TODO: This currently fires twice, even though we call it once. Fix that. Idea: Use a timeout variable to check time to refire.
+			if prng:random_chance(3, PRNG_CLASS.PARTICLES) then
+				commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_TIAMAT_SCEPTER, OLMEC_UID, 1, false)
 				olmec_attack(x, y+2, l)
-				-- olmec_attack(x, y+2.5, l)
-				-- olmec_attack(x, y+2.5, l)
-			-- end
-		elseif olmec.velocityy < -0.400 then
+				olmec_attack(x, y+2, l)
+				olmec_attack(x, y+2, l)
+			end
+		elseif move_state == 4 then
 			OLMEC_STATE = OLMEC_SEQUENCE.FALL
 		end
 	end
