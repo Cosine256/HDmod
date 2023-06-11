@@ -242,10 +242,11 @@ set_post_entity_spawn(function(self)
 end, SPAWN_TYPE.ANY, MASK.PLAYER)
 
 function module.create_hawkman(x, y, l)
-    local hawkman = spawn_on_floor(ENT_TYPE.MONS_TIKIMAN, x, y, l)
-    hawkman_set(hawkman)
-    set_post_statemachine(hawkman, hawkman_update)
-    set_on_damage(hawkman, hawkman_death)
+    local hawkman_uid = spawn_on_floor(ENT_TYPE.MONS_TIKIMAN, x, y, l)
+    hawkman_set(hawkman_uid)
+    set_post_statemachine(hawkman_uid, hawkman_update)
+    set_on_damage(hawkman_uid, hawkman_death)
+    return hawkman_uid
 end
 
 optionslib.register_entity_spawner("Hawkman", module.create_hawkman)

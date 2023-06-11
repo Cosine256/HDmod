@@ -1,5 +1,6 @@
 local scorpionflylib = require 'lib.entities.scorpionfly'
 local snaillib = require 'lib.entities.snail'
+local hawkmanlib = require 'lib.entities.hawkman'
 
 local module = {}
 
@@ -12,6 +13,9 @@ local OLMEC_UID = nil
 local OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 local OLMEC_STATE = 0
 
+local HAWKMAN_UID = nil
+local THREW_HAWKMAN = false
+
 module.DOOR_ENDGAME_OLMEC_UID = nil
 
 function module.init()
@@ -20,49 +24,87 @@ function module.init()
 	OLMEC_UID = nil
 	OLMEC_STATE = 0
 
+	HAWKMAN_UID = nil
+	THREW_HAWKMAN = false
+
 	module.DOOR_ENDGAME_OLMEC_UID = nil
 end
 
-local function cutscene_move_olmec_pre()
+
+local function cutscene_arrange_olmec_pre()
 	local olmecs = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_OLMEC)
 	if #olmecs > 0 then
 		OLMEC_UID = olmecs[1]
 		move_entity(OLMEC_UID, 24.500, 99.500, 0, 0)
 	end
+	local olmec_cutscene_skins = get_entities_by_type(ENT_TYPE.FX_OLMECPART_LARGE)
+	if #olmec_cutscene_skins then
+		get_entity(olmec_cutscene_skins[1]):set_post_update_state_machine(function (self)
+			if self.animation_frame == 2 and not THREW_HAWKMAN then
+				---@type Entity | Movable
+				local hawkman = get_entity(HAWKMAN_UID)
+				hawkman:stun(600)
+				hawkman.velocityx = -0.15
+				hawkman.velocityy = 0.20
+				THREW_HAWKMAN = true
+			end
+		end)
+	end
+end
+
+local function set_post_cutscene_hawkman()
+	---@type Movable
+	local ent = get_entity(HAWKMAN_UID)
+	ent:stun(300)
+	THREW_HAWKMAN = true
+end
+
+local function cutscene_move_hawkman_post()
+	move_entity(HAWKMAN_UID, 15.475, 98.050, 0, 0)
 end
 
 local function cutscene_move_olmec_post()
 	move_entity(OLMEC_UID, 22.500, 98.500, 0, 0)
 end
 
-local function cutscene_move_cavemen()
-	-- # TODO: OLMEC cutscene - Once custom hawkman AI is done:
-	-- create a hawkman and disable his ai
-	-- set_timeout() to reenable his ai and set his stuntimer.
-	-- **does set_timeout() work during cutscenes?
-		-- if not, use set_global_timeout
-			-- set_timeout() accounts for pausing the game while set_global_timeout() does not
-	-- **consider problems for skipping the cutscene
+local function cutscene_arrange_worshipers()
 	local cavemen = get_entities_by_type(ENT_TYPE.MONS_CAVEMAN)
 	for i = 1, #cavemen, 1 do
-		local entity = get_entity(cavemen[i])
-		move_entity(entity.uid, 17.500+i, 98.05, 0, 0)--99.05, 0, 0)
-		entity.move_state = 1
-		entity.animation_frame = 64
-		
+		local caveman = get_entity(cavemen[i])
+		move_entity(caveman.uid, 17.500+i, 98.05, 0, 0)--99.05, 0, 0)
+		caveman.move_state = 1
+		caveman.animation_frame = 64
+
 		-- prevent these cavemen from picking anything up during the cutscene
+
+		local held_item = get_entity(caveman.holding_uid)
+		if held_item ~= nil then
+			drop(caveman.uid, held_item.uid)
+		end
 		---@type self Caveman
-		entity:set_post_update_state_machine(function (self)
+		caveman:set_post_update_state_machine(function (self)
 			self.can_pick_up_timer = 10
 		end)
 	end
+	HAWKMAN_UID = hawkmanlib.create_hawkman(22.0, 98.05, LAYER.FRONT)
+	local hawkman = get_entity(HAWKMAN_UID)
+	if not test_flag(hawkman.flags, ENT_FLAG.FACING_LEFT) then
+		flip_entity(hawkman.uid)
+	end
+	---@param self WalkingMonster
+	hawkman:set_post_update_state_machine(function (self)
+		self.walk_pause_timer = 10
+		if THREW_HAWKMAN then
+			clear_callback()
+		end
+	end)
 end
 
 function module.onlevel_olmec_init()
 	if state.theme == THEME.OLMEC then
 		BOSS_STATE = BOSS_SEQUENCE.CUTSCENE
-		cutscene_move_olmec_pre()
-		cutscene_move_cavemen()
+		cutscene_arrange_olmec_pre()
+		cutscene_arrange_worshipers()
 		
 		doorslib.create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
 
@@ -87,6 +129,8 @@ local function onframe_olmec_cutscene() -- **Move to set_interval() that you can
 				b = b + 1
 			end
 			cutscene_move_olmec_post()
+			cutscene_move_hawkman_post()
+			set_post_cutscene_hawkman()
 			BOSS_STATE = BOSS_SEQUENCE.FIGHT
 		end
 	end
