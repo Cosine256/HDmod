@@ -1,7 +1,9 @@
 --[[
-Custom Music Engine v1.1.0
+Custom Music Engine v1.2.0
 
 This module provides functions to replace vanilla music with custom music for levels, transitions, and the title screen.
+
+Custom music consists of a collection of sounds with instructions on the order and timings in which to play them. The order can be hard-coded or determined at runtime by callback functions. The custom music keeps track of when the current sound was started and starts the next sound when the correct amount of time has passed. The previous sound is not cut off when the next sound starts, so they can be designed to blend into each other.
 
 Custom music for levels and transitions will imitate the following vanilla music behaviors:
     Mutes itself to allow back layer music, shop music, and vendor anger music to play.
@@ -12,8 +14,9 @@ Custom music for levels and transitions will imitate the following vanilla music
 Custom music limitations:
     Doesn't smoothly adjust volume and pitch like vanilla music.
     Can't apply a muffling effect, and instead imitates this effect by just lowering its volume.
-    Can't imitate some of the dynamic behaviors of vanilla music, like tracks changing for player health and level feelings.
-    Custom track timing precision is tied to the user's graphical frame rate. Timing may sound a bit wrong at low frame rates.
+    Sound timing precision is tied to the user's graphical frame rate. Timing may sound a bit wrong at low frame rates.
+
+There is no built-in support for some dynamic behaviors of vanilla music, such as music changing in response to player health or level feelings, but these behaviors can be emulated by using sound ID callbacks and checking the game state to determine the next sound to play.
 
 This module should be loaded as early as possible because it needs to capture the creation of the BGM master vanilla sound. There is no way to find a BGM master that already exists, so this module will not be functional until a new one is created.
 ]]
@@ -29,6 +32,8 @@ module.CUSTOM_MUSIC_MODE = {
     REPLACE_TITLE = 2
 }
 
+module.debug_print = false
+
 local custom_musics = {}
 local bgm_master_psound
 
@@ -40,22 +45,23 @@ function Custom_Music:new(mode, settings)
     local o = {
         settings = {
             mode = mode,
-            intro_sound = settings.intro_sound,
-            loop_start_delay = settings.loop_start_delay or 0,
             base_volume = settings.base_volume or 1,
-            play_over_shop_music = settings.play_over_shop_music or false
+            play_over_shop_music = settings.play_over_shop_music == true,
+            start_sound_id = settings.start_sound_id,
+            sounds = {}
         },
         playing = false,
         psounds = {} -- A few checks are simplified by never letting this be nil.
     }
     setmetatable(o, self)
 
-    if settings.loop_sounds and #settings.loop_sounds > 0 then
-        o.settings.loop_sounds = {}
-        for i, loop_sound_data in ipairs(settings.loop_sounds) do
-            o.settings.loop_sounds[i] = {
-                sound = loop_sound_data.sound,
-                length = loop_sound_data.length
+    if settings.sounds then
+        for _, sound in ipairs(settings.sounds) do
+            o.settings.sounds[sound.id] = {
+                id = sound.id,
+                next_sound_id = sound.next_sound_id,
+                sound = sound.sound,
+                length = sound.length
             }
         end
     end
@@ -65,7 +71,7 @@ function Custom_Music:new(mode, settings)
 
     if o.settings.mode == module.CUSTOM_MUSIC_MODE.REPLACE_TITLE then
         o.title_loading_callback_id = set_callback(function() o:on_title_loading() end, ON.LOADING)
-        if state.screen == ON.TITLE and game_manager.screen_title.music then
+        if state.screen == SCREEN.TITLE and game_manager.screen_title.music then
             game_manager.screen_title.music.playing = false
             o:start()
         end
@@ -82,7 +88,7 @@ function Custom_Music:destroy()
         self:set_mute_bgm_master_psound(false)
     elseif self.settings.mode == module.CUSTOM_MUSIC_MODE.REPLACE_TITLE then
         clear_callback(self.title_loading_callback_id)
-        if state.screen == ON.TITLE and game_manager.screen_title.music then
+        if state.screen == SCREEN.TITLE and game_manager.screen_title.music then
             game_manager.screen_title.music.playing = true
         end
     end
@@ -90,10 +96,13 @@ end
 
 -- Starts the custom music. This function just initializes variables and enables sound creation, after which the frame callback is responsible for creating sounds.
 function Custom_Music:start()
+    if module.debug_print then
+        print("Starting custom music.")
+    end
     self.playing = true
-    self.intro_started = false
-    self.loop_next_index = 1
-    self.loop_next_start_time = get_ms() + self.settings.loop_start_delay
+    self.play_start_sound = true
+    self.next_sound_start_time = nil
+    self.psounds_last_clean_time = get_ms()
     self.mute = false
     self.volume = 1.0
     self.pitch = 1.0
@@ -101,6 +110,9 @@ end
 
 -- Stops the custom music, stopping all existing sounds and disabling sound creation in the frame callback.
 function Custom_Music:stop()
+    if module.debug_print then
+        print("Stopping custom music.")
+    end
     self.playing = false
     for _, psound in pairs(self.psounds) do
         psound:stop()
@@ -121,7 +133,7 @@ end
 
 -- Gets whether vanilla shop music would be currently playing. This does not check for vendor anger music, which takes priority over shop music.
 local function is_shop_music_playing()
-    return state.screen == ON.LEVEL
+    return state.screen == SCREEN.LEVEL
         -- Dark levels do not play shop music.
         and not test_flag(get_level_flags(), 18)
         -- This shop check isn't totally accurate. The vanilla shop check is based on the position of the leader player, not the camera focus. If the last living player dies, then the check is still based on the position of their body. It only falls back to using the camera focus if their body is destroyed. The camera focus is typically the leader, but mods could change it to be something else. I'm using this slightly inaccurate check instead because I haven't found a reliable way to determine who is the leader.
@@ -159,10 +171,10 @@ function Custom_Music:set_pitch_psounds(pitch)
     for _, psound in pairs(self.psounds) do
         psound:set_pitch(pitch)
     end
-    -- Changing the pitch changes the lengths of the sounds. Adjust the start time for the next loop sound. This shouldn't accumulate noticeable floating point errors unless an excessive number of pitch changes occur during a single loop.
+    -- Changing the pitch changes the lengths of the sounds. Adjust the start time for the next sound. This shouldn't accumulate noticeable floating point errors unless an excessive number of pitch changes occur during a single sound.
     local current_time = get_ms()
-    local ms_until_next_start_time = self.loop_next_start_time - current_time
-    self.loop_next_start_time = current_time + (ms_until_next_start_time * self.pitch / pitch)
+    local ms_until_next_start_time = self.next_sound_start_time - current_time
+    self.next_sound_start_time = current_time + (ms_until_next_start_time * self.pitch / pitch)
     self.pitch = pitch
 end
 
@@ -170,6 +182,9 @@ end
 function Custom_Music:clean_psounds()
     for index, psound in pairs(self.psounds) do
         if not psound:is_playing() then
+            if module.debug_print then
+                print("Discarding stopped PlayingSound handle: "..index)
+            end
             self.psounds[index] = nil
         end
     end
@@ -197,10 +212,10 @@ function Custom_Music:modify_psounds()
 
     -- Check whether the custom music needs its volume changed.
     local volume = 1.0
-    if state.screen == ON.TRANSITION and state.theme ~= THEME.COSMIC_OCEAN then
+    if state.screen == SCREEN.TRANSITION and state.theme ~= THEME.COSMIC_OCEAN then
         -- Reduce volume while in a non-CO level transition. There is a muffling effect for vanilla music, but this change sounds reasonably close.
         volume = 0.2
-    elseif test_flag(state.pause, 1) then
+    elseif state.pause & PAUSE.MENU > 0 then
         -- Reduce volume while paused. There is a muffling effect for vanilla music, but this change sounds reasonably close.
         volume = 0.4
     end
@@ -256,6 +271,28 @@ function Custom_Music:set_mute_bgm_master_psound(mute)
     end
 end
 
+-- Updates the current sound to the one with the given sound ID. If the sound ID parameter is a function, then the function is executed and its return value is used as the sound ID. Sets the current sound to nil if no sound has this ID.
+function Custom_Music:update_current_sound(sound_id)
+    if type(sound_id) == "function" then
+        local ctx = {}
+        if self.settings.mode == module.CUSTOM_MUSIC_MODE.REPLACE_LEVEL then
+            ctx.bgm_master = self.bgm_master_psound
+        end
+        -- Execute the sound ID callback.
+        local success, result = pcall(function() sound_id = sound_id(ctx) end)
+        if not success then
+            -- Treat the error as an invalid sound ID and set the current sound to nil before rethrowing the error.
+            if module.debug_print then
+                print("Caught error in sound ID callback: "..result)
+                print("Custom music reached end of sound sequence due to sound ID callback error.")
+            end
+            self.current_sound = nil
+            error(result)
+        end
+    end
+    self.current_sound = self.settings.sounds[sound_id]
+end
+
 -- Performs custom music checks and modifications that need to occur on every frame.
 function Custom_Music:on_frame()
     if self.settings.mode == module.CUSTOM_MUSIC_MODE.REPLACE_LEVEL then
@@ -280,39 +317,53 @@ function Custom_Music:on_frame()
         return
     end
 
-    if not self.intro_started then
-        -- Play the intro sound if one is configured.
-        if self.settings.intro_sound then
-            self:play_sound(self.settings.intro_sound, -1)
-        end
-        self.intro_started = true
+    local now = get_ms()
+
+    -- Clean up finished PlayingSound objects every 10 seconds.
+    if now >= self.psounds_last_clean_time + 10000 then
+        self:clean_psounds()
+        self.psounds_last_clean_time = now
     end
 
-    if self.settings.loop_sounds and #self.settings.loop_sounds > 0 then
-        -- The default looping feature for PlayingSound objects uses the track length, but most sounds have a silent period at the end of the track. This code makes them loop based on configured timings instead, and supports cycling through different loop sounds. It keeps track of when the custom music was started and plays one instance of a loop sound whenever the correct amount of time has passed. Previous sounds are not stopped when a new one plays because they may be designed to blend into the next sound.
-        if get_ms() >= self.loop_next_start_time then
-            -- This is a good place to periodically clean up finished PlayingSound objects.
-            self:clean_psounds()
-            -- Play one instance of the next loop sound.
-            local loop_sound_data = self.settings.loop_sounds[self.loop_next_index]
-            self:play_sound(loop_sound_data.sound, self.loop_next_start_time)
-            -- Determine the next loop sound and calculate when it should play.
-            self.loop_next_index = (self.loop_next_index % #self.settings.loop_sounds) + 1
-            self.loop_next_start_time = self.loop_next_start_time + (loop_sound_data.length / self.pitch)
+    -- Check whether it's time for the next sound to play.
+    if self.play_start_sound or (self.current_sound and now >= self.next_sound_start_time) then
+        -- Determine the next sound to play.
+        if self.play_start_sound then
+            self.play_start_sound = false
+            self.next_sound_start_time = now
+            self:update_current_sound(self.settings.start_sound_id)
+        else
+            self:update_current_sound(self.current_sound.next_sound_id)
+        end
+        if self.current_sound then
+            if module.debug_print then
+                print("Playing custom sound: "..self.current_sound.id)
+            end
+            if self.current_sound.sound then
+                -- Play the sound. The start time is used here as a unique ID and doesn't affect how it plays.
+                self:play_sound(self.current_sound.sound, self.next_sound_start_time)
+            end
+            -- Calculate when the next sound should play.
+            self.next_sound_start_time = self.next_sound_start_time + (self.current_sound.length / self.pitch)
+        else
+            -- The custom music reached the end of its sound sequence. It will continue to replace vanilla music, but will not play any more sounds.
+            if module.debug_print then
+                print("Custom music reached end of sound sequence.")
+            end
         end
     end
 
-    -- Apply modifications to the custom music based on the current game state.
+    -- Apply modifications to the custom music based on the current game state. Do this even if there is no current sound, since previous sounds might still be playing.
     self:modify_psounds()
 end
 
 function Custom_Music:on_title_loading()
-    if state.screen == ON.TITLE then
+    if state.screen == SCREEN.TITLE then
         if state.loading == 3 and game_manager.screen_title.music then
             game_manager.screen_title.music.playing = false
             self:start()
         end
-        if state.loading == 1 and state.screen_next ~= ON.TITLE then
+        if state.loading == 1 and state.screen_next ~= SCREEN.TITLE then
             self:stop()
         end
     end
@@ -346,25 +397,33 @@ mode:
 settings:
     A table describing the custom music to play. Nil will clear the custom music and restore the vanilla music. An empty table will just mute the vanilla music. The settings are not validated and bad values can cause problems later, so be sure to follow these specifications.
     {
-         -- Sound to play once when the custom music starts. Leave nil for no intro sound.
-        intro_sound = PlayingSound,
-        -- Milliseconds to wait before starting the loop. The intro sound does not stop when this time elapses. Defaults to 0.
-        loop_start_delay = Number,
-         -- Zero or more sounds to play in a loop. The sounds are played one at a time in the given order.
-        loop_sounds = {
+        -- Base volume for the custom music. Should be between 0 and 1, inclusive. Defaults to 1.
+        base_volume = number,
+        -- Whether to keep playing custom music in a shop instead of muting it and allowing vanilla shop music to play. Defaults to false.
+        play_over_shop_music = boolean,
+        -- ID of first sound to play when the custom music starts. If a function, then it is called when the custom music starts to determine the first sound ID. See below for more information about the sound ID callback.
+        start_sound_id = string/function,
+        -- Array of zero or more sounds that can be played by the custom music. Defaults to empty array.
+        sounds = {
             {
-                -- Sound to play for a loop iteration.
-                sound = PlayingSound,
-                -- Milliseconds to wait after starting this sound before starting the next one. This sound does not stop when this time elapses. This value is required and must be a positive number.
-                length = Number
+                -- Unique ID for this sound. This value is required.
+                id = string,
+                -- ID of the next sound to play when this sound's time has elapsed. If a function, then it is called at the end of this sound to determine the next sound ID. See below for more information about the sound ID callback.
+                next_sound_id = string/function,
+                -- CustomSound object to play. If nil, then no sound will play, but the next sound will still be started when the time elapses.
+                sound = CustomSound,
+                -- Milliseconds to wait after starting this sound before starting the next one. This sound does not stop playing when this time elapses. This value is required and must be a positive number.
+                length = number
             },
             ...
-        },
-        -- Base volume for the custom music. Should be between 0 and 1, inclusive. Defaults to 1.
-        base_volume = Number,
-        -- Whether to keep playing custom music in a shop instead of muting it and allowing vanilla shop music to play. Defaults to false.
-        play_over_shop_music = Boolean
+        }
     }
+    Sound ID callback:
+        A sound ID callback can be used to dynamically choose the next sound for the custom music to play. It can perform any logic it needs to, such as randomly choosing a sound or checking the game state. Upvalues can be used if data needs to be shared across multiple sound ID callbacks.
+        Signature: string function(ctx)
+        ctx: Context object containing information about the custom music.
+            bgm_master: If the custom music is replacing level music, then this is the BGM master PlayingSound being replaced. Otherwise, this is nil.
+        Return: ID of the sound to play. If nil or invalid, then the custom music will stop playing sounds.
 ]]
 function module.set_custom_music(mode, settings)
     if custom_musics[mode] then
