@@ -4,6 +4,8 @@ local custom_music_engine = require "lib.music.custom_music_engine"
 
 local module = {}
 
+module.dynamic_music_debug_print = false
+
 optionslib.register_option_bool("hd_debug_custom_level_music_disable", "Custom music - Disable for special levels", nil, false, true)
 optionslib.register_option_bool("hd_debug_custom_title_music_disable", "Custom music - Disable for title screen", nil, false, true)
 
@@ -61,6 +63,306 @@ local TITLE_CUSTOM_MUSIC = TITLE_LOOP_SOUND and {
     }
 }
 
+local has_seen_bao_this_cycle = false
+local has_seen_difu_or_chujiang_this_cycle = false
+local difu_count = 0
+
+local function pick_random(table)
+    return table[prng:random(#table)]
+end
+
+local function is_difu_stem(stem_id)
+    if stem_id == "difu" or stem_id == "difu_lush" or stem_id == "difu_nude" then
+        return true
+    else
+        return false
+    end
+end
+
+-- TODO implement functionality for detecting when players are in vlad's tower
+-- TODO implement idle and low health stems
+local HELL_CUSTOM_MUSIC = {
+    base_volume = 0.6,
+    start_sound_id = "avici",
+    sounds = {
+        {
+            id = "avici",
+            sound = create_sound("res/music/BGM_Hell_Avīci.ogg"),
+            length = 14666,
+            next_sound_id = function(ctx)
+                -- A cycle is defined by the return to Avici.
+                -- At the end of a cycle we reset 'has_seen_bao', 'has_seen_difu_or_chujiang_this_cycle' and 'difu_count'
+                if has_seen_bao_this_cycle or has_seen_difu_or_chujiang_this_cycle or difu_count ~= 0 then
+                    has_seen_bao_this_cycle = false
+                    has_seen_difu_or_chujiang_this_cycle = false
+                    difu_count = 0
+
+                    if module.dynamic_music_debug_print then
+                        print("[Cycle End] has_seen_bao: FALSE, has_seen_difu_or_chujiang_this_cycle: FALSE, difu_count reset to 0")
+                    end
+                end
+
+                return pick_random({"abi_a", "abi_b"})
+            end
+        },
+        {
+            id = "abi_a",
+            sound = create_sound("res/music/BGM_Hell_Abi_A.ogg"),
+            length = 8000,
+            next_sound_id = function(ctx)
+                if has_seen_bao_this_cycle then
+                    local next_stem = pick_random({"bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude"})
+
+                    if is_difu_stem(next_stem) then
+                        difu_count = difu_count + 1
+                    end
+
+                    return next_stem
+                else
+                    return pick_random({"bao_a", "bao_b"})
+                end
+            end
+        },
+        {
+            id = "abi_b",
+            sound = create_sound("res/music/BGM_Hell_Abi_B.ogg"),
+            length = 8000,
+            next_sound_id = function(ctx)
+                if has_seen_bao_this_cycle then
+                    local next_stem = pick_random({"bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude"})
+
+                    if is_difu_stem(next_stem) then
+                        difu_count = difu_count + 1
+                    end
+
+                    return next_stem
+                else
+                    return pick_random({"bao_a", "bao_b"})
+                end
+            end
+        },
+        {
+            id = "bao_a",
+            sound = create_sound("res/music/BGM_Hell_Bao_A.ogg"),
+            length = 17000,
+            next_sound_id = function(ctx)
+                local next_stem
+
+                if not has_seen_bao_this_cycle then
+                    has_seen_bao_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_bao: TRUE")
+                    end
+                end
+
+                -- If we have seen chujiang or difu this cycle, one possible next stem can be avici completing a cycle
+                if has_seen_difu_or_chujiang_this_cycle then
+                    next_stem = pick_random({ "avici", "difu", "difu_lush", "difu_nude" })
+                -- If we have not seen chujiang or difu this cycle, we pick chujiang or difu stems
+                else
+                    next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
+                end
+
+                if is_difu_stem(next_stem) then
+                    difu_count = difu_count + 1
+                end
+
+                return next_stem
+            end
+        },
+        {
+            id = "bao_b",
+            sound = create_sound("res/music/BGM_Hell_Bao_B.ogg"),
+            length = 25333,
+            next_sound_id = function(ctx)
+                local next_stem
+
+                if not has_seen_bao_this_cycle then
+                    has_seen_bao_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_bao: TRUE")
+                    end
+                end
+
+                -- If we have seen chujiang or difu this cycle, one possible next stem can be avici completing a cycle
+                if has_seen_difu_or_chujiang_this_cycle then
+                    next_stem = pick_random({"avici", "difu", "difu_lush", "difu_nude"})
+                -- If we have not seen chujiang or difu this cycle, we pick chujiang or difu stems
+                else
+                    next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
+                end
+
+                if is_difu_stem(next_stem) then
+                    difu_count = difu_count + 1
+                end
+
+                return next_stem
+            end
+        },
+        {
+            id = "chujiang_lite",
+            sound = create_sound("res/music/BGM_Hell_Chujiang_lite.ogg"),
+            length = 16000,
+            next_sound_id = function(ctx)
+                if not has_seen_difu_or_chujiang_this_cycle then
+                    has_seen_difu_or_chujiang_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
+                    end
+                end
+
+                return "chujiang"
+            end
+        },
+        {
+            id = "chujiang",
+            sound = create_sound("res/music/BGM_Hell_Chujiang.ogg"),
+            length = 16000,
+            next_sound_id = function(ctx)
+                if not has_seen_difu_or_chujiang_this_cycle then
+                    has_seen_difu_or_chujiang_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
+                    end
+                end
+
+                local next_stem = pick_random({ "bao_a", "bao_b", "difu", "difu_lush", "difu_nude" })
+
+                if is_difu_stem(next_stem) then
+                    difu_count = difu_count + 1
+                end
+
+                return next_stem
+            end
+        },
+        {
+            id = "difu",
+            sound = create_sound("res/music/BGM_Hell_Difu.ogg"),
+            length = 12666,
+            next_sound_id = function(ctx)
+                if not has_seen_difu_or_chujiang_this_cycle then
+                    has_seen_difu_or_chujiang_this_cycle = true
+                    
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
+                    end
+                end
+
+                if difu_count < 2 then
+                    local next_stem = pick_random({ "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_lush", "difu_nude" })
+
+                    if is_difu_stem(next_stem) then
+                        difu_count = difu_count + 1
+                    end
+
+                    return next_stem
+                else
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] difu_count is 2, exiting block")
+                    end
+
+                    difu_count = 0
+                    return pick_random({ "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang" })
+                end
+            end
+        },
+        {
+            id = "difu_lush",
+            sound = create_sound("res/music/BGM_Hell_Difu_lush.ogg"),
+            length = 12666,
+            next_sound_id = function(ctx)
+                if not has_seen_difu_or_chujiang_this_cycle then
+                    has_seen_difu_or_chujiang_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
+                    end
+                end
+
+                if difu_count < 2 then
+                    local next_stem = pick_random({ "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_nude" })
+
+                    if is_difu_stem(next_stem) then
+                        difu_count = difu_count + 1
+                    end
+
+                    return next_stem
+                else
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] difu_count is 2, exiting block")
+                    end
+
+                    difu_count = 0
+                    return pick_random({ "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang" })
+                end
+            end
+        },
+        {
+            id = "difu_nude",
+            sound = create_sound("res/music/BGM_Hell_Difu_nude.ogg"),
+            length = 12666,
+            next_sound_id = function(ctx)
+                if not has_seen_difu_or_chujiang_this_cycle then
+                    has_seen_difu_or_chujiang_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
+                    end
+                end
+
+                if difu_count < 2 then
+                    local next_stem = pick_random({ "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush" })
+
+                    if is_difu_stem(next_stem) then
+                        difu_count = difu_count + 1
+                    end
+
+                    return next_stem
+                else
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] difu_count is 2, exiting block")
+                    end
+
+                    difu_count = 0
+                    return pick_random({ "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang" })
+                end
+            end
+        },
+        {
+            id = "yaoguai_1",
+            sound = create_sound("res/music/BGM_Hell_Yaoguai_1.ogg"),
+            length = 14666,
+            next_sound_id = function(ctx)
+                local next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
+
+                if is_difu_stem(next_stem) then
+                    difu_count = difu_count + 1
+                end
+
+                return next_stem
+            end
+        },
+        {
+            id = "yaoguai_2",
+            sound = create_sound("res/music/BGM_Hell_Yaoguai_2.ogg"),
+            length = 18333,
+            next_sound_id = function(ctx)
+                local next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
+
+                if is_difu_stem(next_stem) then
+                    difu_count = difu_count + 1
+                end
+
+                return next_stem
+            end
+        }
+    }
+}
+
 function module.on_start_level()
     if options.hd_debug_custom_level_music_disable then
         return
@@ -72,6 +374,8 @@ function module.on_start_level()
         custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, YETI_KINGDOM_CUSTOM_MUSIC)
     elseif state.theme == THEME.NEO_BABYLON then
         custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, MOTHERSHIP_CUSTOM_MUSIC)
+    elseif state.theme == THEME.VOLCANA and not feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
+        custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, HELL_CUSTOM_MUSIC)
     end
 end
 
