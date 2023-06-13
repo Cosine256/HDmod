@@ -175,6 +175,10 @@ local function is_ladder_tile_at(x, y)
 	or lvlcode == "Q"
 end
 
+local function is_falling_platform_at(x, y, l)
+	return #get_entities_overlapping_hitbox(ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+end
+
 local function default_ceiling_entity_condition(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
 	and not is_ladder_tile_at(x, y)
@@ -190,6 +194,7 @@ local function default_hell_ceiling_entity_condition(x, y, l)
 	and not is_ladder_tile_at(x, y)
 	and module.is_solid_grid_entity(x, y+1, l)
 	and get_grid_entity_at(x, y-1, l) == -1
+	and not is_falling_platform_at(x, y-1, l)
 	and detect_entrance_room_template(x, y, l) == false
 	and not is_liquid_at(x, y)
 end
