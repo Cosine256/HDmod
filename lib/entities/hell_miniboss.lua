@@ -22,7 +22,7 @@ local oxface_texture_id
 do
     local horsehead_texture_def = TextureDefinition.new()
     horsehead_texture_def.width = 2048
-    horsehead_texture_def.height = 1024
+    horsehead_texture_def.height = 1280
     horsehead_texture_def.tile_width = 256
     horsehead_texture_def.tile_height = 256
     horsehead_texture_def.texture_path = 'res/horsehead.png'
@@ -30,7 +30,7 @@ do
     
     local oxface_texture_def = TextureDefinition.new()
     oxface_texture_def.width = 2048
-    oxface_texture_def.height = 1024
+    oxface_texture_def.height = 1280
     oxface_texture_def.tile_width = 256
     oxface_texture_def.tile_height = 256
     oxface_texture_def.texture_path = 'res/oxface.png'
