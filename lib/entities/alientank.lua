@@ -210,6 +210,7 @@ function set_alientank(uid)
   tank.offsety = -0.05
   tank:set_texture(alien_tank_texture_id)
   tank.user_data = {
+    ent_type = HD_ENT_TYPE.MONS_ALIENTANK;
     bomb_timer = 60,
     reload_timer = prng:random_int(50, 100, PRNG_CLASS.PARTICLES),
     state = 0,

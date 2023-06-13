@@ -1,10 +1,11 @@
 local module = {}
 
+
 local journal_data = require 'journal_data'
 local journal_unlocks = require 'journal_unlocks'
 
 -- Setup custom journal
-string_ids = -- optimizations: hash_to_stringid only needs to be called once (probably doesn't matter that much)
+local string_ids = -- optimizations: hash_to_stringid only needs to be called once (probably doesn't matter that much)
 {
     places_header = hash_to_stringid(0x4f7bcb96),
     people_header = hash_to_stringid(0xe1e4ca91),
@@ -20,6 +21,7 @@ string_ids = -- optimizations: hash_to_stringid only needs to be called once (pr
     journal_get = hash_to_stringid(0xb7fb6d15),
     journal_entry_added = hash_to_stringid(0xbc429789),
 }
+
 
 --thank you mr. auto for this incredibly helpful function!
 function setup_page(x, y, render_ctx, page_type, page_number)
@@ -219,7 +221,9 @@ function setup_page(x, y, render_ctx, page_type, page_number)
             if x > 0 then
                 dest = AABB:new(-0.42, 0.65, 0.33, -0.03)
             end
-            render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_BG_0, bg_row, bg_column, dest, Color:white())  
+            if entry_seen then
+                render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_BG_0, bg_row, bg_column, dest, Color:white())  
+            end
             --draw monster 
             if entry_seen then
                 dest = AABB:new(-0.08, 0.35, 0.22, 0.075)
@@ -231,6 +235,12 @@ function setup_page(x, y, render_ctx, page_type, page_number)
                     if x > 0 then
                         dest = AABB:new(-0.26, 0.46, 0.17, 0.075)
                     end
+                end
+                if big == 2 then
+                    dest = AABB:new(-0.2125, 0.575, 0.325, 0.09375)
+                    if x > 0 then
+                        dest = AABB:new(-0.325, 0.575, 0.2125, 0.09375)
+                    end                    
                 end
                 render_ctx:draw_screen_texture(texture, row, column, dest, Color:white())  
             end
@@ -367,7 +377,7 @@ set_callback(function(chapter, pages)
     --when im indexing these values to get the proper entry
     if chapter == JOURNALUI_PAGE_SHOWN.PLACES then
         pages = {}
-        for i=1, 10 do
+        for i=1, 12 do
             pages[i] = 100+i
         end
         return pages
@@ -392,7 +402,7 @@ set_callback(function(chapter, pages)
     end
     if chapter == JOURNALUI_PAGE_SHOWN.ITEMS then
         pages = {}
-        for i=1, 2 do
+        for i=1, 34 do
             pages[i] = 400+i
         end
         return pages

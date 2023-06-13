@@ -44,6 +44,7 @@ local function hell_miniboss_set(uid, texture_id)
     -- user_data
     ent.user_data = {
         ent_type = HD_ENT_TYPE.MONS_HELL_MINIBOSS;
+        is_horsehead = true;
     };
     --repurposed variables
     ent.move_state = HELL_MINIBOSS_STATE.WALK_TO_PLAYER --logic
@@ -200,6 +201,10 @@ local function create_hell_miniboss(x, y, l, is_horsehead)
     hell_miniboss_set(hell_miniboss, is_horsehead and horsehead_texture_id or oxface_texture_id)
     set_post_statemachine(hell_miniboss, hell_miniboss_update)
     set_pre_collision2(hell_miniboss, take_damage_from_whip)
+    local ent = get_entity(hell_miniboss)
+    if not is_horsehead then
+        ent.user_data.is_horsehead = false
+    end
 end
 
 function module.create_horsehead(x, y, l)
