@@ -79,10 +79,28 @@ local function is_difu_stem(stem_id)
     end
 end
 
--- TODO implement functionality for detecting when players are in vlad's tower
+local function is_player_in_vlads(player)
+    if feelingslib.feeling_check(feelingslib.FEELING_ID.VLAD) then
+        if player ~= nil then
+            local x, y, layer = get_position(player)
+
+            local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+            local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
+            if (
+                    _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP
+                    or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
+                    or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
+            ) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 -- TODO implement idle and low health stems
 local HELL_CUSTOM_MUSIC = {
-    base_volume = 0.6,
+    base_volume = 0.5,
     start_sound_id = "avici",
     sounds = {
         {
@@ -90,6 +108,10 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Avīci.ogg"),
             length = 14666,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
                 -- A cycle is defined by the return to Avici.
                 -- At the end of a cycle we reset 'has_seen_bao', 'has_seen_difu_or_chujiang_this_cycle' and 'difu_count'
                 if has_seen_bao_this_cycle or has_seen_difu_or_chujiang_this_cycle or difu_count ~= 0 then
@@ -110,6 +132,10 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Abi_A.ogg"),
             length = 8000,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
                 if has_seen_bao_this_cycle then
                     local next_stem = pick_random({"bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude"})
 
@@ -128,6 +154,10 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Abi_B.ogg"),
             length = 8000,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
                 if has_seen_bao_this_cycle then
                     local next_stem = pick_random({"bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude"})
 
@@ -146,6 +176,10 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Bao_A.ogg"),
             length = 17000,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
                 local next_stem
 
                 if not has_seen_bao_this_cycle then
@@ -176,6 +210,10 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Bao_B.ogg"),
             length = 25333,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
                 local next_stem
 
                 if not has_seen_bao_this_cycle then
@@ -206,6 +244,10 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Chujiang_lite.ogg"),
             length = 16000,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
                 if not has_seen_difu_or_chujiang_this_cycle then
                     has_seen_difu_or_chujiang_this_cycle = true
 
@@ -222,6 +264,10 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Chujiang.ogg"),
             length = 16000,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
                 if not has_seen_difu_or_chujiang_this_cycle then
                     has_seen_difu_or_chujiang_this_cycle = true
 
@@ -244,9 +290,13 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Difu.ogg"),
             length = 12666,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
                 if not has_seen_difu_or_chujiang_this_cycle then
                     has_seen_difu_or_chujiang_this_cycle = true
-                    
+
                     if module.dynamic_music_debug_print then
                         print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
                     end
@@ -275,6 +325,10 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Difu_lush.ogg"),
             length = 12666,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
                 if not has_seen_difu_or_chujiang_this_cycle then
                     has_seen_difu_or_chujiang_this_cycle = true
 
@@ -306,6 +360,10 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Difu_nude.ogg"),
             length = 12666,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
                 if not has_seen_difu_or_chujiang_this_cycle then
                     has_seen_difu_or_chujiang_this_cycle = true
 
@@ -337,6 +395,10 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Yaoguai_1.ogg"),
             length = 14666,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_2"
+                end
+
                 local next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
 
                 if is_difu_stem(next_stem) then
@@ -351,6 +413,10 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Yaoguai_2.ogg"),
             length = 18333,
             next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
                 local next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
 
                 if is_difu_stem(next_stem) then
