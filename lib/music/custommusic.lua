@@ -98,7 +98,6 @@ local function is_player_in_vlads(player)
     return false
 end
 
--- TODO implement idle and low health stems
 local HELL_CUSTOM_MUSIC = {
     base_volume = 0.5,
     start_sound_id = "avici",
@@ -110,6 +109,14 @@ local HELL_CUSTOM_MUSIC = {
             next_sound_id = function(ctx)
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
                 -- A cycle is defined by the return to Avici.
@@ -136,6 +143,14 @@ local HELL_CUSTOM_MUSIC = {
                     return "yaoguai_1"
                 end
 
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
+                end
+
                 if has_seen_bao_this_cycle then
                     local next_stem = pick_random({"bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude"})
 
@@ -158,6 +173,14 @@ local HELL_CUSTOM_MUSIC = {
                     return "yaoguai_1"
                 end
 
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
+                end
+
                 if has_seen_bao_this_cycle then
                     local next_stem = pick_random({"bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude"})
 
@@ -178,6 +201,14 @@ local HELL_CUSTOM_MUSIC = {
             next_sound_id = function(ctx)
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
                 local next_stem
@@ -214,6 +245,14 @@ local HELL_CUSTOM_MUSIC = {
                     return "yaoguai_1"
                 end
 
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
+                end
+
                 local next_stem
 
                 if not has_seen_bao_this_cycle then
@@ -248,6 +287,14 @@ local HELL_CUSTOM_MUSIC = {
                     return "yaoguai_1"
                 end
 
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
+                end
+
                 if not has_seen_difu_or_chujiang_this_cycle then
                     has_seen_difu_or_chujiang_this_cycle = true
 
@@ -266,6 +313,14 @@ local HELL_CUSTOM_MUSIC = {
             next_sound_id = function(ctx)
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
                 if not has_seen_difu_or_chujiang_this_cycle then
@@ -292,6 +347,14 @@ local HELL_CUSTOM_MUSIC = {
             next_sound_id = function(ctx)
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
                 if not has_seen_difu_or_chujiang_this_cycle then
@@ -329,6 +392,14 @@ local HELL_CUSTOM_MUSIC = {
                     return "yaoguai_1"
                 end
 
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
+                end
+
                 if not has_seen_difu_or_chujiang_this_cycle then
                     has_seen_difu_or_chujiang_this_cycle = true
 
@@ -364,6 +435,14 @@ local HELL_CUSTOM_MUSIC = {
                     return "yaoguai_1"
                 end
 
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
+                end
+
                 if not has_seen_difu_or_chujiang_this_cycle then
                     has_seen_difu_or_chujiang_this_cycle = true
 
@@ -391,12 +470,176 @@ local HELL_CUSTOM_MUSIC = {
             end
         },
         {
+            id = "idle_a",
+            sound = create_sound("res/music/BGM_Hell_Idle_A.ogg"),
+            length = 6000,
+            next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_b", "idle_c" })
+                end
+
+                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
+
+                if is_difu_stem(next_stem) then
+                    difu_count = difu_count + 1
+                end
+
+                return next_stem
+            end
+        },
+        {
+            id = "idle_b",
+            sound = create_sound("res/music/BGM_Hell_Idle_B.ogg"),
+            length = 6000,
+            next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_c" })
+                end
+
+                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
+
+                if is_difu_stem(next_stem) then
+                    difu_count = difu_count + 1
+                end
+
+                return next_stem
+            end
+        },
+        {
+            id = "idle_c",
+            sound = create_sound("res/music/BGM_Hell_Idle_C.ogg"),
+            length = 6000,
+            next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b" })
+                end
+
+                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
+
+                if is_difu_stem(next_stem) then
+                    difu_count = difu_count + 1
+                end
+
+                return next_stem
+            end
+        },
+        {
+            id = "lowhp_1",
+            sound = create_sound("res/music/BGM_Hell_LOWHP_1.ogg"),
+            length = 13333,
+            next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
+                end
+
+                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
+
+                if is_difu_stem(next_stem) then
+                    difu_count = difu_count + 1
+                end
+
+                return next_stem
+            end
+        },
+        {
+            id = "lowhp_2",
+            sound = create_sound("res/music/BGM_Hell_LOWHP_2.ogg"),
+            length = 13333,
+            next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
+                end
+
+                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
+
+                if is_difu_stem(next_stem) then
+                    difu_count = difu_count + 1
+                end
+
+                return next_stem
+            end
+        },
+        {
+            id = "lowhp_3",
+            sound = create_sound("res/music/BGM_Hell_LOWHP_3.ogg"),
+            length = 13333,
+            next_sound_id = function(ctx)
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
+                end
+
+                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
+
+                if is_difu_stem(next_stem) then
+                    difu_count = difu_count + 1
+                end
+
+                return next_stem
+            end
+        },
+        {
             id = "yaoguai_1",
             sound = create_sound("res/music/BGM_Hell_Yaoguai_1.ogg"),
             length = 14666,
             next_sound_id = function(ctx)
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_2"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
                 local next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
@@ -415,6 +658,14 @@ local HELL_CUSTOM_MUSIC = {
             next_sound_id = function(ctx)
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
                 local next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
