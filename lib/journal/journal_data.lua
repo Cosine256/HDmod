@@ -1120,8 +1120,614 @@ module.info = { -- This table is just info for drawing the text and textures for
         };
     };
     items = {
+        -- ROPE PILE: 1
+        {
+            name = hdmod_string.journal.items.rope_pile.name;
+            desc1 = hdmod_string.journal.items.rope_pile.desc1;
+            desc2 = hdmod_string.journal.items.rope_pile.desc2;
+            desc3 = hdmod_string.journal.items.rope_pile.desc3;
+            desc4 = hdmod_string.journal.items.rope_pile.desc4;
+            desc5 = hdmod_string.journal.items.rope_pile.desc5;
+            column = 0;
+            row = 0;
+        };
+        -- BOMB BAG: 2
+        {
+            name = hdmod_string.journal.items.bomb_bag.name;
+            desc1 = hdmod_string.journal.items.bomb_bag.desc1;
+            desc2 = hdmod_string.journal.items.bomb_bag.desc2;
+            desc3 = hdmod_string.journal.items.bomb_bag.desc3;
+            desc4 = hdmod_string.journal.items.bomb_bag.desc4;
+            desc5 = hdmod_string.journal.items.bomb_bag.desc5;
+            column = 1;
+            row = 0;
+        };
+        -- BOMB BOX: 3
+        {
+            name = hdmod_string.journal.items.bomb_box.name;
+            desc1 = hdmod_string.journal.items.bomb_box.desc1;
+            desc2 = hdmod_string.journal.items.bomb_box.desc2;
+            desc3 = hdmod_string.journal.items.bomb_box.desc3;
+            desc4 = hdmod_string.journal.items.bomb_box.desc4;
+            desc5 = hdmod_string.journal.items.bomb_box.desc5;
+            column = 2;
+            row = 0;
+        };
+        -- SPECTACLES: 4
+        {
+            name = hdmod_string.journal.items.spectacles.name;
+            desc1 = hdmod_string.journal.items.spectacles.desc1;
+            desc2 = hdmod_string.journal.items.spectacles.desc2;
+            desc3 = hdmod_string.journal.items.spectacles.desc3;
+            desc4 = hdmod_string.journal.items.spectacles.desc4;
+            desc5 = hdmod_string.journal.items.spectacles.desc5;
+            column = 4;
+            row = 0;
+        };
+        -- CLIMBING GLOVES: 5
+        {
+            name = hdmod_string.journal.items.climbing_gloves.name;
+            desc1 = hdmod_string.journal.items.climbing_gloves.desc1;
+            desc2 = hdmod_string.journal.items.climbing_gloves.desc2;
+            desc3 = hdmod_string.journal.items.climbing_gloves.desc3;
+            desc4 = hdmod_string.journal.items.climbing_gloves.desc4;
+            desc5 = hdmod_string.journal.items.climbing_gloves.desc5;
+            column = 5;
+            row = 0;
+        };
+        -- PITCHERS MITT: 6
+        {
+            name = hdmod_string.journal.items.pitchers_mitt.name;
+            desc1 = hdmod_string.journal.items.pitchers_mitt.desc1;
+            desc2 = hdmod_string.journal.items.pitchers_mitt.desc2;
+            desc3 = hdmod_string.journal.items.pitchers_mitt.desc3;
+            desc4 = hdmod_string.journal.items.pitchers_mitt.desc4;
+            desc5 = hdmod_string.journal.items.pitchers_mitt.desc5;
+            column = 6;
+            row = 0;
+        };
+        -- SPRING SHOES: 7
+        {
+            name = hdmod_string.journal.items.spring_shoes.name;
+            desc1 = hdmod_string.journal.items.spring_shoes.desc1;
+            desc2 = hdmod_string.journal.items.spring_shoes.desc2;
+            desc3 = hdmod_string.journal.items.spring_shoes.desc3;
+            desc4 = hdmod_string.journal.items.spring_shoes.desc4;
+            desc5 = hdmod_string.journal.items.spring_shoes.desc5;
+            column = 7;
+            row = 0;
+        };
+        -- SPIKE SHOES: 8
+        {
+            name = hdmod_string.journal.items.spike_shoes.name;
+            desc1 = hdmod_string.journal.items.spike_shoes.desc1;
+            desc2 = hdmod_string.journal.items.spike_shoes.desc2;
+            desc3 = hdmod_string.journal.items.spike_shoes.desc3;
+            desc4 = hdmod_string.journal.items.spike_shoes.desc4;
+            desc5 = hdmod_string.journal.items.spike_shoes.desc5;
+            column = 8;
+            row = 0;
+        };
+        -- PASTE: 9
+        {
+            name = hdmod_string.journal.items.paste.name;
+            desc1 = hdmod_string.journal.items.paste.desc1;
+            desc2 = hdmod_string.journal.items.paste.desc2;
+            desc3 = hdmod_string.journal.items.paste.desc3;
+            desc4 = hdmod_string.journal.items.paste.desc4;
+            desc5 = hdmod_string.journal.items.paste.desc5;
+            column = 3;
+            row = 0;
+        };
+        -- COMPASS: 10
+        {
+            name = hdmod_string.journal.items.compass.name;
+            desc1 = hdmod_string.journal.items.compass.desc1;
+            desc2 = hdmod_string.journal.items.compass.desc2;
+            desc3 = hdmod_string.journal.items.compass.desc3;
+            desc4 = hdmod_string.journal.items.compass.desc4;
+            desc5 = hdmod_string.journal.items.compass.desc5;
+            column = 9;
+            row = 0;
+        };
+        -- MATTOCK: 11
+        {
+            name = hdmod_string.journal.items.mattock.name;
+            desc1 = hdmod_string.journal.items.mattock.desc1;
+            desc2 = hdmod_string.journal.items.mattock.desc2;
+            desc3 = hdmod_string.journal.items.mattock.desc3;
+            desc4 = hdmod_string.journal.items.mattock.desc4;
+            desc5 = hdmod_string.journal.items.mattock.desc5;
+            column = 6;
+            row = 2;
+        };
+        -- BOOMERANG: 12
+        {
+            name = hdmod_string.journal.items.boomerang.name;
+            desc1 = hdmod_string.journal.items.boomerang.desc1;
+            desc2 = hdmod_string.journal.items.boomerang.desc2;
+            desc3 = hdmod_string.journal.items.boomerang.desc3;
+            desc4 = hdmod_string.journal.items.boomerang.desc4;
+            desc5 = hdmod_string.journal.items.boomerang.desc5;
+            column = 7;
+            row = 2;
+        };
+        -- MACHETE: 13
+        {
+            name = hdmod_string.journal.items.machete.name;
+            desc1 = hdmod_string.journal.items.machete.desc1;
+            desc2 = hdmod_string.journal.items.machete.desc2;
+            desc3 = hdmod_string.journal.items.machete.desc3;
+            desc4 = hdmod_string.journal.items.machete.desc4;
+            desc5 = hdmod_string.journal.items.machete.desc5;
+            column = 8;
+            row = 2;
+        };
+        -- CRYSKNIFE: 14
+        {
+            name = hdmod_string.journal.items.crysknife.name;
+            desc1 = hdmod_string.journal.items.crysknife.desc1;
+            desc2 = hdmod_string.journal.items.crysknife.desc2;
+            desc3 = hdmod_string.journal.items.crysknife.desc3;
+            desc4 = hdmod_string.journal.items.crysknife.desc4;
+            desc5 = hdmod_string.journal.items.crysknife.desc5;
+            column = 9;
+            row = 2;
+        };
+        -- WEB GUN: 15
+        {
+            name = hdmod_string.journal.items.web_gun.name;
+            desc1 = hdmod_string.journal.items.web_gun.desc1;
+            desc2 = hdmod_string.journal.items.web_gun.desc2;
+            desc3 = hdmod_string.journal.items.web_gun.desc3;
+            desc4 = hdmod_string.journal.items.web_gun.desc4;
+            desc5 = hdmod_string.journal.items.web_gun.desc5;
+            column = 0;
+            row = 2;
+        };
+        -- SHOTGUN: 16
+        {
+            name = hdmod_string.journal.items.shotgun.name;
+            desc1 = hdmod_string.journal.items.shotgun.desc1;
+            desc2 = hdmod_string.journal.items.shotgun.desc2;
+            desc3 = hdmod_string.journal.items.shotgun.desc3;
+            desc4 = hdmod_string.journal.items.shotgun.desc4;
+            desc5 = hdmod_string.journal.items.shotgun.desc5;
+            column = 1;
+            row = 2;
+        };
+        -- FREEZE RAY: 17
+        {
+            name = hdmod_string.journal.items.freeze_ray.name;
+            desc1 = hdmod_string.journal.items.freeze_ray.desc1;
+            desc2 = hdmod_string.journal.items.freeze_ray.desc2;
+            desc3 = hdmod_string.journal.items.freeze_ray.desc3;
+            desc4 = hdmod_string.journal.items.freeze_ray.desc4;
+            desc5 = hdmod_string.journal.items.freeze_ray.desc5;
+            column = 2;
+            row = 2;
+        };
+        -- PLASMA CANNON: 18
+        {
+            name = hdmod_string.journal.items.plasma_cannon.name;
+            desc1 = hdmod_string.journal.items.plasma_cannon.desc1;
+            desc2 = hdmod_string.journal.items.plasma_cannon.desc2;
+            desc3 = hdmod_string.journal.items.plasma_cannon.desc3;
+            desc4 = hdmod_string.journal.items.plasma_cannon.desc4;
+            desc5 = hdmod_string.journal.items.plasma_cannon.desc5;
+            column = 0;
+            row = 3;
+        };
+        -- CAMERA: 19
+        {
+            name = hdmod_string.journal.items.camera.name;
+            desc1 = hdmod_string.journal.items.camera.desc1;
+            desc2 = hdmod_string.journal.items.camera.desc2;
+            desc3 = hdmod_string.journal.items.camera.desc3;
+            desc4 = hdmod_string.journal.items.camera.desc4;
+            desc5 = hdmod_string.journal.items.camera.desc5;
+            column = 4;
+            row = 2;
+        };
+        -- TELEPORTER: 20
+        {
+            name = hdmod_string.journal.items.teleporter.name;
+            desc1 = hdmod_string.journal.items.teleporter.desc1;
+            desc2 = hdmod_string.journal.items.teleporter.desc2;
+            desc3 = hdmod_string.journal.items.teleporter.desc3;
+            desc4 = hdmod_string.journal.items.teleporter.desc4;
+            desc5 = hdmod_string.journal.items.teleporter.desc5;
+            column = 5;
+            row = 2;
+        };
+        -- PARACHUTE: 21
+        {
+            name = hdmod_string.journal.items.parachute.name;
+            desc1 = hdmod_string.journal.items.parachute.desc1;
+            desc2 = hdmod_string.journal.items.parachute.desc2;
+            desc3 = hdmod_string.journal.items.parachute.desc3;
+            desc4 = hdmod_string.journal.items.parachute.desc4;
+            desc5 = hdmod_string.journal.items.parachute.desc5;
+            column = 0;
+            row = 1;
+        };
+        -- CAPE: 22
+        {
+            name = hdmod_string.journal.items.cape.name;
+            desc1 = hdmod_string.journal.items.cape.desc1;
+            desc2 = hdmod_string.journal.items.cape.desc2;
+            desc3 = hdmod_string.journal.items.cape.desc3;
+            desc4 = hdmod_string.journal.items.cape.desc4;
+            desc5 = hdmod_string.journal.items.cape.desc5;
+            column = 7;
+            row = 1;
+        };
+        -- JETPACK: 23
+        {
+            name = hdmod_string.journal.items.jetpack.name;
+            desc1 = hdmod_string.journal.items.jetpack.desc1;
+            desc2 = hdmod_string.journal.items.jetpack.desc2;
+            desc3 = hdmod_string.journal.items.jetpack.desc3;
+            desc4 = hdmod_string.journal.items.jetpack.desc4;
+            desc5 = hdmod_string.journal.items.jetpack.desc5;
+            column = 8;
+            row = 1;
+        };
+        -- SHIELD: 24
+        {
+            name = hdmod_string.journal.items.shield.name;
+            desc1 = hdmod_string.journal.items.shield.desc1;
+            desc2 = hdmod_string.journal.items.shield.desc2;
+            desc3 = hdmod_string.journal.items.shield.desc3;
+            desc4 = hdmod_string.journal.items.shield.desc4;
+            desc5 = hdmod_string.journal.items.shield.desc5;
+            column = 1;
+            row = 4;
+        };
+        -- ROYAL JELLY: 25
+        {
+            name = hdmod_string.journal.items.royal_jelly.name;
+            desc1 = hdmod_string.journal.items.royal_jelly.desc1;
+            desc2 = hdmod_string.journal.items.royal_jelly.desc2;
+            desc3 = hdmod_string.journal.items.royal_jelly.desc3;
+            desc4 = hdmod_string.journal.items.royal_jelly.desc4;
+            desc5 = hdmod_string.journal.items.royal_jelly.desc5;
+            column = 6;
+            row = 1;
+        };
+        -- IDOL: 26
+        {
+            name = hdmod_string.journal.items.idol.name;
+            desc1 = hdmod_string.journal.items.idol.desc1;
+            desc2 = hdmod_string.journal.items.idol.desc2;
+            desc3 = hdmod_string.journal.items.idol.desc3;
+            desc4 = hdmod_string.journal.items.idol.desc4;
+            desc5 = hdmod_string.journal.items.idol.desc5;
+            column = 2;
+            row = 3;
+        };
+        -- CRYSTAL SKULL: 27
+        {
+            name = hdmod_string.journal.items.crystal_skull.name;
+            desc1 = hdmod_string.journal.items.crystal_skull.desc1;
+            desc2 = hdmod_string.journal.items.crystal_skull.desc2;
+            desc3 = hdmod_string.journal.items.crystal_skull.desc3;
+            desc4 = hdmod_string.journal.items.crystal_skull.desc4;
+            desc5 = hdmod_string.journal.items.crystal_skull.desc5;
+            column = 7;
+            row = 4;
+        };
+        -- KAPALA: 28
+        {
+            name = hdmod_string.journal.items.kapala.name;
+            desc1 = hdmod_string.journal.items.kapala.desc1;
+            desc2 = hdmod_string.journal.items.kapala.desc2;
+            desc3 = hdmod_string.journal.items.kapala.desc3;
+            desc4 = hdmod_string.journal.items.kapala.desc4;
+            desc5 = hdmod_string.journal.items.kapala.desc5;
+            column = 2;
+            row = 1;
+        };
+        -- UDJAT EYE: 29
+        {
+            name = hdmod_string.journal.items.udjat_eye.name;
+            desc1 = hdmod_string.journal.items.udjat_eye.desc1;
+            desc2 = hdmod_string.journal.items.udjat_eye.desc2;
+            desc3 = hdmod_string.journal.items.udjat_eye.desc3;
+            desc4 = hdmod_string.journal.items.udjat_eye.desc4;
+            desc5 = hdmod_string.journal.items.udjat_eye.desc5;
+            column = 1;
+            row = 1;
+        };
+        -- ANKH: 30
+        {
+            name = hdmod_string.journal.items.ankh.name;
+            desc1 = hdmod_string.journal.items.ankh.desc1;
+            desc2 = hdmod_string.journal.items.ankh.desc2;
+            desc3 = hdmod_string.journal.items.ankh.desc3;
+            desc4 = hdmod_string.journal.items.ankh.desc4;
+            desc5 = hdmod_string.journal.items.ankh.desc5;
+            column = 5;
+            row = 1;
+        };
+        -- HEDJET: 31
+        {
+            name = hdmod_string.journal.items.hedjet.name;
+            desc1 = hdmod_string.journal.items.hedjet.desc1;
+            desc2 = hdmod_string.journal.items.hedjet.desc2;
+            desc3 = hdmod_string.journal.items.hedjet.desc3;
+            desc4 = hdmod_string.journal.items.hedjet.desc4;
+            desc5 = hdmod_string.journal.items.hedjet.desc5;
+            column = 3;
+            row = 1;
+        };
+        -- SCEPTER: 32
+        {
+            name = hdmod_string.journal.items.scepter.name;
+            desc1 = hdmod_string.journal.items.scepter.desc1;
+            desc2 = hdmod_string.journal.items.scepter.desc2;
+            desc3 = hdmod_string.journal.items.scepter.desc3;
+            desc4 = hdmod_string.journal.items.scepter.desc4;
+            desc5 = hdmod_string.journal.items.scepter.desc5;
+            column = 1;
+            row = 3;
+        };
+        -- BOOK OF THE DEAD: 33
+        {
+            name = hdmod_string.journal.items.botd.name;
+            desc1 = hdmod_string.journal.items.botd.desc1;
+            desc2 = hdmod_string.journal.items.botd.desc2;
+            desc3 = hdmod_string.journal.items.botd.desc3;
+            desc4 = hdmod_string.journal.items.botd.desc4;
+            desc5 = hdmod_string.journal.items.botd.desc5;
+            column = 9;
+            row = 3;
+        };
+        -- VLADS CAPE: 34
+        {
+            name = hdmod_string.journal.items.vlads_cape.name;
+            desc1 = hdmod_string.journal.items.vlads_cape.desc1;
+            desc2 = hdmod_string.journal.items.vlads_cape.desc2;
+            desc3 = hdmod_string.journal.items.vlads_cape.desc3;
+            desc4 = hdmod_string.journal.items.vlads_cape.desc4;
+            desc5 = hdmod_string.journal.items.vlads_cape.desc5;
+            column = 5;
+            row = 4;
+        };
+        -- VLADS AMULET: 35
+        {
+            name = hdmod_string.journal.items.vlads_amulet.name;
+            desc1 = hdmod_string.journal.items.vlads_amulet.desc1;
+            desc2 = hdmod_string.journal.items.vlads_amulet.desc2;
+            desc3 = hdmod_string.journal.items.vlads_amulet.desc3;
+            desc4 = hdmod_string.journal.items.vlads_amulet.desc4;
+            desc5 = hdmod_string.journal.items.vlads_amulet.desc5;
+            column = 4;
+            row = 4;
+        };
+        -- EGGPLANT: 36
+        {
+            name = hdmod_string.journal.items.eggplant.name;
+            desc1 = hdmod_string.journal.items.eggplant.desc1;
+            desc2 = hdmod_string.journal.items.eggplant.desc2;
+            desc3 = hdmod_string.journal.items.eggplant.desc3;
+            desc4 = hdmod_string.journal.items.eggplant.desc4;
+            desc5 = hdmod_string.journal.items.eggplant.desc5;
+            column = 4;
+            row = 3;
+        };
     };
     traps = {
+        -- SPIKES: 1
+        {
+            name = hdmod_string.journal.traps.spikes.name;
+            desc1 = hdmod_string.journal.traps.spikes.desc1;
+            desc2 = hdmod_string.journal.traps.spikes.desc2;
+            desc3 = hdmod_string.journal.traps.spikes.desc3;
+            desc4 = hdmod_string.journal.traps.spikes.desc4;
+            desc5 = hdmod_string.journal.traps.spikes.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_0;
+            column = 0;
+            row = 1;
+            bg_column = 0;
+            bg_row = 0;
+            big = false;
+        };
+        -- ARROW TRAP: 2
+        {
+            name = hdmod_string.journal.traps.arrow_trap.name;
+            desc1 = hdmod_string.journal.traps.arrow_trap.desc1;
+            desc2 = hdmod_string.journal.traps.arrow_trap.desc2;
+            desc3 = hdmod_string.journal.traps.arrow_trap.desc3;
+            desc4 = hdmod_string.journal.traps.arrow_trap.desc4;
+            desc5 = hdmod_string.journal.traps.arrow_trap.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_0;
+            column = 0;
+            row = 0;
+            bg_column = 0;
+            bg_row = 0;
+            big = false;
+        };
+        -- POWDER KEG: 3
+        {
+            name = hdmod_string.journal.traps.powder_keg.name;
+            desc1 = hdmod_string.journal.traps.powder_keg.desc1;
+            desc2 = hdmod_string.journal.traps.powder_keg.desc2;
+            desc3 = hdmod_string.journal.traps.powder_keg.desc3;
+            desc4 = hdmod_string.journal.traps.powder_keg.desc4;
+            desc5 = hdmod_string.journal.traps.powder_keg.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_0;
+            column = 3;
+            row = 0;
+            bg_column = 0;
+            bg_row = 0;
+            big = false;
+        };
+        -- BOULDER: 4
+        {
+            name = hdmod_string.journal.traps.boulder.name;
+            desc1 = hdmod_string.journal.traps.boulder.desc1;
+            desc2 = hdmod_string.journal.traps.boulder.desc2;
+            desc3 = hdmod_string.journal.traps.boulder.desc3;
+            desc4 = hdmod_string.journal.traps.boulder.desc4;
+            desc5 = hdmod_string.journal.traps.boulder.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_2;
+            column = 1;
+            row = 0;
+            bg_column = 0;
+            bg_row = 0;
+            big = 2;
+        };
+        -- TIKI TRAP: 5
+        {
+            name = hdmod_string.journal.traps.tiki_trap.name;
+            desc1 = hdmod_string.journal.traps.tiki_trap.desc1;
+            desc2 = hdmod_string.journal.traps.tiki_trap.desc2;
+            desc3 = hdmod_string.journal.traps.tiki_trap.desc3;
+            desc4 = hdmod_string.journal.traps.tiki_trap.desc4;
+            desc5 = hdmod_string.journal.traps.tiki_trap.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_1;
+            column = 0;
+            row = 0;
+            bg_column = 1;
+            bg_row = 0;
+            big = 1;
+        };
+        -- ACID: 6
+        {
+            name = hdmod_string.journal.traps.acid.name;
+            desc1 = hdmod_string.journal.traps.acid.desc1;
+            desc2 = hdmod_string.journal.traps.acid.desc2;
+            desc3 = hdmod_string.journal.traps.acid.desc3;
+            desc4 = hdmod_string.journal.traps.acid.desc4;
+            desc5 = hdmod_string.journal.traps.acid.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_0;
+            column = 3;
+            row = 1;
+            bg_column = 0;
+            bg_row = 2;
+            big = false;
+        };
+        -- SPRING: 7
+        {
+            name = hdmod_string.journal.traps.spring.name;
+            desc1 = hdmod_string.journal.traps.spring.desc1;
+            desc2 = hdmod_string.journal.traps.spring.desc2;
+            desc3 = hdmod_string.journal.traps.spring.desc3;
+            desc4 = hdmod_string.journal.traps.spring.desc4;
+            desc5 = hdmod_string.journal.traps.spring.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_0;
+            column = 8;
+            row = 0;
+            bg_column = 2;
+            bg_row = 1;
+            big = false;
+        };
+        -- MINE: 8
+        {
+            name = hdmod_string.journal.traps.mine.name;
+            desc1 = hdmod_string.journal.traps.mine.desc1;
+            desc2 = hdmod_string.journal.traps.mine.desc2;
+            desc3 = hdmod_string.journal.traps.mine.desc3;
+            desc4 = hdmod_string.journal.traps.mine.desc4;
+            desc5 = hdmod_string.journal.traps.mine.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_0;
+            column = 9;
+            row = 0;
+            bg_column = 2;
+            bg_row = 1;
+            big = false;
+        };
+        -- TURRET: 9
+        {
+            name = hdmod_string.journal.traps.turret.name;
+            desc1 = hdmod_string.journal.traps.turret.desc1;
+            desc2 = hdmod_string.journal.traps.turret.desc2;
+            desc3 = hdmod_string.journal.traps.turret.desc3;
+            desc4 = hdmod_string.journal.traps.turret.desc4;
+            desc5 = hdmod_string.journal.traps.turret.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_0;
+            column = 7;
+            row = 0;
+            bg_column = 3;
+            bg_row = 1;
+            big = false;
+        };
+        -- FORCEFIELD: 10
+        {
+            name = hdmod_string.journal.traps.forcefield.name;
+            desc1 = hdmod_string.journal.traps.forcefield.desc1;
+            desc2 = hdmod_string.journal.traps.forcefield.desc2;
+            desc3 = hdmod_string.journal.traps.forcefield.desc3;
+            desc4 = hdmod_string.journal.traps.forcefield.desc4;
+            desc5 = hdmod_string.journal.traps.forcefield.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_1;
+            column = 4;
+            row = 0;
+            bg_column = 3;
+            bg_row = 1;
+            big = true;
+        };
+        -- CRUSH TRAP: 11
+        {
+            name = hdmod_string.journal.traps.crush_trap.name;
+            desc1 = hdmod_string.journal.traps.crush_trap.desc1;
+            desc2 = hdmod_string.journal.traps.crush_trap.desc2;
+            desc3 = hdmod_string.journal.traps.crush_trap.desc3;
+            desc4 = hdmod_string.journal.traps.crush_trap.desc4;
+            desc5 = hdmod_string.journal.traps.crush_trap.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_0;
+            column = 6;
+            row = 0;
+            bg_column = 1;
+            bg_row = 1;
+            big = false;
+        };
+        -- CEILING TRAP: 12
+        {
+            name = hdmod_string.journal.traps.ceiling_trap.name;
+            desc1 = hdmod_string.journal.traps.ceiling_trap.desc1;
+            desc2 = hdmod_string.journal.traps.ceiling_trap.desc2;
+            desc3 = hdmod_string.journal.traps.ceiling_trap.desc3;
+            desc4 = hdmod_string.journal.traps.ceiling_trap.desc4;
+            desc5 = hdmod_string.journal.traps.ceiling_trap.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_0;
+            column = 4;
+            row = 0;
+            bg_column = 1;
+            bg_row = 1;
+            big = false;
+        };
+        -- SPIKE BALL: 13
+        {
+            name = hdmod_string.journal.traps.spike_ball.name;
+            desc1 = hdmod_string.journal.traps.spike_ball.desc1;
+            desc2 = hdmod_string.journal.traps.spike_ball.desc2;
+            desc3 = hdmod_string.journal.traps.spike_ball.desc3;
+            desc4 = hdmod_string.journal.traps.spike_ball.desc4;
+            desc5 = hdmod_string.journal.traps.spike_ball.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_1;
+            column = 3;
+            row = 0;
+            bg_column = 2;
+            bg_row = 0;
+            big = 1;
+        };
+        -- URAEUS TRAP: 14
+        {
+            name = hdmod_string.journal.traps.uraeus_trap.name;
+            desc1 = hdmod_string.journal.traps.uraeus_trap.desc1;
+            desc2 = hdmod_string.journal.traps.uraeus_trap.desc2;
+            desc3 = hdmod_string.journal.traps.uraeus_trap.desc3;
+            desc4 = hdmod_string.journal.traps.uraeus_trap.desc4;
+            desc5 = hdmod_string.journal.traps.uraeus_trap.desc5;
+            texture = TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_TRAPS_1;
+            column = 1;
+            row = 0;
+            bg_column = 2;
+            bg_row = 2;
+            big = 1;
+        };
     };
     story = {
     };
@@ -1361,8 +1967,24 @@ local default_journal_data = {
         false;
         false;
         false;
+        false;
+        false;
     };
     traps = {
+        false;
+        false;
+        false;
+        false;
+        false;
+        false;
+        false;
+        false;
+        false;
+        false;
+        false;
+        false;
+        false;
+        false;
     };
     story = {
     };

@@ -81,18 +81,18 @@ function setup_page(x, y, render_ctx, page_type, page_number)
 
         -- TODO: add the background textures and other details for all the pages
         elseif page_type == JOURNAL_PAGE_TYPE.PLACES then
-            header_text = get_string(string_ids.places_header)
+            header_text = hdmod_string.journal.header.places
         elseif page_type == JOURNAL_PAGE_TYPE.PEOPLE then
             -- should have almost identical stuff as BESTIARY, but i din't want to write extra logic for character pages etc.
-            header_text = get_string(string_ids.people_header)
+            header_text = hdmod_string.journal.header.people
         elseif page_type == JOURNAL_PAGE_TYPE.ITEMS then
-            header_text = get_string(string_ids.items_header)
+            header_text = hdmod_string.journal.header.items
         elseif page_type == JOURNAL_PAGE_TYPE.TRAPS then
-            header_text = get_string(string_ids.traps_header)
+            header_text = hdmod_string.journal.header.traps
         elseif page_type == JOURNAL_PAGE_TYPE.FEATS then
-            header_text = get_string(string_ids.feats_header)
+            header_text = hdmod_string.journal.header.feats
         elseif page_type == JOURNAL_PAGE_TYPE.STORY then
-            header_text = "Story"
+            header_text = hdmod_string.journal.header.story
         end
         --Take data from custom_journal_data and display it if its been unlocked
         -- draw the header/title on the red bow
@@ -246,15 +246,15 @@ function setup_page(x, y, render_ctx, page_type, page_number)
             end
         elseif page_type == JOURNAL_PAGE_TYPE.ITEMS then
             local true_page_number = page_number.page_number-400
-            local page_name = c.items[true_page_number].name
-            local desc1 = c.items[true_page_number].desc1
-            local desc2 = c.items[true_page_number].desc2
-            local desc3 = c.items[true_page_number].desc3
-            local desc4 = c.items[true_page_number].desc4
-            local desc5 = c.items[true_page_number].desc5
-            local row = c.items[true_page_number].row
-            local column = c.items[true_page_number].column
-            local entry_seen = save_data.journal.places[true_page_number]
+            local page_name = journal_data.info.items[true_page_number].name
+            local desc1 = journal_data.info.items[true_page_number].desc1
+            local desc2 = journal_data.info.items[true_page_number].desc2
+            local desc3 = journal_data.info.items[true_page_number].desc3
+            local desc4 = journal_data.info.items[true_page_number].desc4
+            local desc5 = journal_data.info.items[true_page_number].desc5
+            local row = journal_data.info.items[true_page_number].row
+            local column = journal_data.info.items[true_page_number].column
+            local entry_seen = journal_data.journal_data.items[true_page_number]
             if not entry_seen then
                 page_name = hdmod_string.journal.undiscovered.name
                 desc1 = hdmod_string.journal.undiscovered.desc1
@@ -275,7 +275,9 @@ function setup_page(x, y, render_ctx, page_type, page_number)
             if x > 0 then
                 dest = AABB:new(-0.14, 0.65, 0.61, -0.03)
             end
-            render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_BG_0, 0, 0, dest, Color:white())  
+            if entry_seen then
+                render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_BG_0, 0, 0, dest, Color:white())   
+            end
             --character
             --aabb width of 0.3 and aabb height of 0.4 seemed to draw things 1:1 to vanilla journal
             dest = AABB:new(-0.38, 0.35, -0.08, 0.075)
@@ -283,19 +285,23 @@ function setup_page(x, y, render_ctx, page_type, page_number)
                 dest = AABB:new(0.08, 0.35, 0.38, 0.075)
             end
             if entry_seen then
-                render_ctx:draw_screen_texture(999, row, column, dest, Color:white())
+                render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_ITEMS_0, row, column, dest, Color:white())
             end   
         elseif page_type == JOURNAL_PAGE_TYPE.TRAPS then
             local true_page_number = page_number.page_number-500
-            local page_name = c.traps[true_page_number].name
-            local desc1 = c.traps[true_page_number].desc1
-            local desc2 = c.traps[true_page_number].desc2
-            local desc3 = c.traps[true_page_number].desc3
-            local desc4 = c.traps[true_page_number].desc4
-            local desc5 = c.traps[true_page_number].desc5
-            local row = c.traps[true_page_number].row
-            local column = c.traps[true_page_number].column
-            local entry_seen = save_data.journal.places[true_page_number]
+            local page_name = journal_data.info.traps[true_page_number].name
+            local desc1 = journal_data.info.traps[true_page_number].desc1
+            local desc2 = journal_data.info.traps[true_page_number].desc2
+            local desc3 = journal_data.info.traps[true_page_number].desc3
+            local desc4 = journal_data.info.traps[true_page_number].desc4
+            local desc5 = journal_data.info.traps[true_page_number].desc5
+            local row = journal_data.info.traps[true_page_number].row
+            local column = journal_data.info.traps[true_page_number].column
+            local entry_seen = journal_data.journal_data.traps[true_page_number]
+            local bg_row = journal_data.info.traps[true_page_number].bg_row
+            local bg_column = journal_data.info.traps[true_page_number].bg_column
+            local texture = journal_data.info.traps[true_page_number].texture
+            local big = journal_data.info.traps[true_page_number].big
             if not entry_seen then
                 page_name = hdmod_string.journal.undiscovered.name
                 desc1 = hdmod_string.journal.undiscovered.desc1
@@ -316,15 +322,28 @@ function setup_page(x, y, render_ctx, page_type, page_number)
             if x > 0 then
                 dest = AABB:new(-0.14, 0.65, 0.61, -0.03)
             end
-            render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_BG_0, 0, 0, dest, Color:white())  
-            --character
-            --aabb width of 0.3 and aabb height of 0.4 seemed to draw things 1:1 to vanilla journal
+            if entry_seen then
+                render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_BG_0, bg_row, bg_column, dest, Color:white())  
+            end
+            --trap
             dest = AABB:new(-0.38, 0.35, -0.08, 0.075)
             if x > 0 then
                 dest = AABB:new(0.08, 0.35, 0.38, 0.075)
             end
+            if big then
+                dest = AABB:new(-0.34, 0.46, -0.12, 0.075)
+                if x > 0 then
+                    dest = AABB:new(0.12, 0.46, 0.34, 0.075)
+                end
+            end
+            if big == 2 then
+                dest = AABB:new(-0.475, 0.5375, 0, 0.09375)
+                if x > 0 then
+                    dest = AABB:new(0.08, 0.35, 0.38, 0.075)
+                end
+            end
             if entry_seen then
-                render_ctx:draw_screen_texture(999, row, column, dest, Color:white())
+                render_ctx:draw_screen_texture(texture, row, column, dest, Color:white())
             end              
         elseif page_type == JOURNAL_PAGE_TYPE.STORY then
             local true_page_number = page_number.page_number-600
@@ -402,14 +421,14 @@ set_callback(function(chapter, pages)
     end
     if chapter == JOURNALUI_PAGE_SHOWN.ITEMS then
         pages = {}
-        for i=1, 34 do
+        for i=1, 36 do
             pages[i] = 400+i
         end
         return pages
     end
     if chapter == JOURNALUI_PAGE_SHOWN.TRAPS then
         pages = {}
-        for i=1, 2 do
+        for i=1, 14 do
             pages[i] = 500+i
         end
         return pages

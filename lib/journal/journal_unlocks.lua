@@ -1036,6 +1036,415 @@ function module.check_for_journal_unlocks(journal_data)
             end)
         end
     end, ON.LEVEL)
+    -- ITEMS --
+
+    -- Set a pre-destroy callback for pickups that unlocks based on ENT_TYPE or HD_ENT_TYPE if a player is overlapping with it
+    set_post_entity_spawn(function(self)
+        self:set_pre_destroy(function(self)
+            for _, player in ipairs(players) do
+                if player:overlaps_with(self) then
+                    -- ROPEPILE: 1
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_ROPEPILE then
+                        if not journal_data.journal_data.items[1] then
+                            journal_data.journal_data.items[1] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 0)
+                        end                             
+                    end
+                    -- BOMB BAG: 2
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_BOMBBAG then
+                        if not journal_data.journal_data.items[2] then
+                            journal_data.journal_data.items[2] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 1)
+                        end                             
+                    end
+                    -- BOMB BOX: 3
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_BOMBBOX then
+                        if not journal_data.journal_data.items[3] then
+                            journal_data.journal_data.items[3] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 2)
+                        end                             
+                    end
+                    -- SPECTACLES: 4
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_SPECTACLES then
+                        if not journal_data.journal_data.items[4] then
+                            journal_data.journal_data.items[4] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 3)
+                        end                             
+                    end
+                    -- CLIMBING GLOVES: 5
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES then
+                        if not journal_data.journal_data.items[5] then
+                            journal_data.journal_data.items[5] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 4)
+                        end                             
+                    end
+                    -- PITCHERS MITT: 6
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_PITCHERSMITT then
+                        if not journal_data.journal_data.items[6] then
+                            journal_data.journal_data.items[6] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 5)
+                        end                             
+                    end
+                    -- SPRING SHOES: 7
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_SPRINGSHOES then
+                        if not journal_data.journal_data.items[7] then
+                            journal_data.journal_data.items[7] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 6)
+                        end                             
+                    end
+                    -- SPIKE SHOES: 8
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_SPIKESHOES then
+                        if not journal_data.journal_data.items[8] then
+                            journal_data.journal_data.items[8] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 7)
+                        end                             
+                    end
+                    -- PASTE: 9
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_PASTE then
+                        if not journal_data.journal_data.items[9] then
+                            journal_data.journal_data.items[9] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 8)
+                        end                             
+                    end
+                    -- COMPASS: 10
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_COMPASS and type(self.user_data) ~= "table" then
+                        if not journal_data.journal_data.items[10] then
+                            journal_data.journal_data.items[10] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 9)
+                        end                             
+                    end
+                    -- CRYSKNIFE: 14
+                    if type(self.user_data) == "table" then
+                        if self.user_data.ent_type == HD_ENT_TYPE.ITEM_PICKUP_CRYSKNIFE then
+                            if not journal_data.journal_data.items[14] then
+                                journal_data.journal_data.items[14] = true
+                                show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 13)
+                            end                                
+                        end
+                    end
+                    -- PARACHUTE: 21
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_PARACHUTE then
+                        if not journal_data.journal_data.items[21] then
+                            journal_data.journal_data.items[21] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 20)
+                        end                          
+                    end
+                    -- ROYAL JELLY: 25
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_ROYALJELLY then
+                        if not journal_data.journal_data.items[25] then
+                            journal_data.journal_data.items[25] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 24)
+                        end                             
+                    end
+                    -- KAPALA: 29
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_KAPALA then
+                        if not journal_data.journal_data.items[28] then
+                            journal_data.journal_data.items[28] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 27)
+                        end                             
+                    end
+                    -- UDJAT EYE: 29
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_UDJATEYE then
+                        if not journal_data.journal_data.items[29] then
+                            journal_data.journal_data.items[29] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 28)
+                        end                             
+                    end
+                    -- ANKH: 30
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_ANKH then
+                        if not journal_data.journal_data.items[30] then
+                            journal_data.journal_data.items[30] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 29)
+                        end                             
+                    end
+                    -- HEDJET: 31
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_HEDJET then
+                        if not journal_data.journal_data.items[31] then
+                            journal_data.journal_data.items[31] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 30)
+                        end                             
+                    end
+                    -- BOTD: 33
+                    if self.type.id == ENT_TYPE.ITEM_PICKUP_TABLETOFDESTINY then
+                        if not journal_data.journal_data.items[33] then
+                            journal_data.journal_data.items[33] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 32)
+                        end                             
+                    end
+                end
+            end
+        end)
+    end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.ITEM_PICKUP_ROPEPILE, ENT_TYPE.ITEM_PICKUP_BOMBBAG, ENT_TYPE.ITEM_PICKUP_BOMBBOX, ENT_TYPE.ITEM_PICKUP_SPECTACLES, ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES, ENT_TYPE.ITEM_PICKUP_PITCHERSMITT, ENT_TYPE.ITEM_PICKUP_SPRINGSHOES, ENT_TYPE.ITEM_PICKUP_SPIKESHOES, ENT_TYPE.ITEM_PICKUP_PASTE, ENT_TYPE.ITEM_PICKUP_COMPASS, ENT_TYPE.ITEM_PICKUP_ROYALJELLY, ENT_TYPE.ITEM_PICKUP_ANKH, ENT_TYPE.ITEM_PICKUP_HEDJET, ENT_TYPE.ITEM_PICKUP_UDJATEYE, ENT_TYPE.ITEM_PICKUP_KAPALA, ENT_TYPE.ITEM_PICKUP_PARACHUTE, ENT_TYPE.ITEM_PICKUP_TABLETOFDESTINY)
+    -- Check what players are holding for journal unlocks
+    set_callback(function()
+        for _, player in ipairs(players) do
+            player:set_post_update_state_machine(function()
+                if get_entity(player.holding_uid) ~= nil then
+                    local held_item = get_entity(player.holding_uid)
+                    -- MATTOCK: 11
+                    if held_item.type.id == ENT_TYPE.ITEM_MATTOCK then
+                        if not journal_data.journal_data.items[11] then
+                            journal_data.journal_data.items[11] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 10)
+                        end                          
+                    end
+                    -- BOOMERANG: 12
+                    if held_item.type.id == ENT_TYPE.ITEM_BOOMERANG then
+                        if not journal_data.journal_data.items[12] then
+                            journal_data.journal_data.items[12] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 11)
+                        end                          
+                    end
+                    -- MACHETE: 13
+                    if held_item.type.id == ENT_TYPE.ITEM_MACHETE then
+                        if not journal_data.journal_data.items[13] then
+                            journal_data.journal_data.items[13] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 12)
+                        end                          
+                    end
+                    -- WEB GUN: 15
+                    if held_item.type.id == ENT_TYPE.ITEM_WEBGUN then
+                        if not journal_data.journal_data.items[15] then
+                            journal_data.journal_data.items[15] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 14)
+                        end                          
+                    end
+                    -- SHOTGUN: 16
+                    if held_item.type.id == ENT_TYPE.ITEM_SHOTGUN then
+                        if not journal_data.journal_data.items[16] then
+                            journal_data.journal_data.items[16] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 15)
+                        end                          
+                    end
+                    -- FREEZE RAY: 17
+                    if held_item.type.id == ENT_TYPE.ITEM_FREEZERAY then
+                        if not journal_data.journal_data.items[17] then
+                            journal_data.journal_data.items[17] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 16)
+                        end                          
+                    end
+                    -- PLASMA CANNON: 18
+                    if held_item.type.id == ENT_TYPE.ITEM_PLASMACANNON then
+                        if not journal_data.journal_data.items[18] then
+                            journal_data.journal_data.items[18] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 17)
+                        end                          
+                    end
+                    -- CAMERA: 19
+                    if held_item.type.id == ENT_TYPE.ITEM_CAMERA then
+                        if not journal_data.journal_data.items[19] then
+                            journal_data.journal_data.items[19] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 18)
+                        end                          
+                    end
+                    -- TELEPORTER: 20
+                    if held_item.type.id == ENT_TYPE.ITEM_TELEPORTER then
+                        if not journal_data.journal_data.items[20] then
+                            journal_data.journal_data.items[20] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 19)
+                        end                          
+                    end
+                    -- SHIELD: 24
+                    if held_item.type.id == ENT_TYPE.ITEM_METAL_SHIELD then
+                        if not journal_data.journal_data.items[24] then
+                            journal_data.journal_data.items[24] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 23)
+                        end                          
+                    end
+                    -- IDOL: 26
+                    if held_item.type.id == ENT_TYPE.ITEM_IDOL then
+                        if not journal_data.journal_data.items[26] then
+                            journal_data.journal_data.items[26] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 25)
+                        end                          
+                    end
+                    -- CRYSTAL SKULL: 27
+                    if held_item.type.id == ENT_TYPE.ITEM_MADAMETUSK_IDOL then
+                        if not journal_data.journal_data.items[27] then
+                            journal_data.journal_data.items[27] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 26)
+                        end                          
+                    end
+                    -- SCEPTER: 32
+                    if held_item.type.id == ENT_TYPE.ITEM_SCEPTER then
+                        if not journal_data.journal_data.items[32] then
+                            journal_data.journal_data.items[32] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 31)
+                        end                          
+                    end
+                    -- EGGPLANT: 36
+                    if held_item.type.id == ENT_TYPE.ITEM_EGGPLANT then
+                        if not journal_data.journal_data.items[36] then
+                            journal_data.journal_data.items[36] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 35)
+                        end                          
+                    end
+                end
+                -- Back items
+                if get_entity(player:worn_backitem()) ~= nil then
+                    local backitem = get_entity(player:worn_backitem())
+                    -- CAPE: 22
+                    if backitem.type.id == ENT_TYPE.ITEM_CAPE then
+                        if not journal_data.journal_data.items[22] then
+                            journal_data.journal_data.items[22] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 21)
+                        end                          
+                    end
+                    -- JETPACK: 23
+                    if backitem.type.id == ENT_TYPE.ITEM_JETPACK then
+                        if not journal_data.journal_data.items[23] then
+                            journal_data.journal_data.items[23] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 22)
+                        end                          
+                    end
+                    -- VLADS CAPE: 34
+                    if backitem.type.id == ENT_TYPE.ITEM_VLADS_CAPE then
+                        if not journal_data.journal_data.items[34] then
+                            journal_data.journal_data.items[34] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.ITEMS, 33)
+                        end                          
+                    end
+                end
+            end)
+        end
+    end, ON.LEVEL)
+    -- TRAPS --
+
+    -- Proximity based trap unlocks
+    set_global_interval(function()
+        for _, player in ipairs(players) do
+            for _, v in ipairs(get_entities_by_type(ENT_TYPE.FLOOR_SPIKES, ENT_TYPE.FLOOR_TOTEM_TRAP, ENT_TYPE.FLOOR_SPRING_TRAP, ENT_TYPE.ITEM_LANDMINE, ENT_TYPE.ITEM_ROCK, ENT_TYPE.LIQUID_WATER, ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, ENT_TYPE.ITEM_LASERBEAM, ENT_TYPE.FLOOR_LION_TRAP, ENT_TYPE.ACTIVEFLOOR_CHAINEDPUSHBLOCK)) do
+                local e = get_entity(v)
+                -- SPIKES: 1
+                if distance(player.uid, v) < 2 and e.type.id == ENT_TYPE.FLOOR_SPIKES then
+                    if not journal_data.journal_data.traps[1] then
+                        journal_data.journal_data.traps[1] = true
+                        show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 0)
+                    end    
+                end
+                -- TIKI TRAP: 5
+                if distance(player.uid, v) < 3 and (e.type.id == ENT_TYPE.FLOOR_TOTEM_TRAP) then
+                    if not journal_data.journal_data.traps[5] then
+                        journal_data.journal_data.traps[5] = true
+                        show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 4)
+                    end    
+                end
+                -- ACID: 6
+                if distance(player.uid, v) < 1.5 and (e.type.id == ENT_TYPE.LIQUID_WATER) and state.theme == THEME.EGGPLANT_WORLD then
+                    if not journal_data.journal_data.traps[6] then
+                        journal_data.journal_data.traps[6] = true
+                        show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 5)
+                    end    
+                end                
+                -- SPRING: 7
+                if distance(player.uid, v) < 1 and (e.type.id == ENT_TYPE.FLOOR_SPRING_TRAP) then
+                    if not journal_data.journal_data.traps[7] then
+                        journal_data.journal_data.traps[7] = true
+                        show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 6)
+                    end    
+                end
+                -- MINE: 8
+                if distance(player.uid, v) < 6 and (e.type.id == ENT_TYPE.ITEM_LANDMINE) then
+                    if e.timer >= 1 then
+                        if not journal_data.journal_data.traps[8] then
+                            journal_data.journal_data.traps[8] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 7)
+                        end   
+                    end 
+                end
+                -- TURRET: 9
+                if distance(player.uid, v) < 3 and (e.type.id == ENT_TYPE.ITEM_ROCK) then
+                    if type(e.user_data) == "table" then
+                        if e.user_data.ent_type == HD_ENT_TYPE.ITEM_LASER_TURRET then
+                            if not journal_data.journal_data.traps[9] then
+                                journal_data.journal_data.traps[9] = true
+                                show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 8)
+                            end                             
+                        end
+                    end  
+                end
+                -- FORCEFIELD: 10
+                if distance(player.uid, v) < 6 and (e.type.id == ENT_TYPE.ITEM_LASERBEAM) then
+                    if not journal_data.journal_data.traps[10] then
+                        journal_data.journal_data.traps[10] = true
+                        show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 9)
+                    end                             
+                end
+                -- CRUSH TRAP: 11
+                if distance(player.uid, v) < 4 and (e.type.id == ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP) then
+                    if not journal_data.journal_data.traps[11] then
+                        journal_data.journal_data.traps[11] = true
+                        show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 10)
+                    end                             
+                end
+                if distance(player.uid, v) < 9 and (e.type.id == ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK or e.type.id == ENT_TYPE.ACTIVEFLOOR_CHAINEDPUSHBLOCK) then
+                    if type(e.user_data) == "table" then
+                        -- CEILING TRAP: 12
+                        if e.user_data.ent_type == HD_ENT_TYPE.ACTIVEFLOOR_CRUSHING_CEILING then
+                            if not journal_data.journal_data.traps[12] then
+                                journal_data.journal_data.traps[12] = true
+                                show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 11)
+                            end                             
+                        end
+                        -- SPIKEBALL TRAP: 13
+                        if e.user_data.ent_type == HD_ENT_TYPE.ACTIVEFLOOR_SPIKEBALL_TRAP_BLOCK then
+                            if not journal_data.journal_data.traps[13] then
+                                journal_data.journal_data.traps[13] = true
+                                show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 12)
+                            end                             
+                        end
+                    end  
+                end
+                -- URAEUS TRAP: 14
+                if distance(player.uid, v) < 2 and (e.type.id == ENT_TYPE.FLOOR_LION_TRAP) then
+                    if not journal_data.journal_data.traps[14] then
+                        journal_data.journal_data.traps[14] = true
+                        show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 13)
+                    end
+                end
+            end 
+        end    
+    end, 10)
+    -- Activation based trap unlocks
+    set_global_interval(function()
+        for _, v in ipairs(get_entities_by_type(ENT_TYPE.FLOOR_ARROW_TRAP)) do
+            local a = get_entity(v)
+            if a.arrow_shot then
+                -- ARROW TRAP: 2
+                if not journal_data.journal_data.traps[2] then
+                    journal_data.journal_data.traps[2] = true
+                    show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 1)
+                end
+                -- AMMIT TRAP:
+                if type(a.user_data) == "table" then
+                    if a.user_data.gilded then
+                        --[[
+                        if not journal_data.journal_data.traps[14] then
+                            journal_data.journal_data.traps[14] = true
+                            show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 13)
+                        end
+                        ]]
+                    end
+                end
+            end                   
+        end
+    end, 10)
+    -- POWDER KEG: 3
+    set_post_entity_spawn(function(self)
+        self:set_post_destroy(function()
+            if not journal_data.journal_data.traps[3] then
+                journal_data.journal_data.traps[3] = true
+                show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 2)
+            end              
+        end)
+    end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.ACTIVEFLOOR_POWDERKEG)
+    -- BOULDER: 4
+    set_post_entity_spawn(function(self)
+        if not journal_data.journal_data.traps[4] then
+            journal_data.journal_data.traps[4] = true
+            show_journal_popup(JOURNAL_CHAPTER_TYPE.TRAPS, 3)
+        end              
+    end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.ACTIVEFLOOR_BOULDER)
 end
 
 return module

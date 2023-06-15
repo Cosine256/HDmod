@@ -44,6 +44,10 @@ function module.create_arrowtrap(x, y, l)
 		get_entity(uid):set_texture(temple_texture_id)
 	elseif state.theme == THEME.CITY_OF_GOLD then
 		get_entity(uid):set_texture(gold_texture_id)
+		get_entity(uid).user_data = {
+			gilded = true;
+		}
+
 	end
 end
 

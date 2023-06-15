@@ -4,13 +4,22 @@ local module = {}
 --ENGLISH
 module.english = {
     journal = {
+        header = {
+            places = "Places";
+            people = "People";
+            bestiary = "Bestiary";
+            items = "Items";
+            traps = "Traps";
+            story = "Story";
+            feats = "Feats";
+        };
         undiscovered = {
             name = "UNDISCOVERED";
             desc1 = "";
-            desc2 = "This journal entry is still";
-            desc3 = "waiting to be discovered.";
-            desc4 = "";
-            desc5 = "";            
+            desc2 = "";  
+            desc3 = "This journal entry is still";
+            desc4 = "waiting to be discovered.";
+            desc5 = "";          
         };
         --PLACES
         places = {
@@ -679,12 +688,20 @@ module.english = {
                 desc4 = "contains 3 bombs.";
                 desc5 = "";
             };
+            bomb_box = {
+                name = "BOMB BOX";
+                desc1 = "";
+                desc2 = "";
+                desc3 = "The gift every spelunker wants";
+                desc4 = "to find! Contains 12 bombs.";
+                desc5 = "";
+            };
             spectacles = {
                 name = "SPECTACLES";
                 desc1 = "";
-                desc2 = "For improved vision in the dark"; 
-                desc3 = "and to find treasures hidden";
-                desc4 = "within!";
+                desc2 = "";
+                desc3 = "For improved vision in the dark and"; 
+                desc4 = "to find treasures hidden within!";
                 desc5 = "";
             };
             climbing_gloves = {
@@ -722,18 +739,18 @@ module.english = {
             paste = {
                 name = "PASTE";
                 desc1 = ""; 
-                desc2 = "Even just a tiny amount of this";
-                desc3 = "stuff will let your bombs stick";
-                desc4 = "to virtually anything!";
+                desc2 = "Even just a tiny amount of this stuff";
+                desc3 = "will let your bombs stick to virtually";
+                desc4 = "anything, including yourself and others!";
                 desc5 = "";
             };
-            comapss = {
+            compass = {
                 name = "COMPASS";
                 desc1 = ""; 
-                desc2 = "The strange magnetism of the";
-                desc3 = "caves gives compasses an eerie";
-                desc4 = "sense of direction towards";
-                desc5 = "treasure.";
+                desc2 = "The strange magnetism of the caves";
+                desc3 = "gives compasses an eerie sense of";
+                desc4 = "direction towards treasure and other";
+                desc5 = "riches.";
             };
             mattock = {
                 name = "MATTOCK";
@@ -745,18 +762,18 @@ module.english = {
             };
             boomerang = {
                 name = "BOOMERANG";
-                desc1 = "Most of the boomerangs found "; 
-                desc2 = "here are carved by the sturdy";
-                desc3 = "wood of the jungle that's";
-                desc4 = "lightweight and deadly. The";
-                desc5 = "trademark weapon of the Tikimen.";
+                desc1 = "Most of the boomerangs found here"; 
+                desc2 = "are carved from the sturdy wood";
+                desc3 = "of the jungle that's lightweight";
+                desc4 = "and deadly. The trademark weapon";
+                desc5 = "of the Tiki Tribe.";
             };
             machete = {
                 name = "MACHETE";
                 desc1 = "";
-                desc2 = "It's a bit dull, but still";
-                desc3 = "sharp enough to hack and slice";
-                desc4 = "through adversaries";
+                desc2 = "It's a bit dull, but still sharp";
+                desc3 = "enough to hack and slice through";
+                desc4 = "adversaries.";
                 desc5 = "";
             };
             crysknife = {
@@ -770,10 +787,10 @@ module.english = {
             web_gun = {
                 name = "WEB GUN";
                 desc1 = "";
-                desc2 = "To be fair, web shooting IS";
-                desc3 = "quite a niche market. But if";
-                desc4 = "you're creative enough, you may";
-                desc5 = "find some use for this thing.";
+                desc2 = "To be fair, shooting webs IS a";
+                desc3 = "rather niche market. But if you're";
+                desc4 = "creative enough, you may find some";
+                desc5 = "use for this thing.";
             };
             shotgun = {
                 name = "SHOTGUN";
@@ -810,17 +827,17 @@ module.english = {
             teleporter = {
                 name = "TELEPORTER";
                 desc1 = "";
-                desc2 = "In theory, this kind of tool";
-                desc3 = "should make exploring The Caves a";
-                desc4 = "breeze! In practice? Well...";
+                desc2 = "In theory, this kind of tool should";
+                desc3 = "make exploring The Caves a breeze!";
+                desc4 = "In practice? Well...";
                 desc5 = "";
             };
             parachute = {
                 name = "PARACHUTE";
                 desc1 = "";
-                desc2 = "These can be real life savers if";
-                desc3 = "you ever miss a jump or trip off";
-                desc4 = "a ledge.";
+                desc2 = "";
+                desc3 = "These can be real life savers if you";
+                desc4 = "ever miss a jump or trip off a ledge.";
                 desc5 = "";
             };
             cape = {
@@ -834,81 +851,81 @@ module.english = {
             jetpack = {
                 name = "JETPACK";
                 desc1 = "";
-                desc2 = "Many explorers consider the jetpack";
-                desc3 = "a necessity for spelunking. Just";
-                desc4 = "make sure to watch the fuel levels!";
-                desc5 = "";
+                desc2 = "Ah, the quintessential tool for";
+                desc3 = "deep expeditions! While many";
+                desc4 = "spelunkers swear by it, there's";
+                desc5 = "always the chance it can explode.";
             };
             shield = {
                 name = "SHIELD";
                 desc1 = "";
-                desc2 = "It is forged from an incredibly";
-                desc3 = "durable metal. Wielded by the ";
+                desc2 = "It's forged from an incredibly strong";
+                desc3 = "metal. The infamous weapon of the";
                 desc4 = "unruly Black Knight.";
                 desc5 = "";
             };
             royal_jelly = {
                 name = "ROYAL JELLY";
                 desc1 = "";
-                desc2 = "Delicious nectar created by the";
-                desc3 = "the queen of a beehive. It has ";
-                desc4 = "profound medicinal properties.";
-                desc5 = "";
+                desc2 = "A Delicious nectar created by the";
+                desc3 = "queen of a bee colony. It's sought";
+                desc4 = "after for its medicinal properties";
+                desc5 = "and extraordinary flavor.";
             };
             idol = {
                 name = "IDOL";
                 desc1 = "";
-                desc2 = "A figurine which acts as a";
-                desc3 = "vessel of gods. Of course, to";
-                desc4 = "explorers, it may as well just";
+                desc2 = "A figurine which acts as a vessel";
+                desc3 = "of worship to the gods. Of course,";
+                desc4 = "to explorers, it may as well just";
                 desc5 = "be a big bag of cash.";
             };
             crystal_skull = {
                 name = "CRYSTAL SKULL";
                 desc1 = "";
-                desc2 = "If an idol made of solid gold";
-                desc3 = "excites you, just wait until";
-                desc4 = "you find one of these! It's";
+                desc2 = "If an idol made of solid gold made";
+                desc3 = "you excited, just wait until you get";
+                desc4 = "your hands on one of these! It's";
                 desc5 = "surprisingly heavy.";
             };
             kapala = {
                 name = "KAPALA";
                 desc1 = "";
                 desc2 = "Kali's gift to her most devout";
-                desc3 = "followers. Drinking from the";
-                desc4 = "Kapala is known to provide";
-                desc5 = "significant strength and vigor.";
+                desc3 = "followers. Drinking from it is";
+                desc4 = "believed to provide a profound";
+                desc5 = "feeling of strength and vigor.";
             };
             udjat_eye = {
                 name = "UDJAT EYE";
                 desc1 = "";
                 desc2 = "A mystic eye that seeks its ruler";
-                desc3 = "and will do everything in its ";
-                desc4 = "power to guide its current wielder";
-                desc5 = "to them.";
+                desc3 = "and will do everything in its power";
+                desc4 = "to guide its current carrier towards";
+                desc5 = "them.";
             };
             ankh = {
                 name = "ANKH";
                 desc1 = "";
-                desc2 = "A priceless relic that is";
-                desc3 = "able to grant the holder a";
-                desc4 = "second chance at life. Anubis";
-                desc5 = "is known to wear one.";
+                desc2 = "A priceless relic that is able to";
+                desc3 = "grant the holder a second chance";
+                desc4 = "at life. Anubis is known to keep";
+                desc5 = "one on him at all times.";
             };
             hedjet = {
                 name = "HEDJET";
                 desc1 = "";
-                desc2 = "The symbol of Egyptian power,";
-                desc3 = "glistening with a brilliant";
-                desc4 = "glow.";
+                desc2 = "";
+                desc3 = "The symbol of Egyptian power,";
+                desc4 = "glistening with a brilliant glow.";
                 desc5 = "";
             };
             scepter = {
                 name = "SCEPTER";
                 desc1 = "";
-                desc2 = "The infamous tool of Anubis.";
-                desc3 = "misuse can easily bring the";
-                desc4 = "demise of its wielder.";
+                desc2 = "The infamous tool of Anubis! Misuse";
+                desc3 = "can easily bring the demise of its";
+                desc4 = "wielder.";
                 desc5 = "";
             };
             botd = {
@@ -935,17 +952,146 @@ module.english = {
                 desc4 = "a gift to Vlad from Yama.";
                 desc5 = ""
             };
-        };
-        traps = {
-            grinder = {
-                name = "GRINDER";
+            eggplant = {
+                name = "EGGPLANT";
                 desc1 = "";
-                desc2 = "It will indiscriminately turn";
-                desc3 = "metal and people alike into mush.";
-                desc4 = "Watch your step!";
+                desc2 = "A vessel of which anyone can";
+                desc3 = "project their dreams and desires";
+                desc4 = "onto. Protect it at all costs.";
                 desc5 = "";
             };
         };
+        traps = {
+            spikes = {
+                name = "SPIKES";
+                desc1 = "";
+                desc2 = "A classic trap of intense";
+                desc3 = "perforation that causes unwary";
+                desc4 = "explorers to become past tense in";
+                desc5 = "an instant.";
+            };
+            arrow_trap = {
+                name = "ARROW TRAP";
+                desc1 = "";
+                desc2 = "Carved with the design of a";
+                desc3 = "Quetzoquatl, this rudimentary trap";
+                desc4 = "is triggered by nearly any motion.";
+                desc5 = "";
+            };
+            powder_keg = {
+                name = "POWER KEG";
+                desc1 = "";
+                desc2 = "Remnants of when The Caves were ";
+                desc3 = "still an active digging site, now ";
+                desc4 = "strewn about, still ready to cause";
+                desc5 = "major destruction.";
+            };
+            boulder = {
+                name = "BOULDER";
+                desc1 = "";
+                desc2 = "";
+                desc3 = "The pioneers used to ride these";
+                desc4 = "babies for miles!";
+                desc5 = "";
+            };
+            tiki_trap = {
+                name = "TIKI TRAP";
+                desc1 = "";
+                desc2 = "A technological intrigue carved";
+                desc3 = "and engineered with pure malice in";
+                desc4 = "mind. Quite effective too, I might";
+                desc5 = "add!";
+            };
+            acid = {
+                name = "ACID";
+                desc1 = "";
+                desc2 = "";
+                desc3 = "Digestive fluids used to break down";
+                desc4 = "food. Stay away from the bubbles!";
+                desc5 = "";
+            };
+            spring = {
+                name = "SPRING";
+                desc1 = "";
+                desc2 = "Used by aliens to traverse between";
+                desc3 = "gaps above the botomless pits of ";
+                desc4 = "the Ice Caves.";
+                desc5 = "";
+            };
+            mine = {
+                name = "MINE";
+                desc1 = "";
+                desc2 = "These could be horribly dangerous";
+                desc3 = "if they weren't so easy to disarm.";
+                desc4 = "Well, for people atleast.";
+                desc5 = "";
+            };
+            turret = {
+                name = "TURRET";
+                desc1 = "";
+                desc2 = "Stolen back from the Neo Babylonian";
+                desc3 = "empire, these defenses have been";
+                desc4 = "reprogrammed to serve The Alien Queen.";
+                desc5 = "";
+            };
+            forcefield = {
+                name = "FORCEFIELD";
+                desc1 = "";
+                desc2 = "This emission of pure plasma energy";
+                desc3 = "will deflect virtually anything that";
+                desc4 = "attempts to pass through it.";
+                desc5 = "";
+            };
+            crush_trap = {
+                name = "CRUSH TRAP";
+                desc1 = "";
+                desc2 = "Anubis wanted to make a trap that";
+                desc3 = "would bring true misery to any";
+                desc4 = "tresspassers, and so The Crush";
+                desc5 = "Trap was born. Good for you, Anubis.";
+            };
+            ceiling_trap = {
+                name = "CEILING TRAP";
+                desc1 = "";
+                desc2 = "It goes at a surprisingly steady";
+                desc3 = "rate to give you some time to";
+                desc4 = "reconsider your life decisions.";
+                desc5 = "";
+            };
+            spike_ball = {
+                name = "SPIKE BALL";
+                desc1 = "";
+                desc2 = "Initially used as digging tools,";
+                desc3 = "they've been retrofitted to ";
+                desc4 = "swing indefinitely with malicious";
+                desc5 = "intent.";
+            };
+            lava = {
+                name = "LAVA";
+                desc1 = "";
+                desc2 = "Melted rocks that will set your";
+                desc3 = "whole body ablaze at the slightest";
+                desc4 = "touch.";
+                desc5 = "";
+            };
+            uraeus_trap = {
+                name = "URAEUS TRAP";
+                desc1 = "";
+                desc2 = "Perhaps only if to be a display of";
+                desc3 = "their vast wealth, the guardians of";
+                desc4 = "the golden city decided they needed";
+                desc5 = "their own version of the Tiki Trap.";
+            };
+            ammit_trap = {
+                name = "AMMIT TRAP";
+                desc1 = "";
+                desc2 = "Similar to the Uraeus Trap, except";
+                desc3 = "it's an Arrow Trap instead of a";
+                desc4 = "Tiki Trap.";
+                desc5 = "";
+            };
+        };
+
     };
     --DEATH MESSAGES
 }
