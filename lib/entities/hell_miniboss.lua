@@ -67,9 +67,17 @@ local function hell_miniboss_update(ent)
     if ent.move_state == HELL_MINIBOSS_STATE.WALK_TO_PLAYER then --WALK TO PLAYER
         --move based on walk_pause_timer and chatting_to_uid
         ent.walk_pause_timer = ent.walk_pause_timer - 1
-        if ent.walk_pause_timer == 0 then
-            local x, y, l = get_position(ent.uid)
-            local px, py, pl = get_position(players[1].uid)
+
+        local move_dir = 1
+        if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then
+            move_dir = -1
+        end
+        local x, y, l = get_position(ent.uid)
+        --if there's at least a single tile gap to cross, switch to JUMP.
+        if not commonlib.is_solid_floor_at(x + (0.6 *move_dir), y-1.5, l) then
+            ent.move_state = HELL_MINIBOSS_STATE.JUMP
+        elseif ent.walk_pause_timer == 0 then
+            local px, _, _ = get_position(players[1].uid)
             ent.walk_pause_timer = HELL_MINIBOSS_AI_TIMER.WALK_PAUSE_TIMER + prng:random_int(-10, 20, PRNG_CLASS.AI) --random deviation so they look less robotic
             if ent.chatting_to_uid == 1 then
                 ent.chatting_to_uid = 0
@@ -98,10 +106,11 @@ local function hell_miniboss_update(ent)
                 ent.animation_frame = 14
                 ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
             end
-        end
-        local move_dir = 1
-        if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then
-            move_dir = -1
+
+            move_dir = 1
+            if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then
+                move_dir = -1
+            end
         end
         ent.velocityx = (0.035*ent.chatting_to_uid)*move_dir
     elseif ent.move_state == HELL_MINIBOSS_STATE.TURNING then --TURNING
