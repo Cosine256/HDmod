@@ -52,6 +52,13 @@ local function hell_miniboss_set(uid, texture_id)
     ent.walk_pause_timer = HELL_MINIBOSS_AI_TIMER.WALK_PAUSE_TIMER --same as vanilla
     ent.chatting_to_uid = 0 --used for whether or not entity is walking. 0 not walking 1 walking
 end
+
+local function needs_to_turn(ent, px)
+    local x, _, _ = get_position(ent.uid)
+    return (test_flag(ent.flags, ENT_FLAG.FACING_LEFT) and px > x)
+    or (not test_flag(ent.flags, ENT_FLAG.FACING_LEFT) and px < x)
+end
+
 local function hell_miniboss_update(ent)
     if players[1] == nil then return end
     ent.lock_input_timer = 1
@@ -73,11 +80,15 @@ local function hell_miniboss_update(ent)
             move_dir = -1
         end
         local x, y, l = get_position(ent.uid)
-        --if there's at least a single tile gap to cross, switch to JUMP.
-        if not commonlib.is_solid_floor_at(x + (0.6 *move_dir), y-1.5, l) then
+        local px, _, _ = get_position(players[1].uid)
+        --if there's at least a single tile gap to cross and facing the player, switch to JUMP.
+        if (
+            ent.standing_on_uid ~= -1
+            and not commonlib.is_solid_floor_at(x + (0.6 *move_dir), y-1.5, l)
+            and not needs_to_turn(ent, px)
+        ) then
             ent.move_state = HELL_MINIBOSS_STATE.JUMP
         elseif ent.walk_pause_timer == 0 then
-            local px, _, _ = get_position(players[1].uid)
             ent.walk_pause_timer = HELL_MINIBOSS_AI_TIMER.WALK_PAUSE_TIMER + prng:random_int(-10, 20, PRNG_CLASS.AI) --random deviation so they look less robotic
             if ent.chatting_to_uid == 1 then
                 ent.chatting_to_uid = 0
@@ -94,17 +105,11 @@ local function hell_miniboss_update(ent)
                 ent.cooldown_timer = HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER
             end
             --determine if we should turn around to face the player
-            if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) and px > x then
+            if needs_to_turn(ent, px) then
                 ent.move_state = HELL_MINIBOSS_STATE.TURNING
                 ent.cooldown_timer = 13
                 ent.animation_frame = 14
-                ent.flags = clr_flag(ent.flags, ENT_FLAG.FACING_LEFT)
-            end
-            if not test_flag(ent.flags, ENT_FLAG.FACING_LEFT) and px < x then
-                ent.move_state = HELL_MINIBOSS_STATE.TURNING
-                ent.cooldown_timer = 13
-                ent.animation_frame = 14
-                ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
+                ent.flags = test_flag(ent.flags, ENT_FLAG.FACING_LEFT) and clr_flag(ent.flags, ENT_FLAG.FACING_LEFT) or set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
             end
 
             move_dir = 1
@@ -131,11 +136,11 @@ local function hell_miniboss_update(ent)
             move_dir = -1
         end
         if ent.cooldown_timer == HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-15 then
-            ent.velocityy = 0.25
+            ent.velocityy = 0.27
             commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_JUMP, ent.uid, 1, false)
         end
         if ent.cooldown_timer < HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-15 then
-            ent.velocityx = (0.075)*move_dir
+            ent.velocityx = (0.15)*move_dir
         end
         --animations
         if ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-5 then
