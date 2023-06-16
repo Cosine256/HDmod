@@ -355,14 +355,17 @@ local HELL_CUSTOM_MUSIC = {
                 end
 
                 if is_player_in_vlads(players[1].uid) then
+                    difu_count = 0
                     return "yaoguai_1"
                 end
 
                 if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    difu_count = 0
                     return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
                 end
 
                 if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    difu_count = 0
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
@@ -398,14 +401,17 @@ local HELL_CUSTOM_MUSIC = {
                 end
 
                 if is_player_in_vlads(players[1].uid) then
+                    difu_count = 0
                     return "yaoguai_1"
                 end
 
                 if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    difu_count = 0
                     return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
                 end
 
                 if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    difu_count = 0
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
@@ -441,14 +447,17 @@ local HELL_CUSTOM_MUSIC = {
                 end
 
                 if is_player_in_vlads(players[1].uid) then
+                    difu_count = 0
                     return "yaoguai_1"
                 end
 
                 if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    difu_count = 0
                     return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
                 end
 
                 if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    difu_count = 0
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
