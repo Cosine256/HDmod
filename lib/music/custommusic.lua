@@ -199,6 +199,14 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Bao_A.ogg"),
             length = 17000,
             next_sound_id = function(ctx)
+                if not has_seen_bao_this_cycle then
+                    has_seen_bao_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_bao: TRUE")
+                    end
+                end
+
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
                 end
@@ -212,14 +220,6 @@ local HELL_CUSTOM_MUSIC = {
                 end
 
                 local next_stem
-
-                if not has_seen_bao_this_cycle then
-                    has_seen_bao_this_cycle = true
-
-                    if module.dynamic_music_debug_print then
-                        print("[INFO] has_seen_bao: TRUE")
-                    end
-                end
 
                 -- If we have seen chujiang or difu this cycle, one possible next stem can be avici completing a cycle
                 if has_seen_difu_or_chujiang_this_cycle then
@@ -241,6 +241,14 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Bao_B.ogg"),
             length = 25333,
             next_sound_id = function(ctx)
+                if not has_seen_bao_this_cycle then
+                    has_seen_bao_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_bao: TRUE")
+                    end
+                end
+
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
                 end
@@ -254,14 +262,6 @@ local HELL_CUSTOM_MUSIC = {
                 end
 
                 local next_stem
-
-                if not has_seen_bao_this_cycle then
-                    has_seen_bao_this_cycle = true
-
-                    if module.dynamic_music_debug_print then
-                        print("[INFO] has_seen_bao: TRUE")
-                    end
-                end
 
                 -- If we have seen chujiang or difu this cycle, one possible next stem can be avici completing a cycle
                 if has_seen_difu_or_chujiang_this_cycle then
@@ -283,6 +283,14 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Chujiang_lite.ogg"),
             length = 16000,
             next_sound_id = function(ctx)
+                if not has_seen_difu_or_chujiang_this_cycle then
+                    has_seen_difu_or_chujiang_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
+                    end
+                end
+
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
                 end
@@ -295,13 +303,6 @@ local HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                if not has_seen_difu_or_chujiang_this_cycle then
-                    has_seen_difu_or_chujiang_this_cycle = true
-
-                    if module.dynamic_music_debug_print then
-                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
-                    end
-                end
 
                 return "chujiang"
             end
@@ -311,6 +312,14 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Chujiang.ogg"),
             length = 16000,
             next_sound_id = function(ctx)
+                if not has_seen_difu_or_chujiang_this_cycle then
+                    has_seen_difu_or_chujiang_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
+                    end
+                end
+
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
                 end
@@ -321,14 +330,6 @@ local HELL_CUSTOM_MUSIC = {
 
                 if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
-                end
-
-                if not has_seen_difu_or_chujiang_this_cycle then
-                    has_seen_difu_or_chujiang_this_cycle = true
-
-                    if module.dynamic_music_debug_print then
-                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
-                    end
                 end
 
                 local next_stem = pick_random({ "bao_a", "bao_b", "difu", "difu_lush", "difu_nude" })
@@ -345,6 +346,14 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Difu.ogg"),
             length = 12666,
             next_sound_id = function(ctx)
+                if not has_seen_difu_or_chujiang_this_cycle then
+                    has_seen_difu_or_chujiang_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
+                    end
+                end
+
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
                 end
@@ -355,14 +364,6 @@ local HELL_CUSTOM_MUSIC = {
 
                 if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
-                end
-
-                if not has_seen_difu_or_chujiang_this_cycle then
-                    has_seen_difu_or_chujiang_this_cycle = true
-
-                    if module.dynamic_music_debug_print then
-                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
-                    end
                 end
 
                 if difu_count < 2 then
@@ -388,6 +389,14 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Difu_lush.ogg"),
             length = 12666,
             next_sound_id = function(ctx)
+                if not has_seen_difu_or_chujiang_this_cycle then
+                    has_seen_difu_or_chujiang_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
+                    end
+                end
+
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
                 end
@@ -398,14 +407,6 @@ local HELL_CUSTOM_MUSIC = {
 
                 if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
-                end
-
-                if not has_seen_difu_or_chujiang_this_cycle then
-                    has_seen_difu_or_chujiang_this_cycle = true
-
-                    if module.dynamic_music_debug_print then
-                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
-                    end
                 end
 
                 if difu_count < 2 then
@@ -431,6 +432,14 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Difu_nude.ogg"),
             length = 12666,
             next_sound_id = function(ctx)
+                if not has_seen_difu_or_chujiang_this_cycle then
+                    has_seen_difu_or_chujiang_this_cycle = true
+
+                    if module.dynamic_music_debug_print then
+                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
+                    end
+                end
+
                 if is_player_in_vlads(players[1].uid) then
                     return "yaoguai_1"
                 end
@@ -441,14 +450,6 @@ local HELL_CUSTOM_MUSIC = {
 
                 if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
-                end
-
-                if not has_seen_difu_or_chujiang_this_cycle then
-                    has_seen_difu_or_chujiang_this_cycle = true
-
-                    if module.dynamic_music_debug_print then
-                        print("[INFO] has_seen_difu_or_chujiang_this_cycle: TRUE")
-                    end
                 end
 
                 if difu_count < 2 then
