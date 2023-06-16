@@ -5,20 +5,33 @@ local module = {}
 local ANIMATION_FRAMES_ENUM = {
     FACE = 1,
     BLOCK_DECO = 2,
-	TREETOP = 3,
+	TREETOP_FRONT_CENTER = 3,
+	TREETOP_FRONT_SIDE = 4,
+	TREETOP_BACK = 5,
 }
 
 local ANIMATION_FRAMES_RES = {
     { 0 },
     { 1, 2, 3 },
-    { 0, 1, 2, 3 },
+    { 0 },
+    { 2 },
+    { 3, 4 },
 }
 
+local top_center_texture_id
 local top_texture_id
 local restless_texture_id
 do
+	local top_center_texture_def = TextureDefinition.new()
+	top_center_texture_def.width = 384
+	top_center_texture_def.height = 256
+	top_center_texture_def.tile_width = 256
+	top_center_texture_def.tile_height = 128
+	top_center_texture_def.texture_path = "res/treetop.png"
+	top_center_texture_id = define_texture(top_center_texture_def)
+
 	local top_texture_def = TextureDefinition.new()
-	top_texture_def.width = 256
+	top_texture_def.width = 384
 	top_texture_def.height = 256
 	top_texture_def.tile_width = 128
 	top_texture_def.tile_height = 128
@@ -42,14 +55,17 @@ local function is_haunted()
 end
 
 local function apply_properties_to_topbranch_and_deco(branch, front_deco)
+	local left = test_flag(branch.flags, ENT_FLAG.FACING_LEFT)
+
 	front_deco:set_texture(top_texture_id)
-	front_deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP][2]
-	front_deco.x = test_flag(branch.flags, ENT_FLAG.FACING_LEFT) and 0.03 or -0.03
+	front_deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_FRONT_SIDE][1]
+	front_deco.x = left and 0.03 or -0.03
 	front_deco.y = 0.15
 
 	local back_deco = get_entity(spawn_entity_over(ENT_TYPE.DECORATION_TREETRUNK_TOPBACK, branch.uid, 0, 1.025))
 	back_deco:set_texture(top_texture_id)
-	back_deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP][4]
+	back_deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_BACK][2]
+	if left then flip_entity(back_deco.uid) end
 end
 
 -- HD-style tree decorating methods
@@ -95,12 +111,15 @@ local function add_top_branches(treetop_uid)
 		decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
 		for _, deco_uid in pairs(entity_get_items_by(treetop_uid, {ENT_TYPE.DECORATION_TREETRUNK_TOPFRONT, ENT_TYPE.DECORATION_TREETRUNK_TOPBACK}, MASK.DECORATION)) do
 			local deco = get_entity(deco_uid)
-			deco:set_texture(top_texture_id)
 			if deco.type.id == ENT_TYPE.DECORATION_TREETRUNK_TOPFRONT then
-				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP][1]
+				deco:set_texture(top_center_texture_id)
+				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_FRONT_CENTER][1]
+				deco.width = 2
+				deco:set_draw_depth(10)
 				deco.y = 0.15
 			else
-				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP][3]
+				deco:set_texture(top_texture_id)
+				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_BACK][1]
 			end
 		end
 	end
