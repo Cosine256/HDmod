@@ -52,7 +52,7 @@ function setup_page(x, y, render_ctx, page_type, page_number)
         render_ctx:draw_text(text, x + 0.644 * side_multiply, 0.7137 + 0.005 * side_multiply, 0.00093, 0.0005, Color:new(), aligment, VANILLA_FONT_STYLE.ITALIC)
     end
     
-    if (page_type >= JOURNAL_PAGE_TYPE.PLACES and page_type <= JOURNAL_PAGE_TYPE.TRAPS) or page_type == JOURNAL_PAGE_TYPE.STORY then
+    if (page_type >= JOURNAL_PAGE_TYPE.PLACES and page_type <= JOURNAL_PAGE_TYPE.TRAPS)then
         -- draw the background for the elements on the page
         dest = AABB:new(-3.0, 0.888, 1.0, -0.888)
         if x > 0 then
@@ -403,11 +403,11 @@ set_callback(function(chapter, pages)
     end
     if chapter == JOURNALUI_PAGE_SHOWN.PEOPLE then
         -- For player skin mod compatability, we are keeping the first 20 entries
-        for i=1, 14 do
+        for i=1, 6 do
             pages[i+20] = 200+i
         end
         -- Remove the extra pages
-        for i=35, 38 do
+        for i=27, 38 do
             pages[i] = nil
         end
         return pages
@@ -433,6 +433,7 @@ set_callback(function(chapter, pages)
         end
         return pages
     end
+    --[[
     if chapter == JOURNALUI_PAGE_SHOWN.STORY then
         pages = {}
         for i=1, 2 do
@@ -440,6 +441,7 @@ set_callback(function(chapter, pages)
         end
         return pages
     end
+    ]]
 end, ON.POST_LOAD_JOURNAL_CHAPTER)
 function show_journal_popup(chapter, entry)
     -- Change the string to always say "new journal entry added" instead of "you got the journal!"
@@ -452,11 +454,93 @@ function show_journal_popup(chapter, entry)
         change_string(string_ids.journal_get, get_string(string_ids.journal_get))
     end, 2)
 end
+local function get_chapter_completion(chapter)
+    -- PLACES
+    if chapter == 0 then
+        local total = #journal_data.journal_data.places
+        local count = 0
+        for _, place in ipairs(journal_data.journal_data.places) do
+            if place then 
+                count = count + 1
+            end
+        end
+        return count, total
+    end
+    -- PEOPLE
+    if chapter == 1 then
+        local total = #journal_data.journal_data.people
+        local count = 0
+        for _, person in ipairs(journal_data.journal_data.people) do
+            if person then 
+                count = count + 1
+            end
+        end
+        -- 20 vanilla playables count
+        for i=1, 20 do
+            if savegame.people[i] then
+                count = count + 1
+            end
+        end
+        total = total + 20
+        return count, total
+    end
+    -- BESTIARY
+    if chapter == 2 then
+        local total = #journal_data.journal_data.bestiary
+        local count = 0
+        for _, beast in ipairs(journal_data.journal_data.bestiary) do
+            if beast then 
+                count = count + 1
+            end
+        end
+        return count, total
+    end
+    -- ITEMS
+    if chapter == 3 then
+        local total = #journal_data.journal_data.items
+        local count = 0
+        for _, item in ipairs(journal_data.journal_data.items) do
+            if item then 
+                count = count + 1
+            end
+        end
+        return count, total
+    end
+    -- TRAPS
+    if chapter == 4 then
+        local total = #journal_data.journal_data.traps
+        local count = 0
+        for _, trap in ipairs(journal_data.journal_data.traps) do
+            if trap then 
+                count = count + 1
+            end
+        end
+        return count, total
+    end
+end
+local function get_total_journal_completion()
+    local placecount, placetotal = get_chapter_completion(0)
+    local peoplecount, peopletotal = get_chapter_completion(1)
+    local bestiarycount, bestiarytotal = get_chapter_completion(2)
+    local itemcount, itemtotal = get_chapter_completion(3)
+    local trapcount, traptotal = get_chapter_completion(4)
+
+    return math.floor(((placecount+peoplecount+bestiarycount+itemcount+trapcount)/(placetotal+peopletotal+bestiarytotal+itemtotal+traptotal))*100)
+end
 set_callback(function(render_ctx, page_type, page)
     --remove the % completion from the journal
     if page_type == JOURNAL_PAGE_TYPE.JOURNAL_MENU then
         local mpage = page:as_journal_page_journalmenu()
-        mpage.completion_badge.x = -10
+        local journal_completed = get_total_journal_completion()
+        render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_STICKERS_0, 8, 9, mpage.completion_badge:dest_get_quad():offset(mpage.completion_badge.x, mpage.completion_badge.y), Color:white())
+        render_ctx:draw_text(tostring(journal_completed) .. "%", 0.26, 0.635, 0.0009, 0.0005, Color:white(), VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
+        if mpage.selected_menu_index <= 4 then
+            local discovered, total = get_chapter_completion(mpage.selected_menu_index)
+            -- Find what current chapter we have selected and calculate how many entries we have unlocked
+            dest = AABB:new(0.4, 0.43-(mpage.selected_menu_index*0.145), 0.15, 0.218-(mpage.selected_menu_index*0.145)) --diff 0.212
+            render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_JOURNAL_STICKERS_0, 8, 8, dest, Color:white())      
+            render_ctx:draw_text(tostring(discovered) .. "/" .. tostring(total), 0.275, 0.325-(mpage.selected_menu_index*0.145), 0.0014, 0.0008, Color:white(), VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)   
+        end   
     end
     x = page.background.x
     y = page.background.y
@@ -471,7 +555,6 @@ set_callback(function(render_ctx, page_type, page)
     elseif page.page_number > 500 and page.page_number < 600  then
         setup_page(x, y, render_ctx, JOURNAL_PAGE_TYPE.TRAPS, page)
     elseif page.page_number > 600 and page.page_number < 700  then
-        setup_page(x, y, render_ctx, JOURNAL_PAGE_TYPE.STORY, page)
     end
 end, ON.RENDER_POST_JOURNAL_PAGE)
 -- Run checks for journal unlocks

@@ -222,9 +222,17 @@ module.english = {
                 name = "GUSTAF";
                 desc1 = "";
                 desc2 = "";
-                desc3 = "gustaf.";
-                desc4 = "";
+                desc3 = "The largest of the rats is also the";
+                desc4 = "one that makes all the rules.";
                 desc5 = "";
+            }; 
+            eggplant_john = {
+                name = "EGGPLANT JOHN";
+                desc1 = "";
+                desc2 = "He's an Eggplant delivery boy.";
+                desc3 = "You didn't think eggplants just";
+                desc4 = "grew down deep inside of a cave,";
+                desc5 = "did you?";
             }; 
             bearguy = {
                 name = "ANDY";
@@ -650,7 +658,7 @@ module.english = {
                 desc1 = "";
                 desc2 = "";
                 desc3 = "Bears the face of a horse. Yama's";
-                desc4 = "loyal right-hand man.";
+                desc4 = "loyal left-hand man.";
                 desc5 = "";
             };
             oxface = {
@@ -658,7 +666,7 @@ module.english = {
                 desc1 = "";
                 desc2 = "";
                 desc3 = "Don's the face of an ox. Yama's";
-                desc4 = "loyal left-hand man.";
+                desc4 = "loyal right-hand man.";
                 desc5 = "";
             };
             kingyama = {
@@ -1091,9 +1099,45 @@ module.english = {
                 desc5 = "";
             };
         };
-
+        -- The story stuff is going to just overwrite some strings in a callback kept inside of this files
+        -- I'm a bit tired of finaggling custom journal stuff!
+        story = {
+            "This is an example of the custom story stuff that someone else is gonna have to hash out.";
+            "Something something Yang wants to explore The Caves from HD, Yama mad again, idk lol";
+            "There's 12 entries in the strings file for S2, we don't actually need to use all of them";
+            "In 'hdmod_journal.lua', there's a callback that hard codes the amount of pages we actually want from the journal.";
+            "So whoever works on this later down the line just needs to find that, it starts on line 393 of that file.";
+            "You just use a loop to itterate through and create an array of empty pages that you return to the callback";
+            "You could add more technically, but the game is only gonna draw these 12 entries since we're technically not using custom journal stuff for this.";
+            "That's about all I have to say. Oh yeah, these images should probably be changed too or straight up removed-- that'd work too.";
+            "You can get creative and do some stuff there since the spacing of the text is gonna be kinda weird otherwise.";
+            "That's about all I have to say regarding this.";
+            "Lorem Ipsum blablablablablbala";
+            "blablablabla ty :)";
+        };
     };
     --DEATH MESSAGES
 }
+local story_string_ids = {
+    hash_to_stringid(0x154b498f);
+    hash_to_stringid(0x97a9390a);
+    hash_to_stringid(0x8a0e0d13);
+    hash_to_stringid(0xec7465cf);
+    hash_to_stringid(0xe6fab26a);
+    hash_to_stringid(0xa28c9da3);
+    hash_to_stringid(0xb1eebb39);
+    hash_to_stringid(0x2544d54b);
+    hash_to_stringid(0x326b7195);
+    hash_to_stringid(0xcd113fc9);
+    hash_to_stringid(0x30a134c3);
+    hash_to_stringid(0xe77c4975);
+}
+-- Replace hardcoded strings with our new ones:
+set_callback(function()
+    -- Story
+    for i, string in ipairs(story_string_ids) do
+        change_string(string, hdmod_string.journal.story[i])
+    end
+end, ON.LOGO)
 
 return module

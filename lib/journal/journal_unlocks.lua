@@ -100,8 +100,8 @@ function module.check_for_journal_unlocks(journal_data)
         end
     end, ON.LEVEL)
     -- PEOPLE --
-    -- SHOPKEEPER
     set_callback(function(speaking_ent)
+        -- SHOPKEEPER
         -- Unlock the journal entry when you first hear a shoppie speak
         if speaking_ent.type.id == ENT_TYPE.MONS_SHOPKEEPER then
             if not journal_data.journal_data.people[1] then
@@ -109,21 +109,39 @@ function module.check_for_journal_unlocks(journal_data)
                 show_journal_popup(JOURNAL_CHAPTER_TYPE.PEOPLE, 21)
             end            
         end
+        -- Mamma Tunnel
+        if speaking_ent.type.id == ENT_TYPE.MONS_MARLA_TUNNEL then
+            if not journal_data.journal_data.people[4] then
+                journal_data.journal_data.people[4] = true
+                show_journal_popup(JOURNAL_CHAPTER_TYPE.PEOPLE, 23)
+            end            
+        end
     end, ON.SPEECH_BUBBLE)
+    -- HIRED HAND
+    set_post_entity_spawn(function(self)
+        if not journal_data.journal_data.people[3] and not test_flag(self.flags, ENT_FLAG.SHOP_ITEM) then
+            journal_data.journal_data.people[3] = true
+            show_journal_popup(JOURNAL_CHAPTER_TYPE.PEOPLE, 22)
+        end         
+    end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.CHAR_HIREDHAND)
     -- GUSTAF
     set_post_entity_spawn(function(self)
         set_timeout(function()
             if type(self.user_data) == "table" then
-                if self.user_data.ent_type == HD_ENT_TYPE.MONS_CRITTERRAT then
-                    self:set_post_kill(function(self, destroy_corspe, responsible)
-                        if responsible.type.search_flags == MASK.PLAYER then
-                            if not journal_data.journal_data.people[13] then
-                                journal_data.journal_data.people[13] = true
-                                show_journal_popup(JOURNAL_CHAPTER_TYPE.PEOPLE, 33)
-                            end 
+                self:set_post_update_state_machine(function()
+                    if self.user_data.ent_type == HD_ENT_TYPE.MONS_CRITTERRAT then
+                        for _, player in ipairs(players) do
+                            if distance(self.uid, player.uid) < 3 then
+                                if self.user_data.gustaf then
+                                    if not journal_data.journal_data.people[5] then
+                                        journal_data.journal_data.people[5] = true
+                                        show_journal_popup(JOURNAL_CHAPTER_TYPE.PEOPLE, 24)
+                                    end 
+                                end                               
+                            end
                         end
-                    end)
-                end
+                    end                
+                end)
             end        
         end, 1)
     end, SPAWN_TYPE.ANY, MASK.ANY, ENT_TYPE.MONS_CRITTERCRAB)

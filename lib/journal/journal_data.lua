@@ -138,7 +138,7 @@ module.info = { -- This table is just info for drawing the text and textures for
         };
     };
     people = {
-        -- SHOPKEEPER
+        -- SHOPKEEPER: 1
         {
             name = hdmod_string.journal.people.shopkeeper.name;
             desc1 = hdmod_string.journal.people.shopkeeper.desc1;
@@ -150,7 +150,7 @@ module.info = { -- This table is just info for drawing the text and textures for
             row = 2;
             big = false; -- If we should use TEXTURE.DATA_TEXTURES_JOURNAL_ENTRY_PEOPLE_1 instead
         };
-        -- YANG
+        -- YANG: 2
         {
             name = hdmod_string.journal.people.yang.name;
             desc1 = hdmod_string.journal.people.yang.desc1;
@@ -162,7 +162,7 @@ module.info = { -- This table is just info for drawing the text and textures for
             row = 2;
             big = false;
         };
-        -- HIRED HAND
+        -- HIRED HAND: 3
         {
             name = hdmod_string.journal.people.hired_hand.name;
             desc1 = hdmod_string.journal.people.hired_hand.desc1;
@@ -174,7 +174,7 @@ module.info = { -- This table is just info for drawing the text and textures for
             row = 2;
             big = false;
         };
-        -- TERRA TUNNEL
+        -- TERRA TUNNEL: 4
         {
             name = hdmod_string.journal.people.terra_tunnel.name;
             desc1 = hdmod_string.journal.people.terra_tunnel.desc1;
@@ -183,6 +183,30 @@ module.info = { -- This table is just info for drawing the text and textures for
             desc4 = hdmod_string.journal.people.terra_tunnel.desc4;
             desc5 = hdmod_string.journal.people.terra_tunnel.desc5;
             column = 0;
+            row = 4;
+            big = false;
+        };
+         -- GUSTAF: 5
+         {
+            name = hdmod_string.journal.people.gustaf.name;
+            desc1 = hdmod_string.journal.people.gustaf.desc1;
+            desc2 = hdmod_string.journal.people.gustaf.desc2;
+            desc3 = hdmod_string.journal.people.gustaf.desc3;
+            desc4 = hdmod_string.journal.people.gustaf.desc4;
+            desc5 = hdmod_string.journal.people.gustaf.desc5;
+            column = 2;
+            row = 4;
+            big = false;
+        };
+         -- EGGPLANT JOHN: 6
+         {
+            name = hdmod_string.journal.people.eggplant_john.name;
+            desc1 = hdmod_string.journal.people.eggplant_john.desc1;
+            desc2 = hdmod_string.journal.people.eggplant_john.desc2;
+            desc3 = hdmod_string.journal.people.eggplant_john.desc3;
+            desc4 = hdmod_string.journal.people.eggplant_john.desc4;
+            desc5 = hdmod_string.journal.people.eggplant_john.desc5;
+            column = 1;
             row = 4;
             big = false;
         };
@@ -279,18 +303,6 @@ module.info = { -- This table is just info for drawing the text and textures for
             desc4 = hdmod_string.journal.people.robot.desc4;
             desc5 = hdmod_string.journal.people.robot.desc5;
             column = 3;
-            row = 4;
-            big = false;
-        };
-         -- GUSTAF
-         {
-            name = hdmod_string.journal.people.gustaf.name;
-            desc1 = hdmod_string.journal.people.gustaf.desc1;
-            desc2 = hdmod_string.journal.people.gustaf.desc2;
-            desc3 = hdmod_string.journal.people.gustaf.desc3;
-            desc4 = hdmod_string.journal.people.gustaf.desc4;
-            desc5 = hdmod_string.journal.people.gustaf.desc5;
-            column = 2;
             row = 4;
             big = false;
         };
@@ -1749,14 +1761,6 @@ local default_journal_data = {
         false;
     };
     people = {
-        false;
-        false;
-        false;
-        false;
-        false;
-        false;
-        false;
-        false;
         false;
         false;
         false;

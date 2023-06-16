@@ -14,14 +14,24 @@ do
     critterrat_texture_id = define_texture(critterrat_texture_def)
 end
 
-local function critterrat_set(uid)
+local function critterrat_set(uid, gustaf)
+    if gustaf == nil then gustaf = false end
     ---@type Movable
     local ent = get_entity(uid)
     ent:set_texture(critterrat_texture_id)
     ent.walk_pause_timer = prng:random_int(150, 300, PRNG_CLASS.AI) --randomize this so they dont all stand up at the same time
     ent.user_data = {
         ent_type = HD_ENT_TYPE.MONS_CRITTERRAT;
+        gustaf = gustaf; -- gustaf
     }
+    -- gustaf
+    if gustaf then
+        ent.width = ent.width*1.33
+        ent.height = ent.height*1.33
+        ent.hitboxx = ent.hitboxx*1.33
+        ent.hitboxy = ent.hitboxy*1.33
+        ent.flags = set_flag(ent.flags, ENT_FLAG.TAKE_NO_DAMAGE)
+    end
 end
 local function critterrat_update(ent)
     --flip entity based on movex
@@ -93,11 +103,21 @@ local function critterrat_update(ent)
     end
 end
 
-function module.create_critterrat(x, y, l)
+function module.create_critterrat(x, y, l, gustaf)
     local critterrat = spawn(ENT_TYPE.MONS_CRITTERCRAB, x, y, l, 0, 0)
-    critterrat_set(critterrat)
+    critterrat_set(critterrat, gustaf)
     set_post_statemachine(critterrat, critterrat_update)
 end
+-- Create  G U S T A F
+set_callback(function()
+    if state.theme == THEME.DWELLING and state.level == 4 then
+        -- Find the exit door and summon in G U S T A F
+        for _, v in ipairs(get_entities_by_type(ENT_TYPE.FLOOR_DOOR_EXIT)) do
+            local dx, dy, dl = get_position(v)
+            module.create_critterrat(dx, dy, dl, true)
+        end
+    end
+end, ON.POST_LEVEL_GENERATION)
 
 optionslib.register_entity_spawner("Rat", module.create_critterrat)
 
