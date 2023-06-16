@@ -107,18 +107,6 @@ local HELL_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Hell_Avīci.ogg"),
             length = 14666,
             next_sound_id = function(ctx)
-                if is_player_in_vlads(players[1].uid) then
-                    return "yaoguai_1"
-                end
-
-                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
-                end
-
-                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                    return pick_random({ "idle_a", "idle_b", "idle_c" })
-                end
-
                 -- A cycle is defined by the return to Avici.
                 -- At the end of a cycle we reset 'has_seen_bao', 'has_seen_difu_or_chujiang_this_cycle' and 'difu_count'
                 if has_seen_bao_this_cycle or has_seen_difu_or_chujiang_this_cycle or difu_count ~= 0 then
@@ -129,6 +117,18 @@ local HELL_CUSTOM_MUSIC = {
                     if module.dynamic_music_debug_print then
                         print("[Cycle End] has_seen_bao: FALSE, has_seen_difu_or_chujiang_this_cycle: FALSE, difu_count reset to 0")
                     end
+                end
+
+                if is_player_in_vlads(players[1].uid) then
+                    return "yaoguai_1"
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
+                    return pick_random({ "lowhp_1", "lowhp_2", "lowhp_3" })
+                end
+
+                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
+                    return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
                 return pick_random({"abi_a", "abi_b"})
