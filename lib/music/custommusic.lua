@@ -131,7 +131,7 @@ local HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                return pick_random({"abi_a", "abi_b"})
+                return pick_random({ "abi_a", "abi_b" })
             end
         },
         {
@@ -152,7 +152,7 @@ local HELL_CUSTOM_MUSIC = {
                 end
 
                 if has_seen_bao_this_cycle then
-                    local next_stem = pick_random({"bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude"})
+                    local next_stem = pick_random({ "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
 
                     if is_difu_stem(next_stem) then
                         difu_count = difu_count + 1
@@ -160,7 +160,7 @@ local HELL_CUSTOM_MUSIC = {
 
                     return next_stem
                 else
-                    return pick_random({"bao_a", "bao_b"})
+                    return pick_random({ "bao_a", "bao_b" })
                 end
             end
         },
@@ -182,7 +182,7 @@ local HELL_CUSTOM_MUSIC = {
                 end
 
                 if has_seen_bao_this_cycle then
-                    local next_stem = pick_random({"bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude"})
+                    local next_stem = pick_random({ "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
 
                     if is_difu_stem(next_stem) then
                         difu_count = difu_count + 1
@@ -190,7 +190,7 @@ local HELL_CUSTOM_MUSIC = {
 
                     return next_stem
                 else
-                    return pick_random({"bao_a", "bao_b"})
+                    return pick_random({ "bao_a", "bao_b" })
                 end
             end
         },
@@ -265,7 +265,7 @@ local HELL_CUSTOM_MUSIC = {
 
                 -- If we have seen chujiang or difu this cycle, one possible next stem can be avici completing a cycle
                 if has_seen_difu_or_chujiang_this_cycle then
-                    next_stem = pick_random({"avici", "difu", "difu_lush", "difu_nude"})
+                    next_stem = pick_random({ "avici", "difu", "difu_lush", "difu_nude" })
                 -- If we have not seen chujiang or difu this cycle, we pick chujiang or difu stems
                 else
                     next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
