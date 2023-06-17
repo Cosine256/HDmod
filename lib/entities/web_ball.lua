@@ -25,7 +25,7 @@ local function spawn_web_ball_contents(x, y, l)
         caveman.flags = set_flag(caveman.flags, ENT_FLAG.DEAD)
     elseif prng:random_chance(24, PRNG_CLASS.PARTICLES) then
         for i = 1, 3, 1 do
-            contents[#contents+1] = babyspiderlib.create_critterbabyspider(x, y, l)
+            contents[#contents+1] = babyspiderlib.create_critterspider(x, y, l)
         end
     elseif prng:random_chance(15, PRNG_CLASS.PARTICLES) then
         contents[#contents+1] = spawn(ENT_TYPE.ITEM_SKULL, x, y, l, 0, 0)
