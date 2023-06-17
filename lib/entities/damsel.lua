@@ -31,6 +31,9 @@ function module.get_curr_type()
 end
 
 function module.create_damsel(x, y, l)
+	if not pet_type then
+		module.set_curr_type()
+	end
 	spawn_entity_snapped_to_floor(module.get_curr_type(), x, y, l)
 end
 
