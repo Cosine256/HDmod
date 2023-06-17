@@ -407,7 +407,7 @@ module.is_valid_scorpionfly_spawn = default_ground_monster_condition
 
 module.is_valid_critter_rat_spawn = spiderlair_ground_monster_condition
 
-function module.is_valid_critter_frog_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_frog spawn
+module.is_valid_critter_frog_spawn = default_ground_monster_condition
 
 function module.is_valid_critter_maggot_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_maggot spawn
 
