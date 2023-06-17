@@ -77,6 +77,7 @@ local function critterfrog_update(ent)
             end
             ent.velocityx = 0.065*move_dir
             ent.velocityy = 0.16
+            commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_ALIEN_JUMP, ent.uid, 0.90, false)
         end
     elseif ent.user_data.state == CRITTERFROG_STATE.JUMP then
         if ent.standing_on_uid ~= -1 then
