@@ -84,6 +84,10 @@ local function cutscene_arrange_worshipers()
 		---@type self Caveman
 		caveman:set_post_update_state_machine(function (self)
 			self.can_pick_up_timer = 10
+			self.cooldown_timer = -1
+			if self.move_state == 2 then
+				self.move_state = 1
+			end
 		end)
 	end
 	HAWKMAN_UID = hawkmanlib.create_hawkman(22.0, 98.05, LAYER.FRONT)
@@ -94,6 +98,10 @@ local function cutscene_arrange_worshipers()
 	---@param self WalkingMonster
 	hawkman:set_post_update_state_machine(function (self)
 		self.walk_pause_timer = 10
+		self.cooldown_timer = -1
+		if self.move_state == 2 then
+			self.move_state = 0
+		end
 		if THREW_HAWKMAN then
 			clear_callback()
 		end

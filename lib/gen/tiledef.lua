@@ -773,7 +773,7 @@ module.HD_TILENAME = {
 				},
 				alternate = {
 					[THEME.JUNGLE] = {
-						function(x, y, l) spawn_entity(ENT_TYPE.ITEM_LITWALLTORCH, x, y, l, 0, 0) end,
+						function(x, y, l) spawn_entity(ENT_TYPE.ITEM_LITWALLTORCH, x, y+.2, l, 0, 0) end,
 					}
 				}
 			}
