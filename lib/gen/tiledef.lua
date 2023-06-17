@@ -22,6 +22,7 @@ local coffinlib = require 'lib.entities.coffin'
 local liquidfalllib = require 'lib.entities.liquidfall'
 local altarlib = require 'lib.entities.altar'
 local moailib = require 'lib.entities.moai'
+local anubis2lib = require 'lib.entities.anubis2'
 
 local module = {}
 

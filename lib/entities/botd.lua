@@ -1,4 +1,5 @@
 local module = {}
+local anubis2lib = require 'anubis2'
 
 optionslib.register_option_bool("hd_debug_item_botd_give", "Book of the Dead - Start with item", nil, false, true)
 -- register_option_float("hd_ui_botd_a_w", "UI: botd width", 0.08, 0.0, 99.0)
@@ -136,9 +137,10 @@ set_callback(function()
     if module.OBTAINED_BOOKOFDEAD == false then
         for i = 1, #players, 1 do
             if entity_has_item_type(players[i].uid, ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY) then
-                -- # TODO: Move into the method that spawns Anubis II in COG
-                toast_override("Death to the defiler!")
+                -- Spawn Anubis2
+				anubis2lib.create_anubis2(players[i].x, players[i].y+3, players[i].layer)
                 module.OBTAINED_BOOKOFDEAD = true
+
                 set_timeout(function() remove_player_item(ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY) end, 1)
             end
         end
