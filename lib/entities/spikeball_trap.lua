@@ -55,10 +55,6 @@ local function spikeball_trap_set(uid)
     ent.owner_uid = spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CHAINEDPUSHBLOCK, x, y, l)
     local block = get_entity(ent.owner_uid)
     block:set_texture(block_texture_id)
-    --user_data
-    block.user_data = {
-        ent_type = HD_ENT_TYPE.ACTIVEFLOOR_SPIKEBALL_TRAP_BLOCK;
-    }
     --move_state determines the direction the ball will spin in
     ent.move_state = 1
     if prng:random_chance(2, PRNG_CLASS.PARTICLES) then
