@@ -1,6 +1,7 @@
 local spikeslib = require 'lib.entities.spikes'
 local hideyholelib = require 'lib.entities.hideyhole'
 local shopslib = require 'lib.entities.shops'
+local tutorialsignslib = require 'lib.entities.tutorial_signs'
 
 local module = {}
 
@@ -36,6 +37,7 @@ local function init_onlevel()
 	roomdeflib.init()
 	spikeslib.init()
 	hideyholelib.init()
+	tutorialsignslib.init()
 end
 
 --[[

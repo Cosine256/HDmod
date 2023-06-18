@@ -22,6 +22,7 @@ local coffinlib = require 'lib.entities.coffin'
 local liquidfalllib = require 'lib.entities.liquidfall'
 local altarlib = require 'lib.entities.altar'
 local moailib = require 'lib.entities.moai'
+local tutorialsignslib = require 'lib.entities.tutorial_signs'
 
 local module = {}
 
@@ -1344,6 +1345,11 @@ module.HD_TILENAME = {
 		description = "Bounce Trap",
 	},
 	["!"] = {
+		phases = {
+			[1] = {
+				default = { tutorialsignslib.create_tutorial_sign }
+			}
+		},
 		-- one occasion in tutorial it's an arrow trap
 		description = "Tutorial Controls Display",
 	},
