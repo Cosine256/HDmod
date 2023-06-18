@@ -5,7 +5,7 @@ local devil_texture_id
 do
     local devil_texture_def = TextureDefinition.new()
     devil_texture_def.width = 1152
-    devil_texture_def.height = 384
+    devil_texture_def.height = 512
     devil_texture_def.tile_width = 128
     devil_texture_def.tile_height = 128
     devil_texture_def.texture_path = 'res/devil.png'
@@ -43,7 +43,7 @@ local ANIMATION_INFO = {
         finish = 25;
         speed = 5;
     };
-    -- For the stun  frames we are going to see what the game puts the animation frame to by default and translate that over to our texture sheet
+    -- For the stun  frames (and talking) we are going to see what the game puts the animation frame to by default and translate that over to our texture sheet
 }
 
 -- State enum
@@ -227,6 +227,7 @@ local function state_vanilla(self)
     else
         -- Don't use custom animations
         self.user_data.custom_animation = false
+        -- Stun
         if self.animation_frame == 153 then
             self.animation_frame = 17
         elseif self.animation_frame == 154 then
@@ -237,6 +238,20 @@ local function state_vanilla(self)
             self.animation_frame = 15
         elseif self.animation_frame == 157 then
             self.animation_frame = 16
+        end
+    end
+    if self.chatting_to_uid ~= -1 then
+        self.user_data.custom_animation = false
+        if self.animation_frame == 10 then
+            self.animation_frame = 27
+        elseif self.animation_frame == 11 then
+            self.animation_frame = 28
+        elseif self.animation_frame == 12 then
+            self.animation_frame = 29
+        elseif self.animation_frame == 13 then
+            self.animation_frame = 30
+        elseif self.animation_frame == 14 then
+            self.animation_frame = 31
         end
     end
 end
@@ -253,7 +268,28 @@ local function devil_update(self)
     -- Custom animation
     animate_entity(self)
 end
-
+-- Custom talking sounds
+set_vanilla_sound_callback(VANILLA_SOUND.ENEMIES_TIKIMAN_TALK, VANILLA_SOUND_CALLBACK_TYPE.CREATED, function(sound)
+    -- Can't differentiate between custom and base entity, tikimen shouldn't even exist in Hell or Yama's throne so this should be fine 
+    if state.theme == THEME.VOLCANA then
+        -- Probably need to set up a sound manually by just stealing the parameters from the vanilla sound
+        --[[
+        commonlib.play_custom_sound(devil_charge, self.uid, 1, false)
+        ]]
+        local dist_x = sound:get_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_X)
+        local dist_y = sound:get_parameter(VANILLA_SOUND_PARAM.DIST_CENTER_Y)
+        sound:set_volume(0)
+        -- To whoever wants to add talking variation: 
+        -- Since this cant be passed into the custom sound function, you'll have to create all your talking sounds in this file
+        -- Then, randomly choose one here
+        local audio = devil_charge:play(false)
+        local vol = 1-(dist_x + dist_y)
+        if vol < 0 then vol = 0 end
+        audio:set_volume(vol)
+        
+        audio:set_pause(false, SOUND_TYPE.SFX)
+    end
+end)
 local function devil_set(self)
     -- Userdata stuff
     self.user_data = {
@@ -321,7 +357,12 @@ local function devil_set(self)
         end
     end)
 end
-
+-- Test
+set_callback(function()
+    for i=1, 2 do
+        module.create_devil(players[1].x+2+i, players[1].y, players[1].layer)
+    end
+end, ON.START)
 function module.create_devil(x, y, l)
     local devil = get_entity(spawn(ENT_TYPE.MONS_TIKIMAN, x, y, l, 0, 0))
     devil_set(devil)
