@@ -43,7 +43,10 @@ function module.create_arrowtrap(x, y, l)
 	if state.theme == THEME.TEMPLE and not options.hd_og_floorstyle_temple then
 		entity:set_texture(temple_texture_id)
 	elseif state.theme == THEME.CITY_OF_GOLD then
-		entity:set_texture(gold_texture_id)
+		get_entity(uid):set_texture(gold_texture_id)
+		get_entity(uid).user_data = {
+			gilded = true;
+		}
 		entity:set_post_destroy(function (entity)
 			spawn(ENT_TYPE.ITEM_NUGGET, x, y, l, prng:random_float(PRNG_CLASS.AI)*0.2-0.1, prng:random_float(PRNG_CLASS.AI)*0.1+0.1)
 		end)
