@@ -196,6 +196,10 @@ set_callback(function()
                         local cx, cy, cl = get_position(floor.uid)
                         kill_entity(floor.uid)
                         local block = get_entity(spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, cx, cy, cl, 0, 0))
+                        -- user_data
+                        block.user_data = {
+                            ent_type = HD_ENT_TYPE.ACTIVEFLOOR_CRUSHING_CEILING;
+                        }
                         block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
                         block.more_flags = set_flag(block.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
                         block.velocityy = -0.01

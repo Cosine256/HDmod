@@ -52,10 +52,6 @@ end
 
 ---@param laser LightShot
 local function laser_set(laser)
-    -- user_data
-    laser.user_data = {
-        ent_type = HD_ENT_TYPE.ITEM_LASER_TURRET;
-    };
     ---@param _laser LightShot
     ---@param collider Movable
     set_pre_collision2(laser.uid, function (_laser, collider)
@@ -221,6 +217,11 @@ function module.spawn_turret(x, y, l)
         deco:set_texture(turret_texture_id)
         deco.animation_frame = 4
         floor.deco_bottom = deco_uid
+        local e = get_entity(uid)
+        -- user_data
+        e.user_data = {
+            ent_type = HD_ENT_TYPE.ITEM_LASER_TURRET;
+        };
     else
         uid = spawn(ENT_TYPE.ITEM_ROCK, x, y, l, 0, 0)
     end

@@ -16,7 +16,6 @@ end
 
 local function _spawn_hideyhole_damsel(x, y, l)
 	removelib.remove_items_for_hideyhole_spawn(x, y, l)
-	damsellib.set_curr_type()
 	damsellib.create_damsel(x, y, l)
 	module.DAMSEL_SPAWNED = true
 end

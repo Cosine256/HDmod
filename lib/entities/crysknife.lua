@@ -69,6 +69,9 @@ local function crysknife_pickup_set(entity)
 	entity:set_texture(crysknife_texture_id)
 	entity.animation_frame = 144
 	entity.hitboxy = 0.125
+	entity.user_data = {
+		ent_type = HD_ENT_TYPE.ITEM_PICKUP_CRYSKNIFE;
+	}
 end
 
 local function crysknife_picked(_, player, _)

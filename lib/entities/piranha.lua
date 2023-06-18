@@ -38,10 +38,6 @@ local function set_piranha_skeleton(ent)
     nosacrifice.add_uid(ent.uid)
 	ent.animation_frame = ANIMATION_SKELETON_RES.ITEM[1]
     ent:set_texture(piranha_skeleton_tex_id)
-    -- user_data
-    ent.user_data = {
-        ent_type = HD_ENT_TYPE.MONS_PIRANHA;
-    };
 end
 
 local function get_solids_overlapping(hitbox, layer)
@@ -188,6 +184,10 @@ local module = {}
 
 function module.create_piranha(x, y, l)
 	local ent = get_entity(spawn_grid_entity(ENT_TYPE.MONS_TADPOLE, x, y, l))
+    -- user_data
+    ent.user_data = {
+        ent_type = HD_ENT_TYPE.MONS_PIRANHA;
+    };
     set_post_statemachine(ent.uid, piranha_update)
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
 		ent:set_texture(piranha_skeleton_tex_id)
