@@ -6,7 +6,7 @@ local texture_id
 do
     local texture_def = TextureDefinition.new();
     texture_def.width = 640;
-    texture_def.height = 512;
+    texture_def.height = 768;
     texture_def.tile_width = 128;
     texture_def.tile_height = 128;
     texture_def.texture_path = 'res/black_knight.png';
