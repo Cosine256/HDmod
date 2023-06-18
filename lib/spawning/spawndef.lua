@@ -27,6 +27,7 @@ local scorpionflylib = require 'lib.entities.scorpionfly'
 local devillib = require 'lib.entities.devil'
 local windowlib = require 'lib.entities.window'
 local crushtraplib = require 'lib.entities.crushtrap'
+local critterfroglib = require 'lib.entities.critterfrog'
 
 local module = {}
 
@@ -100,7 +101,7 @@ module.global_spawn_procedural_scorpionfly = define_procedural_spawn("hd_procedu
 
 module.global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", critterratlib.create_critterrat, validlib.is_valid_critter_rat_spawn)
 
-module.global_spawn_procedural_critter_frog = define_procedural_spawn("hd_procedural_critter_frog", createlib.create_critter_frog, validlib.is_valid_critter_frog_spawn)
+module.global_spawn_procedural_critter_frog = define_procedural_spawn("hd_procedural_critter_frog", critterfroglib.create_critterfrog, validlib.is_valid_critter_frog_spawn)
 
 module.global_spawn_procedural_worm_jungle_critter_maggot = define_procedural_spawn("hd_procedural_worm_jungle_critter_maggot", createlib.create_critter_maggot, validlib.is_valid_critter_maggot_spawn)
 
