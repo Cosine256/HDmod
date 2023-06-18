@@ -98,10 +98,17 @@ local function is_player_in_vlads(player)
     return false
 end
 
+-- TODO once music can continue playing during transitions change start_sound_id to intro
 local HELL_CUSTOM_MUSIC = {
     base_volume = 0.5,
     start_sound_id = "avici",
     sounds = {
+        {
+            id = "intro",
+            sound = create_sound("res/music/BGM_Hell_Intro.ogg"),
+            length = 1893,
+            next_sound_id = "avici"
+        },
         {
             id = "avici",
             sound = create_sound("res/music/BGM_Hell_Avīci.ogg"),
