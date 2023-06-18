@@ -18,11 +18,6 @@ local function spawn_eggsac(x, y, l, dir_i)
 		end
 		return false
 	end)
-	local ent = get_entity(uid)
-    -- user_data
-    ent.user_data = {
-        ent_type = HD_ENT_TYPE.MONS_WORM_EGG;
-    };
 end
 
 function module.create_eggsac(x, y, l)
