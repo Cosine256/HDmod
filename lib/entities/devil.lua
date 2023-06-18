@@ -357,12 +357,6 @@ local function devil_set(self)
         end
     end)
 end
--- Test
-set_callback(function()
-    for i=1, 2 do
-        module.create_devil(players[1].x+2+i, players[1].y, players[1].layer)
-    end
-end, ON.START)
 function module.create_devil(x, y, l)
     local devil = get_entity(spawn(ENT_TYPE.MONS_TIKIMAN, x, y, l, 0, 0))
     devil_set(devil)
