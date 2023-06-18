@@ -21,6 +21,53 @@ do
     yama_2_texture_def.texture_path = 'res/king_yama_2.png'
     yama_2_texture_id = define_texture(yama_2_texture_def)
 end
+local yama_intro_texture_id
+do
+    local yama_intro_texture_def = TextureDefinition.new()
+    yama_intro_texture_def.width = 1536
+    yama_intro_texture_def.height = 386
+    yama_intro_texture_def.tile_width = 256
+    yama_intro_texture_def.tile_height = 386
+    yama_intro_texture_def.texture_path = 'res/king_yama_intro.png'
+    yama_intro_texture_id = define_texture(yama_intro_texture_def)   
+end
+-- mmmmmmm yummy gibs
+local yama_debris_texture_id
+do
+    local yama_debris_texture_def = TextureDefinition.new()
+    yama_debris_texture_def.width = 256
+    yama_debris_texture_def.height = 256
+    yama_debris_texture_def.tile_width = 128
+    yama_debris_texture_def.tile_height = 128
+    yama_debris_texture_def.texture_path = 'res/yama_debris.png'
+    yama_debris_texture_id = define_texture(yama_debris_texture_def)   
+end
+local function create_yama_gib(x, y, l, vx, vy, frame)
+    -- like regular gibs but coded by a goober such as myself, 
+    -- explodes into blood chunks when they hit the ground
+    local gib = get_entity(spawn(ENT_TYPE.ITEM_ROCK, x, y, l, vx, vy))
+    gib.flags = set_flag(gib.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
+    if math.random(2) == 1 then gib.flags = set_flag(gib.flags, ENT_FLAG.FACING_LEFT) end
+    gib:set_texture(yama_debris_texture_id)
+    gib.width = gib.width*0.75
+    gib.height = gib.height*0.75
+    gib.hitboxx = gib.hitboxx*0.75
+    gib.hitboxy = gib.hitboxy*0.75
+    local lor = 1
+    if test_flag(gib.flags, ENT_FLAG.FACING_LEFT) then lor = -1 end
+    gib:set_post_update_state_machine(function(self)
+        local sx, sy, sl = get_position(self.uid)
+        self.animation_frame = frame
+        self.angle = self.angle + math.abs(self.velocityx*2)*lor + math.abs((self.velocityy*0.5))*lor
+        if test_flag(self.more_flags, ENT_MORE_FLAG.HIT_GROUND) then
+            --create blood
+            for _=1, 2 do
+                local rubble = get_entity(spawn(ENT_TYPE.ITEM_BLOOD, sx+math.random(-10, 10)/100, sy+math.random(-10, 10)/100, sl, math.random(-15, 15)/100, math.random(10, 15)/100))
+            end
+            self:destroy()
+        end
+    end)
+end
 -- Sound effect path
 local fart = create_sound('res/sounds/fart.wav')
 local yell = create_sound('res/sounds/yamascream.wav')
@@ -60,6 +107,11 @@ local ANIMATION_INFO = {
         start = 14;
         finish = 14;
         speed = 1; 
+    };
+    HEAD_INTRO = {
+        start = 0;
+        finish = 5;
+        speed = 8;
     };
     HAND_OPEN = {
         start = 14;
@@ -541,6 +593,13 @@ local function yama_head_rage(self)
             self:set_post_update_state_machine(function()
                 commonlib.update_sound_volume(snd, self.uid, 1)
             end)
+            --create blood
+            local x, y, l = get_position(self.uid)
+            for _=1, 12 do
+                local rubble = get_entity(spawn(ENT_TYPE.ITEM_BLOOD, x+math.random(-10, 10)/100, y+math.random(-10, 10)/100, l, math.random(-15, 15)/100, math.random(10, 15)/100))
+            end
+            -- Setup the red illumination
+            self.user_data.ilum = create_illumination(Color:new(0.9, 0.6, 0, 1), 20, self.uid)
             -- Flags
             self.flags = clr_flag(self.flags, ENT_FLAG.PICKUPABLE)
             self.flags = clr_flag(self.flags, ENT_FLAG.THROWABLE_OR_KNOCKBACKABLE)
@@ -588,6 +647,7 @@ local function yama_head_rage(self)
             self.animation_frame = 0
             self.user_data.attack_timer = 0
             self.user_data.intro_yell = false
+            self:set_texture(yama_texture_id)
         end
     end
 end
@@ -705,6 +765,12 @@ local function yama_head_update(self)
 
     elseif d.state == HEAD_STATE.EGGPLANT then
     end
+    -- Update the illumination if it exists
+    if self.user_data.ilum ~= nil then
+        self.user_data.ilum.brightness = 1.75
+        self.user_data.ilum.distortion = 1.5
+        refresh_illumination(self.user_data.ilum)
+    end
     -- We need gravity to be able to throw this entity
     if not self.user_data.phase2 then
         if self.overlay ~= nil then
@@ -776,6 +842,8 @@ local function yama_head_set(self)
         dir = 1; -- Direction yama's head will fly in when idling
         hurt_timer = 0; -- Pauses animation and does a minor shake
         intro_yell = true; -- Start phase1 instead of phase2 during the rage state
+
+        ilum = nil; -- Ornage, fiery illumination for phase2
 
         target = nil; -- Points to the entity yama will chase in phase 2
 
@@ -866,8 +934,14 @@ local function yama_head_set(self)
     end)
     -- Death sound
     self:set_pre_kill(function()
-        -- Cursed particle effect bc it looks cool
-        generate_world_particles(PARTICLEEMITTER.ALTAR_SKULL, self.uid)
+        local x, y, l = get_position(self.uid)
+        -- gibs
+        for i=1, 2 do
+            create_yama_gib(self.x+math.random(-10, 10)/100, self.y+math.random(-10, 10)/100, self.layer, math.random(-3, 3)/30, math.random(3, 7)/25, 0)
+        end
+        for i=1, 4 do
+            create_yama_gib(self.x+math.random(-10, 10)/100, self.y+math.random(-10, 10)/100, self.layer, math.random(-3, 3)/30, math.random(3, 7)/26, 1)
+        end
         -- Sound effect
         local audio = defeat:play()
         local x, y, _ = get_position(self.uid)
@@ -1221,6 +1295,7 @@ local function hand_slam_intro(self)
         self.user_data.yama.user_data.animation_info = ANIMATION_INFO.HEAD_SPIT
         self.user_data.yama.user_data.animation_frame = self.user_data.yama.user_data.animation_info.start
         self.user_data.yama.animation_frame = self.user_data.yama.user_data.animation_info.start
+        self.user_data.yama:set_texture(yama_intro_texture_id)
         self.user_data.yama.user_data.state = HEAD_STATE.RAGE
         self.user_data.yama.user_data.attack_timer = 0
         self.user_data.yama.user_data.custom_animation = false
@@ -1373,6 +1448,10 @@ local function yama_hand_set(self)
     self:set_post_damage(animate_entity)
     -- Update if one of yama's hands is missing
     self:set_pre_kill(function(self)
+        -- gibs
+        for i=1, 5 do
+            create_yama_gib(self.x+math.random(-10, 10)/100, self.y+math.random(-10, 10)/100, self.layer, math.random(-3, 3)/30, math.random(3, 7)/26, 2)
+        end
         if self.user_data.yama ~= nil then
             if type(self.user_data.yama.user_data) == "table" then
                 if self.user_data.yama.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HEAD then
