@@ -41,6 +41,9 @@ decorlib = require 'lib.gen.decor'
 snowballlib = require 'lib.entities.snowball'
 crystalmonkeylib = require 'lib.entities.crystal_monkey'
 shopslib = require 'lib.entities.shops'
+hdmod_string_data = require 'hdmod_strings' -- This has every single string for every supported language
+hdmod_string = hdmod_string_data.english -- Call this for the currently selected language
+hdmod_journal = require 'lib.journal.hdmod_journal'
 require "lib.entities.mammoth"
 require "lib.entities.hdentnew"
 require "lib.entities.custom_death_messages"
