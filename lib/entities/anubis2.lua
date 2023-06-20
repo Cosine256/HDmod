@@ -234,11 +234,6 @@ function module.create_anubis2(x, y, l)
     local anubis2 = get_entity(spawn(ENT_TYPE.MONS_ANUBIS2, x, y, l, 0, 0))
     create_cool_ass_red_portal_effect(x, y, l)
     anubis2.color.a = 0
-    set_timeout(function()
-        if anubis2 ~= nil then
-            toast_override("Death to the defiler!")
-        end
-    end, 60)
     anubis2_set(anubis2.uid)
     set_post_statemachine(anubis2.uid, anubis2_update)
     return anubis2

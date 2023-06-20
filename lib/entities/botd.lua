@@ -137,9 +137,11 @@ set_callback(function()
     if module.OBTAINED_BOOKOFDEAD == false then
         for i = 1, #players, 1 do
             if entity_has_item_type(players[i].uid, ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY) then
-                -- Spawn Anubis2
 				anubis2lib.create_anubis2(players[i].x, players[i].y+3, players[i].layer)
                 module.OBTAINED_BOOKOFDEAD = true
+				-- # TODO: When remaking the BOTD item to use the custom item library, please
+				-- make this toast only run upon first acquiring the BOTD in COG and avoid playing it in the future.
+				toast_override("Death to the defiler!")
 
                 set_timeout(function() remove_player_item(ENT_TYPE.ITEM_POWERUP_TABLETOFDESTINY) end, 1)
             end
