@@ -146,6 +146,14 @@ local function detect_solid_nonshop_nontree(x, y, l)
 	return false
 end
 
+local function is_non_grid_entity_at(x, y, l)
+	return #get_entities_overlapping_hitbox({
+		ENT_TYPE.FLOOR_TREE_BRANCH,
+		ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL,
+		ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK
+	}, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+end
+
 function module.is_solid_grid_entity(x, y, l)
 	local ent = get_entity(get_grid_entity_at(x, y, l))
 	if not ent then
@@ -714,6 +722,7 @@ end
 
 function module.is_valid_crushtrap_spawn(x, y, l)
     if get_grid_entity_at(x, y, l) == -1 then return false end
+	if is_non_grid_entity_at(x, y, l) then return false end
 	if is_liquid_at(x, y) then return false end
 
 	-- can only spawn in certain room ids
@@ -736,7 +745,7 @@ function module.is_valid_crushtrap_spawn(x, y, l)
 		or is_invalid_block_against_crushtrap(x+1, y, l)
 		or is_invalid_block_against_crushtrap(x, y-1, l)
 	) then return false end
-
+	message(string.format("%s, %s", x, y))
 	return true
 end
 
