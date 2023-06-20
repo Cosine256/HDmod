@@ -166,8 +166,22 @@ local function default_ground_monster_condition(x, y, l)
 	and not is_liquid_at(x, y)
 end
 
+local function is_ladder_tile_at(x, y)
+	local lvlcode = locatelib.get_levelcode_at_gpos(x, y)
+	return lvlcode == "G"
+	or lvlcode == "H"
+	or lvlcode == "L"
+	or lvlcode == "P"
+	or lvlcode == "Q"
+end
+
+local function is_falling_platform_at(x, y, l)
+	return #get_entities_overlapping_hitbox(ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+end
+
 local function default_ceiling_entity_condition(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
+	and not is_ladder_tile_at(x, y)
 	and module.is_solid_grid_entity(x, y+1, l)
 	and get_grid_entity_at(x, y-1, l) == -1
 	and get_grid_entity_at(x, y-2, l) == -1
@@ -177,8 +191,10 @@ end
 
 local function default_hell_ceiling_entity_condition(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
+	and not is_ladder_tile_at(x, y)
 	and module.is_solid_grid_entity(x, y+1, l)
 	and get_grid_entity_at(x, y-1, l) == -1
+	and not is_falling_platform_at(x, y-1, l)
 	and detect_entrance_room_template(x, y, l) == false
 	and not is_liquid_at(x, y)
 end
@@ -391,7 +407,7 @@ module.is_valid_scorpionfly_spawn = default_ground_monster_condition
 
 module.is_valid_critter_rat_spawn = spiderlair_ground_monster_condition
 
-function module.is_valid_critter_frog_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_frog spawn
+module.is_valid_critter_frog_spawn = default_ground_monster_condition
 
 function module.is_valid_critter_maggot_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_maggot spawn
 
@@ -813,12 +829,14 @@ function module.is_valid_ufo_spawn(x, y, l)
 	return (
 		-- HD also avoids the coffin rooms here, but I think the API already accounts for that since we set S2 coffin rooms
 		room ~= roomdeflib.HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN
+		and room ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
 		and default_ceiling_entity_condition(x, y, l)
 	)
 end
 
 function module.is_valid_bacterium_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
+	and not is_ladder_tile_at(x, y)
 	and not is_liquid_at(x, y)
 	and (
 		module.is_solid_grid_entity(x, y+1, l)

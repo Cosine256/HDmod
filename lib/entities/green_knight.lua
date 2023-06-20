@@ -59,7 +59,7 @@ local function ignore_whip_damage(ent, damage_dealer, damage_amount, velocityx, 
     if damage_dealer.type.id == ENT_TYPE.ITEM_WHIP and ent.price == 0 and ent.health > 2 then
         generate_world_particles(PARTICLEEMITTER.NOHITEFFECT_STARS, ent.uid)
         ent.price = 10 --cooldown
-        commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_ENEMY_HIT_INVINCIBLE, damage_dealer.uid)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_ENEMY_HIT_INVINCIBLE, damage_dealer.uid, 1)
         return true
     end
 end
@@ -69,7 +69,7 @@ local function become_caveman(ent)
         ent:set_texture(ent.type.texture)
         --sfx and green rubble here
         ent.flags = set_flag(ent.flags, ENT_FLAG.CAN_BE_STOMPED)
-        commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, ent.uid, 1)
         for i=1, 4, 1 do
             -- # TODO: polish this effect up a bit more, colors arent spot on and the sfx could be a bit more metalic
             local x, y, l = get_position(ent.uid)

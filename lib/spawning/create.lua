@@ -61,8 +61,6 @@ function module.create_frog(x, y, l) spawn_on_floor(ENT_TYPE.MONS_FROG, x, y, l)
 
 function module.create_yeti(x, y, l) spawn_on_floor(ENT_TYPE.MONS_YETI, x, y, l) end
 
-function module.create_critter_frog(x, y, l) end
-
 function module.create_critter_maggot(x, y, l) end
 
 function module.create_jiangshi(x, y, l) spawn_on_floor(ENT_TYPE.MONS_JIANGSHI, x, y, l) end
