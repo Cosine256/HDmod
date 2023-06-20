@@ -55,7 +55,7 @@ module.HELL_CUSTOM_MUSIC = {
             next_sound_id = function(ctx)
                 -- A cycle is defined by the return to Avici.
                 -- At the end of a cycle we reset 'has_seen_bao', 'has_seen_difu_or_chujiang_this_cycle' and 'difu_count'
-                if has_seen_bao_this_cycle or has_seen_difu_or_chujiang_this_cycle or difu_count ~= 0 then
+                if has_seen_bao_this_cycle ~= false or has_seen_difu_or_chujiang_this_cycle ~= false or difu_count ~= 0 then
                     has_seen_bao_this_cycle = false
                     has_seen_difu_or_chujiang_this_cycle = false
                     difu_count = 0
