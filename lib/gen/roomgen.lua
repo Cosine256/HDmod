@@ -656,6 +656,7 @@ do
 	}
 
 	function level_generation_method_shops()
+		shopslib.custom_shop = shopslib.CUSTOM_SHOP.NONE
 		if (
 			roomgenlib.detect_same_levelstate(THEME.DWELLING, 1, 1) == false
 			and state.theme ~= THEME.VOLCANA
