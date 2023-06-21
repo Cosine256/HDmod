@@ -98,13 +98,7 @@ module.HELL_CUSTOM_MUSIC = {
                 end
 
                 if has_seen_bao_this_cycle then
-                    local next_stem = pick_random({ "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
-
-                    if is_difu_stem(next_stem) then
-                        difu_count = difu_count + 1
-                    end
-
-                    return next_stem
+                    return pick_random({ "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
                 else
                     return pick_random({ "bao_a", "bao_b" })
                 end
@@ -128,13 +122,7 @@ module.HELL_CUSTOM_MUSIC = {
                 end
 
                 if has_seen_bao_this_cycle then
-                    local next_stem = pick_random({ "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
-
-                    if is_difu_stem(next_stem) then
-                        difu_count = difu_count + 1
-                    end
-
-                    return next_stem
+                    return pick_random({ "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
                 else
                     return pick_random({ "bao_a", "bao_b" })
                 end
@@ -165,21 +153,13 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                local next_stem
-
                 -- If we have seen chujiang or difu this cycle, one possible next stem can be avici completing a cycle
                 if has_seen_difu_or_chujiang_this_cycle then
-                    next_stem = pick_random({ "avici", "difu", "difu_lush", "difu_nude" })
+                    return pick_random({ "avici", "difu", "difu_lush", "difu_nude" })
                 -- If we have not seen chujiang or difu this cycle, we pick chujiang or difu stems
                 else
-                    next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
+                    return pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
                 end
-
-                if is_difu_stem(next_stem) then
-                    difu_count = difu_count + 1
-                end
-
-                return next_stem
             end
         },
         {
@@ -207,21 +187,13 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                local next_stem
-
                 -- If we have seen chujiang or difu this cycle, one possible next stem can be avici completing a cycle
                 if has_seen_difu_or_chujiang_this_cycle then
-                    next_stem = pick_random({ "avici", "difu", "difu_lush", "difu_nude" })
+                    return pick_random({ "avici", "difu", "difu_lush", "difu_nude" })
                 -- If we have not seen chujiang or difu this cycle, we pick chujiang or difu stems
                 else
-                    next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
+                    return pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
                 end
-
-                if is_difu_stem(next_stem) then
-                    difu_count = difu_count + 1
-                end
-
-                return next_stem
             end
         },
         {
@@ -278,13 +250,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                local next_stem = pick_random({ "bao_a", "bao_b", "difu", "difu_lush", "difu_nude" })
-
-                if is_difu_stem(next_stem) then
-                    difu_count = difu_count + 1
-                end
-
-                return next_stem
+                return pick_random({ "bao_a", "bao_b", "difu", "difu_lush", "difu_nude" })
             end
         },
         {
@@ -315,7 +281,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                if difu_count < 2 then
+                if difu_count < 1 then
                     local next_stem = pick_random({ "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_lush", "difu_nude" })
 
                     if is_difu_stem(next_stem) then
@@ -325,7 +291,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return next_stem
                 else
                     if module.dynamic_music_debug_print then
-                        print("[Hell Music Debug] difu_count = 2; exiting block")
+                        print("[Hell Music Debug] difu_count = 1; exiting block")
                     end
 
                     difu_count = 0
@@ -361,7 +327,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                if difu_count < 2 then
+                if difu_count < 1 then
                     local next_stem = pick_random({ "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_nude" })
 
                     if is_difu_stem(next_stem) then
@@ -371,7 +337,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return next_stem
                 else
                     if module.dynamic_music_debug_print then
-                        print("[Hell Music Debug] difu_count = 2; exiting block")
+                        print("[Hell Music Debug] difu_count = 1; exiting block")
                     end
 
                     difu_count = 0
@@ -407,7 +373,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                if difu_count < 2 then
+                if difu_count < 1 then
                     local next_stem = pick_random({ "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu", "difu_lush" })
 
                     if is_difu_stem(next_stem) then
@@ -417,7 +383,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return next_stem
                 else
                     if module.dynamic_music_debug_print then
-                        print("[Hell Music Debug] difu_count = 2; exiting block")
+                        print("[Hell Music Debug] difu_count = 1; exiting block")
                     end
 
                     difu_count = 0
@@ -442,13 +408,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_b", "idle_c" })
                 end
 
-                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
-
-                if is_difu_stem(next_stem) then
-                    difu_count = difu_count + 1
-                end
-
-                return next_stem
+                return pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
             end
         },
         {
@@ -468,13 +428,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_c" })
                 end
 
-                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
-
-                if is_difu_stem(next_stem) then
-                    difu_count = difu_count + 1
-                end
-
-                return next_stem
+                return pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
             end
         },
         {
@@ -494,13 +448,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b" })
                 end
 
-                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
-
-                if is_difu_stem(next_stem) then
-                    difu_count = difu_count + 1
-                end
-
-                return next_stem
+                return pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
             end
         },
         {
@@ -520,13 +468,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
-
-                if is_difu_stem(next_stem) then
-                    difu_count = difu_count + 1
-                end
-
-                return next_stem
+                return pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
             end
         },
         {
@@ -546,13 +488,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
-
-                if is_difu_stem(next_stem) then
-                    difu_count = difu_count + 1
-                end
-
-                return next_stem
+                return pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
             end
         },
         {
@@ -572,13 +508,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                local next_stem = pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
-
-                if is_difu_stem(next_stem) then
-                    difu_count = difu_count + 1
-                end
-
-                return next_stem
+                return pick_random({ "avici", "abi_a", "abi_b", "bao_a", "bao_b", "chujiang_lite", "chujiang", "difu_nude" })
             end
         },
         {
@@ -598,13 +528,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                local next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
-
-                if is_difu_stem(next_stem) then
-                    difu_count = difu_count + 1
-                end
-
-                return next_stem
+                return pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
             end
         },
         {
@@ -624,13 +548,7 @@ module.HELL_CUSTOM_MUSIC = {
                     return pick_random({ "idle_a", "idle_b", "idle_c" })
                 end
 
-                local next_stem = pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
-
-                if is_difu_stem(next_stem) then
-                    difu_count = difu_count + 1
-                end
-
-                return next_stem
+                return pick_random({ "chujiang_lite", "chujiang", "difu", "difu_lush", "difu_nude" })
             end
         }
     }
