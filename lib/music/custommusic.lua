@@ -1,6 +1,7 @@
 -- TODO: Custom music can only play if the necessary sound files have been extracted locally.
 
 local custom_music_engine = require "lib.music.custom_music_engine"
+local hellmusic = require "lib.music.hell.hellmusic"
 
 local module = {}
 
@@ -52,6 +53,8 @@ local MOTHERSHIP_CUSTOM_MUSIC = MOTHERSHIP_INTRO_SOUND and MOTHERSHIP_LOOP_SOUND
     }
 }
 
+local HELL_CUSTOM_MUSIC = hellmusic.HELL_CUSTOM_MUSIC
+
 local TITLE_LOOP_SOUND = create_sound("res/music/title_medley.wav")
 local TITLE_CUSTOM_MUSIC = TITLE_LOOP_SOUND and {
     base_volume = 0.45,
@@ -72,6 +75,8 @@ function module.on_start_level()
         custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, YETI_KINGDOM_CUSTOM_MUSIC)
     elseif state.theme == THEME.NEO_BABYLON then
         custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, MOTHERSHIP_CUSTOM_MUSIC)
+    elseif state.theme == THEME.VOLCANA and not feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
+        custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, HELL_CUSTOM_MUSIC)
     end
 end
 
