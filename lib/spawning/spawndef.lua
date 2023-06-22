@@ -215,6 +215,7 @@ module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedu
 ---@param room_gen_ctx PostRoomGenerationContext
 function module.set_chances(room_gen_ctx)
     if options.hd_debug_scripted_levelgen_disable == false then
+        validlib.debug_init()
         if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
             local num_of_spawns = 0
             if (

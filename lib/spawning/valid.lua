@@ -1,5 +1,29 @@
 local module = {}
 
+local debug_valid_spaces
+
+local DEBUG_RGB_BROWN = rgba(204, 51, 0, 170)
+local DEBUG_RGB_ORANGE = rgba(255, 153, 0, 170)
+local DEBUG_RGB_GREEN = rgba(153, 196, 19, 170)
+
+function module.debug_init()
+	debug_valid_spaces = {}
+end
+
+local function debug_add_valid_space(x, y, color)
+	debug_valid_spaces[#debug_valid_spaces+1] = {}
+	debug_valid_spaces[#debug_valid_spaces].x = x
+	debug_valid_spaces[#debug_valid_spaces].y = y
+	debug_valid_spaces[#debug_valid_spaces].color = color
+end
+
+set_callback(function(draw_ctx)
+	if state.pause == 0 and state.screen == 12 and debug_valid_spaces then
+		for _, space in pairs(debug_valid_spaces) do
+			draw_ctx:draw_rect_filled(screen_aabb(AABB:new():offset(space.x, space.y):extrude(0.5)), 0, space.color)
+		end
+	end
+end, ON.GUIFRAME)
 
 --[[
 	START PROCEDURAL/EXTRA SPAWN DEF
@@ -146,12 +170,12 @@ local function detect_solid_nonshop_nontree(x, y, l)
 	return false
 end
 
+local function is_pushblock_at(x, y, l)
+	return #get_entities_overlapping_hitbox({ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+end
+
 local function is_non_grid_entity_at(x, y, l)
-	return #get_entities_overlapping_hitbox({
-		ENT_TYPE.FLOOR_TREE_BRANCH,
-		ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL,
-		ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK
-	}, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+	return #get_entities_overlapping_hitbox({ENT_TYPE.FLOOR_TREE_BRANCH, ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, 0, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
 end
 
 function module.is_solid_grid_entity(x, y, l)
@@ -535,17 +559,7 @@ function module.is_valid_spikeball_spawn(x, y, l)
 end
 
 local function is_invalid_block_against_arrowtrap(x, y, l)
-	local uid = get_grid_entity_at(x, y, l)
-	if uid ~= -1
-		and commonlib.has(
-			{
-				ENT_TYPE.FLOOR_TOTEM_TRAP,
-				ENT_TYPE.FLOOR_LION_TRAP,
-				ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP
-			},
-			get_entity(uid).type.id
-		)
-	then
+	if #get_entities_overlapping_hitbox({ENT_TYPE.FLOOR_TOTEM_TRAP, ENT_TYPE.FLOOR_LION_TRAP, ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP}, 0, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0 then
 		return true
 	end
 	return is_anti_trap_at(x, y)
@@ -554,7 +568,9 @@ end
 function module.is_valid_arrowtrap_spawn(x, y, l)
 	local rx, _ = get_room_index(x, y)
     if y == state.level_gen.spawn_y and (rx >= state.level_gen.spawn_room_x-1 and rx <= state.level_gen.spawn_room_x+1) then return false end
-	
+
+	if is_anti_trap_at(x, y) then return false end
+
 	-- Prevent arrowtraps from spawning in front of tikitraps and crushtraps
 	if (
 		is_invalid_block_against_arrowtrap(x-1, y, l)
@@ -565,17 +581,29 @@ function module.is_valid_arrowtrap_spawn(x, y, l)
 	end
 
     local floor = get_grid_entity_at(x, y, l)
+
+	if floor == -1 then
+		return false
+	end
+
     local left = module.is_solid_grid_entity(x-1, y, l)
     local left2 = module.is_solid_grid_entity(x-2, y, l)
     local right = module.is_solid_grid_entity(x+1, y, l)
     local right2 = module.is_solid_grid_entity(x+2, y, l)
-    if floor ~= -1 and (
-		(not left and not left2 and right and not is_liquid_at(x-1, y))
-		or (left and not right and not right2 and not is_liquid_at(x+1, y))
+
+	if (
+		(left or left2 or not right or is_liquid_at(x-1, y))
+		and (not left or right or right2 or is_liquid_at(x+1, y))
 	) then
-        return commonlib.has(valid_floors, get_entity_type(floor))
+        return false
     end
-    return false
+
+	if not commonlib.has(valid_floors, get_entity_type(floor)) then
+		return false
+	end
+
+	-- debug_add_valid_space(x, y, DEBUG_RGB_GREEN)
+    return true
 end
 
 local function is_valid_tiki_crushtrap_room(x, y, _)
@@ -688,10 +716,15 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 
 	-- Does it have a block underneith?
 	local bottom = get_grid_entity_at(x, y-1, l)
-	if bottom ~= -1 then
-		return commonlib.has(valid_floors, get_entity_type(bottom))
+	if bottom == -1 then
+		return false
 	end
-	return false
+	if not commonlib.has(valid_floors, get_entity_type(bottom)) then
+		return false
+	end
+	
+	-- debug_add_valid_space(x, y, DEBUG_RGB_BROWN)
+	return true
 end
 
 local function is_valid_block_against_crushtrap(x, y, l)
@@ -704,16 +737,15 @@ local function is_valid_block_against_crushtrap(x, y, l)
 		or type == ENT_TYPE.FLOORSTYLED_MINEWOOD
 		or type == ENT_TYPE.FLOORSTYLED_COG
 		or type == ENT_TYPE.FLOOR_JUNGLE
-		or type == ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK
 		or type == ENT_TYPE.FLOOR_ALTAR
+		or type == ENT_TYPE.FLOOR_BORDERTILE
 	)
 end
 
 local function is_invalid_block_against_crushtrap(x, y, l)
-	local uid = get_grid_entity_at(x, y, l)
-	if uid == -1 then return true end
 	if is_anti_trap_at(x, y) then return true end
-	if (get_entity(uid).type.id == ENT_TYPE.FLOOR_ARROW_TRAP) then
+	local uid = get_grid_entity_at(x, y, l)
+	if uid ~= -1 and get_entity(uid).type.id == ENT_TYPE.FLOOR_ARROW_TRAP then
 		-- message("crushtrap avoided arrowtrap")
 		return true
 	end
@@ -721,9 +753,13 @@ local function is_invalid_block_against_crushtrap(x, y, l)
 end
 
 function module.is_valid_crushtrap_spawn(x, y, l)
-    if get_grid_entity_at(x, y, l) == -1 then return false end
+    if get_grid_entity_at(x, y, l) ~= -1 then return false end
 	if is_non_grid_entity_at(x, y, l) then return false end
 	if is_liquid_at(x, y) then return false end
+
+	-- probably don't even need this
+	-- -- cannot spawn under a pushblock
+	-- if is_pushblock_at(x, y+1, l) then return false end
 
 	-- can only spawn in certain room ids
 	if not is_valid_tiki_crushtrap_room(x, y, l) then
@@ -745,7 +781,8 @@ function module.is_valid_crushtrap_spawn(x, y, l)
 		or is_invalid_block_against_crushtrap(x+1, y, l)
 		or is_invalid_block_against_crushtrap(x, y-1, l)
 	) then return false end
-	message(string.format("%s, %s", x, y))
+
+	-- debug_add_valid_space(x, y, DEBUG_RGB_ORANGE)
 	return true
 end
 
