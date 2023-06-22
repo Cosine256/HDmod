@@ -1507,7 +1507,15 @@ module.HD_TILENAME = {
 			}
 		},
 		description = "Forcefield top",
-	}
+	},
+	["_"] = {
+		phases = {
+			[1] = {
+				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_PAGODA_PLATFORM, x, y, l) end,},
+			}
+		},
+		description = "Platform",
+	},
 }
 
 
