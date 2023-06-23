@@ -26,6 +26,8 @@ local snaillib = require 'lib.entities.snail'
 local scorpionflylib = require 'lib.entities.scorpionfly'
 local devillib = require 'lib.entities.devil'
 local windowlib = require 'lib.entities.window'
+local crushtraplib = require 'lib.entities.crushtrap'
+local critterfroglib = require 'lib.entities.critterfrog'
 
 local module = {}
 
@@ -99,7 +101,7 @@ module.global_spawn_procedural_scorpionfly = define_procedural_spawn("hd_procedu
 
 module.global_spawn_procedural_critter_rat = define_procedural_spawn("hd_procedural_critter_rat", critterratlib.create_critterrat, validlib.is_valid_critter_rat_spawn)
 
-module.global_spawn_procedural_critter_frog = define_procedural_spawn("hd_procedural_critter_frog", createlib.create_critter_frog, validlib.is_valid_critter_frog_spawn)
+module.global_spawn_procedural_critter_frog = define_procedural_spawn("hd_procedural_critter_frog", critterfroglib.create_critterfrog, validlib.is_valid_critter_frog_spawn)
 
 module.global_spawn_procedural_worm_jungle_critter_maggot = define_procedural_spawn("hd_procedural_worm_jungle_critter_maggot", createlib.create_critter_maggot, validlib.is_valid_critter_maggot_spawn)
 
@@ -171,7 +173,7 @@ module.global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedura
 
 module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
 
-module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", function(x, y, l) spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP, x, y, l) end, validlib.is_valid_crushtrap_spawn)
+module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", crushtraplib.create_crushtrap, validlib.is_valid_crushtrap_spawn)
 
 -- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
 module.global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone_common, validlib.is_valid_tombstone_spawn)
@@ -213,6 +215,7 @@ module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedu
 ---@param room_gen_ctx PostRoomGenerationContext
 function module.set_chances(room_gen_ctx)
     if options.hd_debug_scripted_levelgen_disable == false then
+        validlib.debug_init()
         if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
             local num_of_spawns = 0
             if (

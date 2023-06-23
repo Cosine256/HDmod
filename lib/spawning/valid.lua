@@ -1,5 +1,29 @@
 local module = {}
 
+local debug_valid_spaces
+
+local DEBUG_RGB_BROWN = rgba(204, 51, 0, 170)
+local DEBUG_RGB_ORANGE = rgba(255, 153, 0, 170)
+local DEBUG_RGB_GREEN = rgba(153, 196, 19, 170)
+
+function module.debug_init()
+	debug_valid_spaces = {}
+end
+
+local function debug_add_valid_space(x, y, color)
+	debug_valid_spaces[#debug_valid_spaces+1] = {}
+	debug_valid_spaces[#debug_valid_spaces].x = x
+	debug_valid_spaces[#debug_valid_spaces].y = y
+	debug_valid_spaces[#debug_valid_spaces].color = color
+end
+
+set_callback(function(draw_ctx)
+	if state.pause == 0 and state.screen == 12 and debug_valid_spaces then
+		for _, space in pairs(debug_valid_spaces) do
+			draw_ctx:draw_rect_filled(screen_aabb(AABB:new():offset(space.x, space.y):extrude(0.5)), 0, space.color)
+		end
+	end
+end, ON.GUIFRAME)
 
 --[[
 	START PROCEDURAL/EXTRA SPAWN DEF
@@ -77,14 +101,8 @@ local function check_empty_space(origin_x, origin_y, layer, width, height)
 	return true
 end
 
-local function detect_empty_nodoor(x, y, l)
-	-- local entity_uids = get_entities_at(0, MASK.MONSTER | MASK.ITEM | MASK.FLOOR, x, y, l, 0.5)
-	local entity_uids = get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, 0, x, y, l, 0.5)
-	local door_not_here = #entity_uids == 0
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and door_not_here
-	)
+local function is_door_at(x, y, l)
+	return #get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, MASK.FLOOR, x, y, l, 0.5) ~= 0
 end
 
 local shop_templates = {
@@ -111,6 +129,19 @@ local function detect_entrance_room_template(x, y, l) -- is this position inside
 	)
 end
 
+local function is_fountainhead_at(x, y)
+	return locatelib.get_levelcode_at_gpos(x, y) == "&"
+end
+
+function module.is_valid_climbable_space(x, y, l)
+	return not (
+		get_entities_at(0, MASK.FLOOR | MASK.ACTIVEFLOOR, x, y-1, l, 0.5)[1] ~= nil
+		or is_door_at(x, y-2, l)
+		or is_liquid_at(x, y-1)
+		or is_fountainhead_at(x, y-1)
+	)
+end
+
 local nonshop_nontree_solids = {
 	ENT_TYPE.FLOOR_ALTAR,
 	ENT_TYPE.FLOOR_TREE_BASE,
@@ -133,11 +164,20 @@ local function detect_solid_nonshop_nontree(x, y, l)
 	return false
 end
 
+local function is_pushblock_at(x, y, l)
+	return #get_entities_overlapping_hitbox({ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+end
+
+local function is_non_grid_entity_at(x, y, l)
+	return #get_entities_overlapping_hitbox({ENT_TYPE.FLOOR_TREE_BRANCH, ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, 0, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+end
+
 function module.is_solid_grid_entity(x, y, l)
-	if #get_entities_overlapping_hitbox({ENT_TYPE.FLOOR_TOTEM_TRAP, ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR | MASK.FLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0 then return true end
-    local ent = get_entity(get_grid_entity_at(x, y, l))
-    if not ent then return false end
-    return test_flag(ent.flags, ENT_FLAG.SOLID)
+	local ent = get_entity(get_grid_entity_at(x, y, l))
+	if not ent then
+		return #get_entities_overlapping_hitbox({ENT_TYPE.ACTIVEFLOOR_SLIDINGWALL, ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+	end
+	return test_flag(ent.flags, ENT_FLAG.SOLID)
 end
 
 local function is_valid_monster_floor(x, y, l)
@@ -152,8 +192,22 @@ local function default_ground_monster_condition(x, y, l)
 	and not is_liquid_at(x, y)
 end
 
+local function is_ladder_tile_at(x, y)
+	local lvlcode = locatelib.get_levelcode_at_gpos(x, y)
+	return lvlcode == "G"
+	or lvlcode == "H"
+	or lvlcode == "L"
+	or lvlcode == "P"
+	or lvlcode == "Q"
+end
+
+local function is_falling_platform_at(x, y, l)
+	return #get_entities_overlapping_hitbox(ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+end
+
 local function default_ceiling_entity_condition(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
+	and not is_ladder_tile_at(x, y)
 	and module.is_solid_grid_entity(x, y+1, l)
 	and get_grid_entity_at(x, y-1, l) == -1
 	and get_grid_entity_at(x, y-2, l) == -1
@@ -163,8 +217,10 @@ end
 
 local function default_hell_ceiling_entity_condition(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
+	and not is_ladder_tile_at(x, y)
 	and module.is_solid_grid_entity(x, y+1, l)
 	and get_grid_entity_at(x, y-1, l) == -1
+	and not is_falling_platform_at(x, y-1, l)
 	and detect_entrance_room_template(x, y, l) == false
 	and not is_liquid_at(x, y)
 end
@@ -179,7 +235,7 @@ local function run_spiderlair_ground_enemy_chance()
 		feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) == false
 		or (
 			current_ground_chance ~= 0
-			and math.random(current_ground_chance) == 1
+			and prng:random_chance(current_ground_chance, PRNG_CLASS.LEVEL_GEN)
 		)
 	) then
 		return true
@@ -190,6 +246,17 @@ end
 local function spiderlair_ground_monster_condition(x, y, l)
 	return run_spiderlair_ground_enemy_chance()
 		and default_ground_monster_condition(x, y, l)
+end
+
+function module.is_valid_walltorch_spawn(x, y, layer)
+	local floor_flags = get_entity_flags(get_grid_entity_at(x, y, layer))
+	return get_grid_entity_at(x, y+1, layer) == -1
+			and not module.is_solid_grid_entity(x, y, layer)
+			and not test_flag(floor_flags, ENT_FLAG.IS_PLATFORM)
+			and not test_flag(floor_flags, ENT_FLAG.INDESTRUCTIBLE_OR_SPECIAL_FLOOR) -- Doors
+			and module.is_solid_grid_entity(x, y-1, layer)
+			and not is_liquid_at(x, y)
+			and get_entities_overlapping_hitbox(0, MASK.ITEM | MASK.MONSTER | MASK.MOUNT, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), layer)[1] == nil
 end
 
 local function only_useless_items_at(x, y, l)
@@ -366,7 +433,7 @@ module.is_valid_scorpionfly_spawn = default_ground_monster_condition
 
 module.is_valid_critter_rat_spawn = spiderlair_ground_monster_condition
 
-function module.is_valid_critter_frog_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_frog spawn
+module.is_valid_critter_frog_spawn = default_ground_monster_condition
 
 function module.is_valid_critter_maggot_spawn(x, y, l) return false end -- # TODO: Implement method for valid critter_maggot spawn
 
@@ -442,25 +509,34 @@ function module.is_valid_turret_spawn(x, y, l)
 		and check_empty_space(x-1, y, l, 3, 3)
 end
 
+local function is_over_or_next_to_liquid(x, y)
+	return is_liquid_at(x, y)
+	or is_liquid_at(x-1, y)
+	or is_liquid_at(x+1, y)
+	or is_liquid_at(x, y+1)
+	or is_liquid_at(x, y-1)
+end
+
 function module.is_valid_pushblock_spawn(x, y, l)
+	if is_over_or_next_to_liquid(x, y) then return false end
 	-- Replaces floor with spawn where it has floor underneath
     local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
-		local _entity_type = get_entity_type(above)
-		if (
-			_entity_type == ENT_TYPE.FLOOR_ALTAR
-			or _entity_type == ENT_TYPE.FLOOR_TREE_BASE
-		) then
+		if commonlib.has({ENT_TYPE.FLOOR_ALTAR, ENT_TYPE.FLOOR_TREE_BASE, ENT_TYPE.FLOOR_SPIKES}, get_entity_type(above)) then
 			return false
 		end
 	end
-    return (
-		detect_solid_nonshop_nontree(x, y, l)
-		and detect_solid_nonshop_nontree(x, y - 1, l)
-	)
+
+	if not detect_solid_nonshop_nontree(x, y, l)
+	or not detect_solid_nonshop_nontree(x, y - 1, l)
+	then
+		return false
+	end
+    return true
 end
 
 function module.is_valid_spikeball_spawn(x, y, l)
+	if is_over_or_next_to_liquid(x, y) then return false end
 	-- need subchunkid of what room we're in
 	local _subchunk_id = locatelib.get_levelroom_at_game_position(x, y)
 	if (
@@ -475,78 +551,126 @@ function module.is_valid_spikeball_spawn(x, y, l)
 
 	local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
-		if get_entity_type(above) == ENT_TYPE.FLOOR_ALTAR then
+		if commonlib.has({ENT_TYPE.FLOOR_ALTAR, ENT_TYPE.FLOOR_SPIKES}, get_entity_type(above)) then
 			return false
 		end
 	end
-    return (
-		detect_solid_nonshop_nontree(x, y, l)
-		and detect_solid_nonshop_nontree(x, y - 1, l)
-	)
+
+	if not detect_solid_nonshop_nontree(x, y, l)
+	or not detect_solid_nonshop_nontree(x, y - 1, l)
+	then
+		return false
+	end
+
+    return true
 end
 
--- # TOFIX: Prevent arrowtraps from spawning in front of tikitraps (or prevent tiki traps from spawning in front of arrow traps)
+local function is_invalid_block_against_arrowtrap(x, y, l)
+	if #get_entities_overlapping_hitbox({ENT_TYPE.FLOOR_TOTEM_TRAP, ENT_TYPE.FLOOR_LION_TRAP, ENT_TYPE.ACTIVEFLOOR_CRUSH_TRAP}, 0, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0 then
+		return true
+	end
+	return is_anti_trap_at(x, y)
+end
+
 function module.is_valid_arrowtrap_spawn(x, y, l)
 	local rx, _ = get_room_index(x, y)
     if y == state.level_gen.spawn_y and (rx >= state.level_gen.spawn_room_x-1 and rx <= state.level_gen.spawn_room_x+1) then return false end
+
+	if is_anti_trap_at(x, y) then return false end
+
+	-- Prevent arrowtraps from spawning in front of tikitraps and crushtraps
+	if (
+		is_invalid_block_against_arrowtrap(x-1, y, l)
+		or is_invalid_block_against_arrowtrap(x+1, y, l)
+	) then
+		-- message("arrowtrap avoided other trap")
+		return false
+	end
+
     local floor = get_grid_entity_at(x, y, l)
+
+	if floor == -1 then
+		return false
+	end
+
     local left = module.is_solid_grid_entity(x-1, y, l)
     local left2 = module.is_solid_grid_entity(x-2, y, l)
     local right = module.is_solid_grid_entity(x+1, y, l)
     local right2 = module.is_solid_grid_entity(x+2, y, l)
-    if floor ~= -1 and (
-		(not left and not left2 and right and not is_liquid_at(x-1, y))
-		or (left and not right and not right2 and not is_liquid_at(x+1, y))
+
+	if (
+		(left or left2 or not right or is_liquid_at(x-1, y))
+		and (not left or right or right2 or is_liquid_at(x+1, y))
 	) then
-        return commonlib.has(valid_floors, get_entity_type(floor))
+        return false
     end
-    return false
+
+	if not commonlib.has(valid_floors, get_entity_type(floor)) then
+		return false
+	end
+
+	-- debug_add_valid_space(x, y, DEBUG_RGB_GREEN)
+    return true
+end
+
+local function is_valid_tiki_crushtrap_room(x, y, _)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return (
+		_subchunk_id == roomdeflib.HD_SUBCHUNKID.SIDE
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.EXIT
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.PATH
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.PATH_DROP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.PATH_DROP_NOTOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.PATH_NOTOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_EXIT
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_PATH
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_SIDE
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_TOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
+	)
 end
 
 function module.is_valid_tikitrap_spawn(x, y, l)
 	-- need subchunkid of what room we're in
-	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	--prevent spawing in lake
 	if roomy > 4 then return false end
 
 	if (
-		is_anti_trap_at(x, y) == true
-		or is_anti_trap_at(x, y-1) == true
+		is_anti_trap_at(x, y)
+		or is_anti_trap_at(x, y-1)
 	) then return false end
 
-	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
-	if (
-		_subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SIDE
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.EXIT
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_DROP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_DROP_NOTOP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.PATH_NOTOP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_EXIT
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_PATH
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_SIDE
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_TOP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_MIDSECTION
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.SACRIFICIALPIT_BOTTOM
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_TOP
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
-		and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
-	) then
+	-- Doesn't work for some reason
+	-- if is_pushblock_at(x, y, l) 
+	-- or is_pushblock_at(x, y-1, l) then
+	-- 	return false
+	-- end
+
+	if not is_valid_tiki_crushtrap_room(x, y, l) then
 		return false
 	end
 
-	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then return false end
-
-	if get_entity_type(get_grid_entity_at(x, y, l)) == ENT_TYPE.FLOOR_ALTAR
-		or is_liquid_at(x, y) then
+	local here = get_grid_entity_at(x, y, l)
+	if commonlib.has({ENT_TYPE.FLOOR_ALTAR, ENT_TYPE.FLOOR_SPIKES}, get_entity_type(here)) then
 		return false
 	end
 
-	if (
-		detect_empty_nodoor(x, y, l) == false
-		-- or detect_empty_nodoor(x, y, l) == false
-	) then return false end
+	if is_liquid_at(x, y)
+	or is_liquid_at(x, y+1) then
+		return false
+	end
+
+	if is_door_at(x, y, l)
+	or is_door_at(x, y+1, l) then
+		return false
+	end
 
 	-- Does it have 3 spaces across unoccupied above it?
 	local topleft2 = get_grid_entity_at(x-1, y+2, l)
@@ -563,6 +687,17 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	local right = get_grid_entity_at(x+1, y, l)
 	local num_of_blocks = 0
 	local avoid_both_top = false
+
+	-- is not up against an arrowtrap?
+	if (
+		(topleft ~= -1 and get_entity(topleft).type.id == ENT_TYPE.FLOOR_ARROW_TRAP)
+		or (topright ~= -1 and get_entity(topright).type.id == ENT_TYPE.FLOOR_ARROW_TRAP)
+		or (left ~= -1 and get_entity(left).type.id == ENT_TYPE.FLOOR_ARROW_TRAP)
+		or (right ~= -1 and get_entity(right).type.id == ENT_TYPE.FLOOR_ARROW_TRAP)
+	) then
+		-- message("tikitrap avoided arrowtrap")
+		return false
+	end
 
 	if (
 		topleft ~= -1
@@ -599,20 +734,74 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 
 	-- Does it have a block underneith?
 	local bottom = get_grid_entity_at(x, y-1, l)
-	if bottom ~= -1 then
-		return commonlib.has(valid_floors, get_entity_type(bottom))
+	if bottom == -1 then
+		return false
+	end
+	if not commonlib.has(valid_floors, get_entity_type(bottom)) then
+		return false
+	end
+
+	-- debug_add_valid_space(x, y, DEBUG_RGB_BROWN)
+	return true
+end
+
+local function is_valid_block_against_crushtrap(x, y, l)
+	local uid = get_grid_entity_at(x, y, l)
+	if uid == -1 then return false end
+	local type = get_entity(uid).type.id
+	return (
+		type == ENT_TYPE.FLOORSTYLED_TEMPLE
+		or type == ENT_TYPE.FLOORSTYLED_STONE
+		or type == ENT_TYPE.FLOORSTYLED_MINEWOOD
+		or type == ENT_TYPE.FLOORSTYLED_COG
+		or type == ENT_TYPE.FLOOR_JUNGLE
+		or type == ENT_TYPE.FLOOR_ALTAR
+		or type == ENT_TYPE.FLOOR_BORDERTILE
+	)
+end
+
+local function is_invalid_block_against_crushtrap(x, y, l)
+	if is_anti_trap_at(x, y) then return true end
+	local uid = get_grid_entity_at(x, y, l)
+	if uid ~= -1 and get_entity(uid).type.id == ENT_TYPE.FLOOR_ARROW_TRAP then
+		-- message("crushtrap avoided arrowtrap")
+		return true
 	end
 	return false
 end
 
 function module.is_valid_crushtrap_spawn(x, y, l)
-	--[[
-		-- # TODO: Implement method for valid crushtrap spawn
-		-- Replace air
-		-- Needs at least one block open on one side of it
-		-- Needs at least one block occupide on one side of it
-	]]
-	return false
+    if get_grid_entity_at(x, y, l) ~= -1 then return false end
+	if is_non_grid_entity_at(x, y, l) then return false end
+	if is_liquid_at(x, y) then return false end
+
+	-- probably don't even need this
+	-- -- cannot spawn under a pushblock
+	-- if is_pushblock_at(x, y+1, l) then return false end
+
+	-- can only spawn in certain room ids
+	if not is_valid_tiki_crushtrap_room(x, y, l) then
+		return false
+	end
+
+	-- Has at least one block occupide on any side
+	if (
+		not is_valid_block_against_crushtrap(x-1, y, l)
+		and not is_valid_block_against_crushtrap(x, y+1, l)
+		and not is_valid_block_against_crushtrap(x+1, y, l)
+		and not is_valid_block_against_crushtrap(x, y-1, l)
+	) then return false end
+
+	-- cannot be up against an arrow trap or anti-trap block
+	if (
+		is_invalid_block_against_crushtrap(x-1, y, l)
+		or is_invalid_block_against_crushtrap(x, y+1, l)
+		or is_invalid_block_against_crushtrap(x+1, y, l)
+		or is_invalid_block_against_crushtrap(x, y-1, l)
+	) then return false end
+
+	-- debug_add_valid_space(x, y, DEBUG_RGB_ORANGE)
+	return true
 end
 
 function module.is_valid_tombstone_spawn(x, y, l)
@@ -626,19 +815,29 @@ function module.is_valid_tombstone_spawn(x, y, l)
 		return false
 	end
 
-	local below_type = get_entity_type(get_grid_entity_at(x, y-1, l))
+	-- local below_type = get_entity_type(get_grid_entity_at(x, y-1, l))
+	-- if below_type == ENT_TYPE.FLOORSTYLED_BEEHIVE then
+	-- 	return false
+	-- end
+
+	if is_door_at(x, y, l)
+	or is_door_at(x, y+1, l) then
+		return false
+	end
+
+	if get_grid_entity_at(x, y, l) ~= -1
+	or get_grid_entity_at(x, y+1, l) ~= -1 then
+		return false
+	end
+
     return (
-		-- _subchunk_id ~= genlib.HD_SUBCHUNKID.RESTLESS_TOMB and
-		detect_empty_nodoor(x, y, l)
-		and detect_empty_nodoor(x, y+1, l)
-		and detect_solid_nonshop_nontree(x, y - 1, l)
+		detect_solid_nonshop_nontree(x, y - 1, l)
 		and check_empty_space(x-1, y+1, l, 3, 1)
-		and below_type ~= ENT_TYPE.FLOORSTYLED_BEEHIVE
 		and not is_liquid_at(x, y)
 	)
 end
 
-module.is_valid_dar_decor_spawn = is_liquid_at
+module.is_invalid_dar_decor_spawn = is_liquid_at
 
 function module.is_valid_giantfrog_spawn(x, y, l)
 	return default_ground_monster_condition(x, y, l)
@@ -704,12 +903,14 @@ function module.is_valid_ufo_spawn(x, y, l)
 	return (
 		-- HD also avoids the coffin rooms here, but I think the API already accounts for that since we set S2 coffin rooms
 		room ~= roomdeflib.HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN
+		and room ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
 		and default_ceiling_entity_condition(x, y, l)
 	)
 end
 
 function module.is_valid_bacterium_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
+	and not is_ladder_tile_at(x, y)
 	and not is_liquid_at(x, y)
 	and (
 		module.is_solid_grid_entity(x, y+1, l)

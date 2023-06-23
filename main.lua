@@ -46,7 +46,7 @@ require "lib.entities.hdentnew"
 require "lib.entities.custom_death_messages"
 
 meta.name = "HDmod - Demo"
-meta.version = "1.04"
+meta.version = "1.05"
 meta.description = "Spelunky HD's campaign in Spelunky 2"
 meta.author = "Super Ninja Fat"
 
@@ -104,16 +104,22 @@ set_callback(function()
 				tombstonelib.set_ash_tombstone()
 
 				backwalllib.set_backwall_bg()
-				
+
 				decorlib.change_decorations()
-				
+
+				treelib.postlevelgen_decorate_trees()
+
 				touchupslib.postlevelgen_remove_items()
 
 				touchupslib.postlevelgen_spawn_dar_fog()
 
 				touchupslib.postlevelgen_fix_door_ambient_sound()
-				
+
 				touchupslib.postlevelgen_replace_wooden_shields()
+
+				touchupslib.postlevelgen_spawn_walltorches()
+
+				shopslib.postlevelgen_fix_customshop_sign()
 			end
 		end
 	end
@@ -121,10 +127,6 @@ end, ON.POST_LEVEL_GENERATION)
 
 set_callback(function()
 	-- message(F'ON.LEVEL: {state.time_level}')
-	roomgenlib.onlevel_generation_execution_phase_four()
-
-	treelib.onlevel_decorate_trees()
-	
 	touchupslib.onlevel_touchups()
 
 	olmeclib.onlevel_olmec_init()
@@ -136,12 +138,12 @@ end, ON.LEVEL)
 
 set_callback(function()
 	-- Detect loading from a level into anything other than the options screen. This should capture every level ending scenario, including instant restarts and warps.
-	if state.loading == 2 and state.screen == ON.LEVEL and state.screen_next ~= ON.OPTIONS then
+	if state.loading == 2 and state.screen == SCREEN.LEVEL and state.screen_next ~= SCREEN.OPTIONS then
 		custommusiclib.on_end_level()
 	end
 	-- Check whether custom title music has been enabled/disabled in the options right before loading the title screen.
 	-- Two loading events are checked because the script API sometimes misses one of them the first time the title screen loads.
-	if (state.loading == 1 or state.loading == 2) and state.screen_next == ON.TITLE then
+	if (state.loading == 1 or state.loading == 2) and state.screen_next == SCREEN.TITLE then
 		custommusiclib.update_custom_title_music_enabled()
 	end
 end, ON.LOADING)

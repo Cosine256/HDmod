@@ -1,4 +1,7 @@
-local hdtypelib = require 'lib.entities.hdtype'
+local scorpionflylib = require 'lib.entities.scorpionfly'
+local snaillib = require 'lib.entities.snail'
+local hawkmanlib = require 'lib.entities.hawkman'
+
 local module = {}
 
 local HELL_Y = 86
@@ -10,6 +13,9 @@ local OLMEC_UID = nil
 local OLMEC_SEQUENCE = { ["STILL"] = 1, ["FALL"] = 2 }
 local OLMEC_STATE = 0
 
+local HAWKMAN_UID = nil
+local THREW_HAWKMAN = false
+
 module.DOOR_ENDGAME_OLMEC_UID = nil
 
 function module.init()
@@ -18,40 +24,95 @@ function module.init()
 	OLMEC_UID = nil
 	OLMEC_STATE = 0
 
+	HAWKMAN_UID = nil
+	THREW_HAWKMAN = false
+
 	module.DOOR_ENDGAME_OLMEC_UID = nil
 end
 
-local function cutscene_move_olmec_pre()
+
+local function cutscene_arrange_olmec_pre()
 	local olmecs = get_entities_by_type(ENT_TYPE.ACTIVEFLOOR_OLMEC)
 	if #olmecs > 0 then
 		OLMEC_UID = olmecs[1]
 		move_entity(OLMEC_UID, 24.500, 99.500, 0, 0)
 	end
+	local olmec_cutscene_skins = get_entities_by_type(ENT_TYPE.FX_OLMECPART_LARGE)
+	if #olmec_cutscene_skins then
+		get_entity(olmec_cutscene_skins[1]):set_post_update_state_machine(function (self)
+			if self.animation_frame == 2 and not THREW_HAWKMAN then
+				---@type Entity | Movable
+				local hawkman = get_entity(HAWKMAN_UID)
+				hawkman:stun(600)
+				hawkman.velocityx = -0.15
+				hawkman.velocityy = 0.20
+				THREW_HAWKMAN = true
+			end
+		end)
+	end
+end
+
+local function set_post_cutscene_hawkman()
+	---@type Movable
+	local ent = get_entity(HAWKMAN_UID)
+	ent:stun(300)
+	THREW_HAWKMAN = true
+end
+
+local function cutscene_move_hawkman_post()
+	move_entity(HAWKMAN_UID, 15.475, 98.050, 0, 0)
 end
 
 local function cutscene_move_olmec_post()
 	move_entity(OLMEC_UID, 22.500, 98.500, 0, 0)
 end
 
-local function cutscene_move_cavemen()
-	-- # TODO: OLMEC cutscene - Once custom hawkman AI is done:
-	-- create a hawkman and disable his ai
-	-- set_timeout() to reenable his ai and set his stuntimer.
-	-- **does set_timeout() work during cutscenes?
-		-- if not, use set_global_timeout
-			-- set_timeout() accounts for pausing the game while set_global_timeout() does not
-	-- **consider problems for skipping the cutscene
+local function cutscene_arrange_worshipers()
 	local cavemen = get_entities_by_type(ENT_TYPE.MONS_CAVEMAN)
-	for i, caveman in ipairs(cavemen) do
-		move_entity(caveman, 17.500+i, 98.05, 0, 0)--99.05, 0, 0)
+	for i = 1, #cavemen, 1 do
+		local caveman = get_entity(cavemen[i])
+		move_entity(caveman.uid, 17.500+i, 98.05, 0, 0)--99.05, 0, 0)
+		caveman.move_state = 1
+		caveman.animation_frame = 64
+
+		-- prevent these cavemen from picking anything up during the cutscene
+
+		local held_item = get_entity(caveman.holding_uid)
+		if held_item ~= nil then
+			drop(caveman.uid, held_item.uid)
+		end
+		---@type self Caveman
+		caveman:set_post_update_state_machine(function (self)
+			self.can_pick_up_timer = 10
+			self.cooldown_timer = -1
+			if self.move_state == 2 then
+				self.move_state = 1
+			end
+		end)
 	end
+	HAWKMAN_UID = hawkmanlib.create_hawkman(22.0, 98.05, LAYER.FRONT)
+	local hawkman = get_entity(HAWKMAN_UID)
+	if not test_flag(hawkman.flags, ENT_FLAG.FACING_LEFT) then
+		flip_entity(hawkman.uid)
+	end
+	---@param self WalkingMonster
+	hawkman:set_post_update_state_machine(function (self)
+		self.walk_pause_timer = 10
+		self.cooldown_timer = -1
+		if self.move_state == 2 then
+			self.move_state = 0
+		end
+		if THREW_HAWKMAN then
+			clear_callback()
+		end
+	end)
 end
 
 function module.onlevel_olmec_init()
 	if state.theme == THEME.OLMEC then
 		BOSS_STATE = BOSS_SEQUENCE.CUTSCENE
-		cutscene_move_olmec_pre()
-		cutscene_move_cavemen()
+		cutscene_arrange_olmec_pre()
+		cutscene_arrange_worshipers()
 		
 		doorslib.create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
 
@@ -76,31 +137,113 @@ local function onframe_olmec_cutscene() -- **Move to set_interval() that you can
 				b = b + 1
 			end
 			cutscene_move_olmec_post()
+			cutscene_move_hawkman_post()
+			set_post_cutscene_hawkman()
 			BOSS_STATE = BOSS_SEQUENCE.FIGHT
 		end
 	end
 end
 
+replace_drop(DROP.TIAMAT_BAT, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_BEE, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_CAVEMAN, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_COBRA, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_HERMITCRAB, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_MONKEY, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_MOSQUITO, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_OCTOPUS, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_OLMITE, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_SCORPION, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_SNAKE, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_UFO, ENT_TYPE.FX_SHADOW)
+replace_drop(DROP.TIAMAT_YETI, ENT_TYPE.FX_SHADOW)
+
 local function olmec_attack(x, y, l)
-	hdtypelib.create_hd_type(hdtypelib.HD_ENT.OLMEC_SHOT, x, y, l, false, 0, 150)
+	local type = ENT_TYPE.ITEM_TIAMAT_SHOT
+	---@type TiamatShot
+	local entity = get_entity(spawn(type, x, y, l, 0, 150))
+	entity.flags = set_flag(entity.flags, ENT_FLAG.COLLIDES_WALLS)
+	entity.flags = clr_flag(entity.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
+	entity.flags = clr_flag(entity.flags, ENT_FLAG.NO_GRAVITY)
+
+	local set_velocity
+	set_timeout(function ()
+		---@param entity Movable
+		set_post_statemachine(entity.uid, function (entity)
+			if not set_velocity then
+
+				local xvel = prng:random_int(7, 30, PRNG_CLASS.PARTICLES)/100
+				if prng:random_chance(2, PRNG_CLASS.PARTICLES) then xvel = -xvel end
+				entity.velocityx = xvel
+				entity.velocityy = prng:random_int(5, 10, PRNG_CLASS.PARTICLES)/100
+
+				-- message("Olmec behavior 'YEET' velocityx: " .. tostring(entity.velocityx))
+				set_velocity = true
+			end
+			if (entity.standing_on_uid ~= -1) then
+				kill_entity(entity.uid)
+			end
+		end)
+	end, 40)
+	entity:set_post_kill(function (entity)
+		local chance = prng:random_int(1, 6, PRNG_CLASS.AI)
+		x, y, l = get_position(entity.uid)
+		if chance == 1 then
+			if prng:random_chance(8, PRNG_CLASS.AI) then
+				spawn_entity(ENT_TYPE.MONS_COBRA, x, y, l, 0, 0)
+			else
+				spawn_entity(ENT_TYPE.MONS_SNAKE, x, y, l, 0, 0)
+			end
+		elseif chance == 2 then
+			spawn_entity(ENT_TYPE.MONS_SPIDER, x, y, l, 0, 0)
+		elseif chance == 3 then
+			if prng:random_chance(8, PRNG_CLASS.AI) then
+				spawn_entity(ENT_TYPE.MONS_BEE, x, y, l, 0, 0)
+			else
+				spawn_entity(ENT_TYPE.MONS_BAT, x, y, l, 0, 0)
+			end
+		elseif chance == 4 then
+			if prng:random_chance(8, PRNG_CLASS.AI) then
+				spawn_entity(ENT_TYPE.MONS_FIREFROG, x, y, l, 0, 0)
+			else
+				spawn_entity(ENT_TYPE.MONS_FROG, x, y, l, 0, 0)
+			end
+		elseif chance == 5 then
+			spawn_entity(ENT_TYPE.MONS_MONKEY, x, y, l, 0, 0)
+		elseif chance == 6 then
+			if prng:random_chance(8, PRNG_CLASS.AI) then
+				if prng:random_chance(4, PRNG_CLASS.AI) then
+					scorpionflylib.create_scorpionfly(x, y, l)
+				else
+					spawn_entity(ENT_TYPE.MONS_SCORPION, x, y, l, 0, 0)
+				end
+			else
+				snaillib.create_snail(x, y, l)
+			end
+		end
+		commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_SORCERESS_ATK_SPAWN, entity.uid, 1, false)
+	end)
 end
 
+
+local has_hit_floor = false
 local function onframe_olmec_behavior()
 	---@type Olmec
 	local olmec = get_entity(OLMEC_UID)
 	if olmec ~= nil then
 		-- Enemy Spawning: Detect when olmec is about to smash down
-		if olmec.velocityy > -0.400 and olmec.velocityx == 0 and OLMEC_STATE == OLMEC_SEQUENCE.FALL then
+		-- set has_hit_floor when olmec's move_state goes from 4 to 0
+		local move_state = get_entity(OLMEC_UID).move_state
+		if move_state == 0 and OLMEC_STATE == OLMEC_SEQUENCE.FALL then
 			OLMEC_STATE = OLMEC_SEQUENCE.STILL
 			local x, y, l = get_position(OLMEC_UID)
-			-- 1/3 random chance each time olmec groundpounds, shoots 3 out in random directions upwards.
-			-- if math.random() >= 0.5 then
-				-- # TODO: This currently fires twice, even though we call it once. Fix that. Idea: Use a timeout variable to check time to refire.
+			if prng:random_chance(3, PRNG_CLASS.PARTICLES) then
+				commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_TIAMAT_SCEPTER, OLMEC_UID, 1, false)
 				olmec_attack(x, y+2, l)
-				-- olmec_attack(x, y+2.5, l)
-				-- olmec_attack(x, y+2.5, l)
-			-- end
-		elseif olmec.velocityy < -0.400 then
+				olmec_attack(x, y+2, l)
+				olmec_attack(x, y+2, l)
+			end
+		elseif move_state == 4 then
 			OLMEC_STATE = OLMEC_SEQUENCE.FALL
 		end
 	end

@@ -18,7 +18,7 @@ local function critterrat_set(uid)
     ---@type Movable
     local ent = get_entity(uid)
     ent:set_texture(critterrat_texture_id)
-    ent.walk_pause_timer = math.random(150, 300) --randomize this so they dont all stand up at the same time
+    ent.walk_pause_timer = prng:random_int(150, 300, PRNG_CLASS.AI) --randomize this so they dont all stand up at the same time
 end
 local function critterrat_update(ent)
     --flip entity based on movex
@@ -44,7 +44,7 @@ local function critterrat_update(ent)
     --cancel walk_pause_timer early and use it for the standing
     if ent.move_state == 5 and ent.walk_pause_timer < 5 then
         ent.move_state = 1
-        ent.walk_pause_timer = 230 + math.random(-15, 15)
+        ent.walk_pause_timer = 230 + prng:random_int(-15, 15, PRNG_CLASS.AI)
     end
     if ent.move_state == 1 and ent.walk_pause_timer < 90 then
         ent.move_state = 5
@@ -69,18 +69,18 @@ local function critterrat_update(ent)
             local px, py, _ = get_position(player.uid)
             if math.abs(px-x) < 3 and math.abs(py-y) < 1 then
                 ent.move_state = 1
-                ent.walk_pause_timer = 230 + math.random(-15, 15)
+                ent.walk_pause_timer = 230 + prng:random_int(-15, 15, PRNG_CLASS.AI)
             end
         end
     end
     --sfx when hitting walls
     if math.abs(ent.velocityx) + math.abs(ent.velocityy) > 0.03 then --make sure overall velocity is high enough for these checks
         if test_flag(ent.more_flags, ENT_MORE_FLAG.HIT_GROUND) then
-            commonlib.play_sound_at_entity(VANILLA_SOUND.CRITTERS_PENGUIN_JUMP1, ent.uid)
+            commonlib.play_vanilla_sound(VANILLA_SOUND.CRITTERS_PENGUIN_JUMP1, ent.uid, 1, false)
             ent.more_flags = clr_flag(ent.more_flags, ENT_MORE_FLAG.HIT_GROUND)
         end
         if test_flag(ent.more_flags, ENT_MORE_FLAG.HIT_WALL) then
-            commonlib.play_sound_at_entity(VANILLA_SOUND.CRITTERS_PENGUIN_JUMP1, ent.uid)
+            commonlib.play_vanilla_sound(VANILLA_SOUND.CRITTERS_PENGUIN_JUMP1, ent.uid, 1, false)
             ent.more_flags = clr_flag(ent.more_flags, ENT_MORE_FLAG.HIT_WALL)
         end
     end

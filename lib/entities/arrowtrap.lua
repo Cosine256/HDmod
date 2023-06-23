@@ -22,29 +22,31 @@ end
 
 function module.create_arrowtrap(x, y, l)
 	removelib.remove_floor_and_embedded_at(x, y, l)
-    local uid = spawn_grid_entity(ENT_TYPE.FLOOR_ARROW_TRAP, x, y, l)
+    local entity = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_ARROW_TRAP, x, y, l))
     local left = validlib.is_solid_grid_entity(x-1, y, l)
     local right = validlib.is_solid_grid_entity(x+1, y, l)
 	local flip = false
 	if not left and not right then
-		--math.randomseed(read_prng()[5])
-		if prng:random() < 0.5 then
+		if prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
 			flip = true
 		end
 	elseif not left then
 		flip = true
 	end
 	if flip == true then
-		flip_entity(uid)
+		flip_entity(entity.uid)
 	end
 	if test_flag(state.level_flags, 18) == true then
-		spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, uid, 0, 0.35)
+		spawn_entity_over(ENT_TYPE.FX_SMALLFLAME, entity.uid, 0, 0.35)
 	end
 
 	if state.theme == THEME.TEMPLE and not options.hd_og_floorstyle_temple then
-		get_entity(uid):set_texture(temple_texture_id)
+		entity:set_texture(temple_texture_id)
 	elseif state.theme == THEME.CITY_OF_GOLD then
-		get_entity(uid):set_texture(gold_texture_id)
+		entity:set_texture(gold_texture_id)
+		entity:set_post_destroy(function (entity)
+			spawn(ENT_TYPE.ITEM_NUGGET, x, y, l, prng:random_float(PRNG_CLASS.AI)*0.2-0.1, prng:random_float(PRNG_CLASS.AI)*0.1+0.1)
+		end)
 	end
 end
 

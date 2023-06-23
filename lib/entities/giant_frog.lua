@@ -32,6 +32,24 @@ do
     giant_frog_texture_def.texture_path = "res/giantfrog.png"
     giant_frog_texture_id = define_texture(giant_frog_texture_def)
 end
+-- frorg sounds :)))
+local jump_sound = {
+    create_sound('res/sounds/giantfrogjump1.wav'),
+    create_sound('res/sounds/giantfrogjump2.wav'),
+    create_sound('res/sounds/giantfrogjump3.wav'),
+    create_sound('res/sounds/giantfrogjump4.wav'),
+    create_sound('res/sounds/giantfrogjump5.wav'),
+    create_sound('res/sounds/giantfrogjump6.wav')
+}
+-- # TODO these sounds aren't working for whatever reason, yet the jump_sounds work perfect
+local land_sound = {
+    create_sound('res/sounds/giantfrogland1.wav'),
+    create_sound('res/sounds/giantfrogland2.wav'),
+    create_sound('res/sounds/giantfrogland3.wav'),
+    create_sound('res/sounds/giantfrogland4.wav'),
+    create_sound('res/sounds/giantfrogland5.wav'),
+    create_sound('res/sounds/giantfrogland6.wav')
+}
 
 local function gfrog_target_facing(frog_uid, player_uid)
     local x1 = get_position(player_uid)
@@ -84,10 +102,10 @@ local function giant_frog_set(ent)
         local x, y, l = get_position(dead_ent.uid)
         spawn_frog_rubble(x, y, l, 2)
         spawn_blood(x, y, l, 4)
-        if math.random(1, 3) == 1 then
-            spawn(ENT_TYPE.ITEM_PICKUP_SPRINGSHOES, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.2-0.1, prng:random_float(PRNG_CLASS.PARTICLES)*0.1+0.1)
+        if prng:random_chance(3, PRNG_CLASS.AI) then
+            spawn(ENT_TYPE.ITEM_PICKUP_SPRINGSHOES, x, y, l, prng:random_float(PRNG_CLASS.AI)*0.2-0.1, prng:random_float(PRNG_CLASS.AI)*0.1+0.1)
         else
-            spawn(ENT_TYPE.ITEM_EMERALD, x, y, l, prng:random_float(PRNG_CLASS.PARTICLES)*0.2-0.1, prng:random_float(PRNG_CLASS.PARTICLES)*0.1+0.1)
+            spawn(ENT_TYPE.ITEM_EMERALD, x, y, l, prng:random_float(PRNG_CLASS.AI)*0.2-0.1, prng:random_float(PRNG_CLASS.AI)*0.1+0.1)
         end
     end)
     return {
@@ -95,7 +113,7 @@ local function giant_frog_set(ent)
         script_jumped = false,
         animation_state = ANIM_STATE.IDLE,
         animation_timer = 60,
-        action_timer = math.random(100, 200)
+        action_timer = prng:random_int(100, 200, PRNG_CLASS.AI)
     }
 end
 
@@ -114,8 +132,11 @@ local function giant_frog_jump(ent)
     ent.velocityx = vel_x
     ent.velocityy = 0.175
     -- Jump SFX
-    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_JUMP, ent.uid)
+    --[[
+    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_JUMP, ent.uid, 1, false)
     audio:set_volume(1)
+    ]]
+    commonlib.play_custom_sound(jump_sound[prng:random_index(#jump_sound, PRNG_CLASS.FX)], ent.uid, 0.5, false)
 end
 
 local function giant_frog_spit(ent)
@@ -123,7 +144,7 @@ local function giant_frog_spit(ent)
     local x, y, l = get_position(ent.uid)
     --ent.animation_frame = 0
     local vx = facing_left and -0.120 or 0.120
-    local spawned = get_entity(spawn(ENT_TYPE.MONS_FROG, x+vx, y, l, vx, 0.07+math.random()*0.03))
+    local spawned = get_entity(spawn(ENT_TYPE.MONS_FROG, x+vx, y, l, vx, 0.07+prng:random_float(PRNG_CLASS.AI)*0.03))
     spawned.last_owner_uid = ent.uid
     if facing_left then
         spawned.flags = set_flag(spawned.flags, ENT_FLAG.FACING_LEFT)
@@ -131,7 +152,7 @@ local function giant_frog_spit(ent)
         spawned.flags = clr_flag(spawned.flags, ENT_FLAG.FACING_LEFT)
     end
     ent.idle_counter = 0
-    commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_FROG_GIANT_OPEN, ent.uid)
+    commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_FROG_GIANT_OPEN, ent.uid, 1, false)
 end
 
 ---@param ent Frog
@@ -161,7 +182,7 @@ local function update_giant_frog_animation(ent, c_data)
                     ent.flags = ent.flags ~ b(ENT_FLAG.FACING_LEFT)
                 end
                 c_data.animation_state = ANIM_STATE.IDLE
-                c_data.animation_timer = math.random(20, 50)
+                c_data.animation_timer = prng:random_int(20, 50, PRNG_CLASS.AI)
             end
         else
             ent.animation_frame = get_animation_frame(c_data.animation_state, c_data.animation_timer)
@@ -186,8 +207,7 @@ local function giant_frog_update(ent, c_data)
                 if dist <= 13 then
                     commonlib.shake_camera(10, 10, 6, 6, 6, false)
                     -- Landing SFX
-                    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_STOMP, ent.uid, 1)
-                    audio:set_volume(0.4)
+                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_BOSS_CAVEMAN_LAND, ent.uid, 1, false)
                     break
                 end
             end
@@ -204,14 +224,14 @@ local function giant_frog_update(ent, c_data)
             if c_data.animation_state == ANIM_STATE.IDLE then
                 face_target(ent.uid, ent.chased_target_uid)
                 local time
-                if c_data.frogs_inside == 0 or math.random(2) == 1 then
+                if c_data.frogs_inside == 0 or prng:random_chance(2, PRNG_CLASS.AI) then
                     if filter_entities(get_entities_overlapping_hitbox(0, MASK.FLOOR, get_hitbox(ent.uid, 0, 0, 0.8), ent.layer), filter_solids)[1] then
                         ent.move_state = 1
-                        time = math.random(50, 100)
+                        time = prng:random_int(50, 100, PRNG_CLASS.AI)
                         set_animation(c_data, ANIM_STATE.WALKING)
                     else
                         set_animation(c_data, ANIM_STATE.JUMPING)
-                        time = math.random(100, 200)
+                        time = prng:random_int(100, 200, PRNG_CLASS.AI)
                     end
                 else
                     set_timeout(function()
@@ -228,8 +248,8 @@ local function giant_frog_update(ent, c_data)
                 c_data.action_timer = time
             elseif c_data.animation_state == ANIM_STATE.WALKING then
                 c_data.animation_state = ANIM_STATE.IDLE
-                c_data.animation_timer = math.random(20, 50)
-                c_data.action_timer = math.random(100, 200)
+                c_data.animation_timer = prng:random_int(20, 50, PRNG_CLASS.AI)
+                c_data.action_timer = prng:random_int(100, 200, PRNG_CLASS.AI)
             else
                 update_giant_frog_animation(ent, c_data)
             end
@@ -245,8 +265,8 @@ local function giant_frog_update(ent, c_data)
                     ent.velocityx = vel_x
                 else
                     c_data.animation_state = ANIM_STATE.IDLE
-                    c_data.animation_timer = math.random(20, 50)
-                    c_data.action_timer = math.random(100, 200)
+                    c_data.animation_timer = prng:random_int(20, 50, PRNG_CLASS.AI)
+                    c_data.action_timer = prng:random_int(100, 200, PRNG_CLASS.AI)
                 end
             end
             update_giant_frog_animation(ent, c_data)

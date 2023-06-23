@@ -1,6 +1,7 @@
 -- TODO: Custom music can only play if the necessary sound files have been extracted locally.
 
 local custom_music_engine = require "lib.music.custom_music_engine"
+local hellmusic = require "lib.music.hell.hellmusic"
 
 local module = {}
 
@@ -9,54 +10,58 @@ optionslib.register_option_bool("hd_debug_custom_title_music_disable", "Custom m
 
 local WORM_LOOP_SOUND = create_sound("../../Extracted/soundbank/ogg/BGM_Frog_Belly.ogg")
 local WORM_CUSTOM_MUSIC = WORM_LOOP_SOUND and {
-    loop_sounds = {
-        { sound = WORM_LOOP_SOUND, length = 22722 }
-    },
-    base_volume = 0.6
+    base_volume = 0.6,
+    start_sound_id = "loop",
+    sounds = {
+        { id = "loop", next_sound_id = "loop", sound = WORM_LOOP_SOUND, length = 22722 }
+    }
 }
 
 local BLACK_MARKET_INTRO_SOUND = create_sound("../../Extracted/soundbank/ogg/BGM_Black_Market_Transition.ogg")
 local BLACK_MARKET_LOOP_1_SOUND = create_sound("../../Extracted/soundbank/ogg/BGM_Black_Market_Part_A.ogg")
 local BLACK_MARKET_LOOP_2_SOUND = create_sound("../../Extracted/soundbank/ogg/BGM_Black_Market_Part_B.ogg")
 local BLACK_MARKET_CUSTOM_MUSIC = BLACK_MARKET_INTRO_SOUND and BLACK_MARKET_LOOP_1_SOUND and BLACK_MARKET_LOOP_2_SOUND and {
-    intro_sound = BLACK_MARKET_INTRO_SOUND,
-    loop_start_delay = 1807,
-    loop_sounds = {
-        { sound = BLACK_MARKET_LOOP_1_SOUND, length = 28916 },
-        { sound = BLACK_MARKET_LOOP_2_SOUND, length = 21687 }
-    },
     base_volume = 0.6,
-    play_over_shop_music = true
+    play_over_shop_music = true,
+    start_sound_id = "intro",
+    sounds = {
+        { id = "intro", next_sound_id = "loop_1", sound = BLACK_MARKET_INTRO_SOUND, length = 1807 },
+        { id = "loop_1", next_sound_id = "loop_2", sound = BLACK_MARKET_LOOP_1_SOUND, length = 28916 },
+        { id = "loop_2", next_sound_id = "loop_1", sound = BLACK_MARKET_LOOP_2_SOUND, length = 21687 }
+    }
 }
 
 local YETI_KINGDOM_INTRO_SOUND = create_sound("../../Extracted/soundbank/ogg/BGM_Yeti_Caves_Transition.ogg")
 local YETI_KINGDOM_LOOP_SOUND = create_sound("../../Extracted/soundbank/ogg/BGM_Yeti_Caves_Main.ogg")
 local YETI_KINGDOM_CUSTOM_MUSIC = YETI_KINGDOM_INTRO_SOUND and YETI_KINGDOM_LOOP_SOUND and {
-    intro_sound = YETI_KINGDOM_INTRO_SOUND,
-    loop_start_delay = 1538,
-    loop_sounds = {
-        { sound = YETI_KINGDOM_LOOP_SOUND, length = 49231 }
-    },
-    base_volume = 0.6
+    base_volume = 0.6,
+    start_sound_id = "intro",
+    sounds = {
+        { id = "intro", next_sound_id = "loop", sound = YETI_KINGDOM_INTRO_SOUND, length = 1538 },
+        { id = "loop", next_sound_id = "loop", sound = YETI_KINGDOM_LOOP_SOUND, length = 49231 }
+    }
 }
 
 local MOTHERSHIP_INTRO_SOUND = create_sound("../../Extracted/soundbank/ogg/BGM_Mothership_Transition.ogg")
 local MOTHERSHIP_LOOP_SOUND = create_sound("../../Extracted/soundbank/ogg/BGM_Mothership_main.ogg")
 local MOTHERSHIP_CUSTOM_MUSIC = MOTHERSHIP_INTRO_SOUND and MOTHERSHIP_LOOP_SOUND and {
-    intro_sound = MOTHERSHIP_INTRO_SOUND,
-    loop_start_delay = 10500,
-    loop_sounds = {
-        { sound = MOTHERSHIP_LOOP_SOUND, length = 36000 }
-    },
-    base_volume = 0.6
+    base_volume = 0.6,
+    start_sound_id = "intro",
+    sounds = {
+        { id = "intro", next_sound_id = "loop", sound = MOTHERSHIP_INTRO_SOUND, length = 10500 },
+        { id = "loop", next_sound_id = "loop", sound = MOTHERSHIP_LOOP_SOUND, length = 36000 }
+    }
 }
+
+local HELL_CUSTOM_MUSIC = hellmusic.HELL_CUSTOM_MUSIC
 
 local TITLE_LOOP_SOUND = create_sound("res/music/title_medley.wav")
 local TITLE_CUSTOM_MUSIC = TITLE_LOOP_SOUND and {
-    loop_sounds = {
-        { sound = TITLE_LOOP_SOUND, length = 131500 }
-    },
-    base_volume = 0.45
+    base_volume = 0.45,
+    start_sound_id = "loop",
+    sounds = {
+        { id = "loop", next_sound_id = "loop", sound = TITLE_LOOP_SOUND, length = 131500 }
+    }
 }
 
 function module.on_start_level()
@@ -70,6 +75,8 @@ function module.on_start_level()
         custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, YETI_KINGDOM_CUSTOM_MUSIC)
     elseif state.theme == THEME.NEO_BABYLON then
         custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, MOTHERSHIP_CUSTOM_MUSIC)
+    elseif state.theme == THEME.VOLCANA and not feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
+        custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, HELL_CUSTOM_MUSIC)
     end
 end
 
