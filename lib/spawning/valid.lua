@@ -101,14 +101,8 @@ local function check_empty_space(origin_x, origin_y, layer, width, height)
 	return true
 end
 
-local function detect_empty_nodoor(x, y, l)
-	-- local entity_uids = get_entities_at(0, MASK.MONSTER | MASK.ITEM | MASK.FLOOR, x, y, l, 0.5)
-	local entity_uids = get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, 0, x, y, l, 0.5)
-	local door_not_here = #entity_uids == 0
-	return (
-		get_grid_entity_at(x, y, l) == -1
-		and door_not_here
-	)
+local function is_door_at(x, y, l)
+	return #get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, MASK.FLOOR, x, y, l, 0.5) ~= 0
 end
 
 local shop_templates = {
@@ -142,7 +136,7 @@ end
 function module.is_valid_climbable_space(x, y, l)
 	return not (
 		get_entities_at(0, MASK.FLOOR | MASK.ACTIVEFLOOR, x, y-1, l, 0.5)[1] ~= nil
-		or get_entities_at(ENT_TYPE.LOGICAL_DOOR, MASK.LOGICAL, x, y-2, l, 0.5)[1] ~= nil
+		or is_door_at(x, y-2, l)
 		or is_liquid_at(x, y-1)
 		or is_fountainhead_at(x, y-1)
 	)
@@ -636,23 +630,34 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	if roomy > 4 then return false end
 
 	if (
-		is_anti_trap_at(x, y) == true
-		or is_anti_trap_at(x, y-1) == true
+		is_anti_trap_at(x, y)
+		or is_anti_trap_at(x, y-1)
 	) then return false end
+
+	-- Doesn't work for some reason
+	-- if is_pushblock_at(x, y, l) 
+	-- or is_pushblock_at(x, y-1, l) then
+	-- 	return false
+	-- end
 
 	if not is_valid_tiki_crushtrap_room(x, y, l) then
 		return false
 	end
 
-	if get_entity_type(get_grid_entity_at(x, y, l)) == ENT_TYPE.FLOOR_ALTAR
-		or is_liquid_at(x, y) then
+	local here = get_grid_entity_at(x, y, l)
+	if commonlib.has({ENT_TYPE.FLOOR_ALTAR, ENT_TYPE.FLOOR_SPIKES}, get_entity_type(here)) then
 		return false
 	end
 
-	if (
-		detect_empty_nodoor(x, y, l) == false
-		-- or detect_empty_nodoor(x, y, l) == false
-	) then return false end
+	if is_liquid_at(x, y)
+	or is_liquid_at(x, y+1) then
+		return false
+	end
+
+	if is_door_at(x, y, l)
+	or is_door_at(x, y+1, l) then
+		return false
+	end
 
 	-- Does it have 3 spaces across unoccupied above it?
 	local topleft2 = get_grid_entity_at(x-1, y+2, l)
@@ -722,7 +727,7 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	if not commonlib.has(valid_floors, get_entity_type(bottom)) then
 		return false
 	end
-	
+
 	-- debug_add_valid_space(x, y, DEBUG_RGB_BROWN)
 	return true
 end
@@ -797,14 +802,24 @@ function module.is_valid_tombstone_spawn(x, y, l)
 		return false
 	end
 
-	local below_type = get_entity_type(get_grid_entity_at(x, y-1, l))
+	-- local below_type = get_entity_type(get_grid_entity_at(x, y-1, l))
+	-- if below_type == ENT_TYPE.FLOORSTYLED_BEEHIVE then
+	-- 	return false
+	-- end
+
+	if is_door_at(x, y, l)
+	or is_door_at(x, y+1, l) then
+		return false
+	end
+
+	if get_grid_entity_at(x, y, l) ~= -1
+	or get_grid_entity_at(x, y+1, l) ~= -1 then
+		return false
+	end
+
     return (
-		-- _subchunk_id ~= genlib.HD_SUBCHUNKID.RESTLESS_TOMB and
-		detect_empty_nodoor(x, y, l)
-		and detect_empty_nodoor(x, y+1, l)
-		and detect_solid_nonshop_nontree(x, y - 1, l)
+		detect_solid_nonshop_nontree(x, y - 1, l)
 		and check_empty_space(x-1, y+1, l, 3, 1)
-		and below_type ~= ENT_TYPE.FLOORSTYLED_BEEHIVE
 		and not is_liquid_at(x, y)
 	)
 end
