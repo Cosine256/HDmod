@@ -513,18 +513,17 @@ function module.is_valid_pushblock_spawn(x, y, l)
 	-- Replaces floor with spawn where it has floor underneath
     local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
-		local _entity_type = get_entity_type(above)
-		if (
-			_entity_type == ENT_TYPE.FLOOR_ALTAR
-			or _entity_type == ENT_TYPE.FLOOR_TREE_BASE
-		) then
+		if commonlib.has({ENT_TYPE.FLOOR_ALTAR, ENT_TYPE.FLOOR_TREE_BASE, ENT_TYPE.FLOOR_SPIKES}, get_entity_type(above)) then
 			return false
 		end
 	end
-    return (
-		detect_solid_nonshop_nontree(x, y, l)
-		and detect_solid_nonshop_nontree(x, y - 1, l)
-	)
+
+	if not detect_solid_nonshop_nontree(x, y, l)
+	or not detect_solid_nonshop_nontree(x, y - 1, l)
+	then
+		return false
+	end
+    return true
 end
 
 function module.is_valid_spikeball_spawn(x, y, l)
@@ -542,14 +541,18 @@ function module.is_valid_spikeball_spawn(x, y, l)
 
 	local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
-		if get_entity_type(above) == ENT_TYPE.FLOOR_ALTAR then
+		if commonlib.has({ENT_TYPE.FLOOR_ALTAR, ENT_TYPE.FLOOR_SPIKES}, get_entity_type(above)) then
 			return false
 		end
 	end
-    return (
-		detect_solid_nonshop_nontree(x, y, l)
-		and detect_solid_nonshop_nontree(x, y - 1, l)
-	)
+
+	if not detect_solid_nonshop_nontree(x, y, l)
+	or not detect_solid_nonshop_nontree(x, y - 1, l)
+	then
+		return false
+	end
+
+    return true
 end
 
 local function is_invalid_block_against_arrowtrap(x, y, l)
