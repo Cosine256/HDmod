@@ -509,7 +509,16 @@ function module.is_valid_turret_spawn(x, y, l)
 		and check_empty_space(x-1, y, l, 3, 3)
 end
 
+local function is_over_or_next_to_liquid(x, y)
+	return is_liquid_at(x, y)
+	or is_liquid_at(x-1, y)
+	or is_liquid_at(x+1, y)
+	or is_liquid_at(x, y+1)
+	or is_liquid_at(x, y-1)
+end
+
 function module.is_valid_pushblock_spawn(x, y, l)
+	if is_over_or_next_to_liquid(x, y) then return false end
 	-- Replaces floor with spawn where it has floor underneath
     local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
@@ -527,6 +536,7 @@ function module.is_valid_pushblock_spawn(x, y, l)
 end
 
 function module.is_valid_spikeball_spawn(x, y, l)
+	if is_over_or_next_to_liquid(x, y) then return false end
 	-- need subchunkid of what room we're in
 	local _subchunk_id = locatelib.get_levelroom_at_game_position(x, y)
 	if (
