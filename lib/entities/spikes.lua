@@ -6,12 +6,14 @@ local ANIMATION_FRAMES_ENUM = {
     SPIKES_WOOD = 1,
     SPIKES_WORM = 2,
     SPIKES_VLAD = 3,
+    DECO_BORDER = 4,
 }
 
 local ANIMATION_FRAMES_RES = {
     { 0 },
     { 101, 102, 103 },
     { 0, 1 },
+    { 21, 22, 23 },
 }
 
 local wood_texture_id
@@ -46,13 +48,19 @@ end
 function module.create_spikes_over(floor_uid)
     ---@type Floor
     local floor = get_entity(floor_uid)
+    local floor_type = floor.type.id
     local spikes = get_entity(spawn_entity_over(ENT_TYPE.FLOOR_SPIKES, floor_uid, 0, 1))
     local wood_in_mines = (
         state.theme == THEME.DWELLING
-        and floor.type.id == ENT_TYPE.FLOORSTYLED_MINEWOOD
+        and floor_type == ENT_TYPE.FLOORSTYLED_MINEWOOD
     )
     --manage block deco
-    if (
+    if floor_type == ENT_TYPE.FLOOR_BORDERTILE then
+        floor:add_decoration(FLOOR_SIDE.TOP)
+        if floor.deco_top ~= -1 then
+            get_entity(floor.deco_top).animation_frame = prng:random_int(ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_BORDER][1], ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_BORDER][#ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_BORDER]], PRNG_CLASS.LEVEL_GEN)
+        end
+    elseif (
         wood_in_mines
         or state.theme == THEME.EGGPLANT_WORLD
     ) then
@@ -67,14 +75,11 @@ function module.create_spikes_over(floor_uid)
             deco.animation_frame = state.theme == THEME.EGGPLANT_WORLD and prng:random_int(ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.SPIKES_WORM][1], ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.SPIKES_WORM][#ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.SPIKES_WORM]], PRNG_CLASS.LEVEL_GEN) or ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.SPIKES_WOOD][1]
         end
     -- manage vlad spikes handling
-    elseif state.theme == THEME.VOLCANA then
-        if (
-            get_entity_type(floor_uid) == ENT_TYPE.FLOORSTYLED_VLAD
-        ) then
-            spikes:set_texture(vlad_texture_id)
-            spikes.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.SPIKES_VLAD][1]
-            vlad_spikes[#vlad_spikes+1] = spikes.uid
-        end
+    elseif state.theme == THEME.VOLCANA
+    and floor_type == ENT_TYPE.FLOORSTYLED_VLAD then
+        spikes:set_texture(vlad_texture_id)
+        spikes.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.SPIKES_VLAD][1]
+        vlad_spikes[#vlad_spikes+1] = spikes.uid
     end
 end
 
@@ -84,6 +89,13 @@ function module.detect_floor_and_create_spikes(x, y, l)
     
     if #floorsAtOffset > 0 then
         module.create_spikes_over(floorsAtOffset[1])
+    elseif worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TUTORIAL then
+        set_timeout(function ()
+            local floorsAtOffset = get_entities_at(0, MASK.FLOOR, x, y-1, LAYER.FRONT, 0.5)            
+            if #floorsAtOffset > 0 then
+                module.create_spikes_over(floorsAtOffset[1])
+            end
+        end, 1)
     end
 end
 
