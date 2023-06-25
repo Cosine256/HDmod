@@ -175,7 +175,7 @@ module.register_dev_section("Warps", function(ctx)
     ctx:win_inline()
     draw_warp_button(ctx, "4-3", 4, 3, THEME.TEMPLE)
     ctx:win_inline()
-    draw_warp_button(ctx, "4-4", 4, 4, THEME.OLMEC)
+    draw_warp_button(ctx, "OLMEC", 4, 4, THEME.OLMEC)
     ctx:win_inline()
     draw_warp_button(ctx, "CoG", 4, 3, THEME.CITY_OF_GOLD)
 
@@ -185,11 +185,11 @@ module.register_dev_section("Warps", function(ctx)
     ctx:win_inline()
     draw_warp_button(ctx, "5-3", 5, 3, THEME.VOLCANA)
     ctx:win_inline()
-    draw_warp_button(ctx, "5-4", 5, 4, THEME.VOLCANA)
+    draw_warp_button(ctx, "YAMA", 5, 4, THEME.VOLCANA)
 
     draw_warp_button(ctx, "Test 1", 1, 1, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
     ctx:win_inline()
-    draw_warp_button(ctx, "Test 2", 1, 1, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
+    draw_warp_button(ctx, "Test 2", 1, 2, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
 
     ctx:win_separator()
 

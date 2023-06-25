@@ -177,6 +177,7 @@ set_post_entity_spawn(function(self)
     module.create_yama_head(self.x, self.y, self.layer)
     self:destroy()
 end, SPAWN_TYPE.ANY, 0, {ENT_TYPE.MONS_YAMA})
+
 ------------------------------------
 --------- YAMA'S HEAD --------------
 local function slam(self)
@@ -189,6 +190,24 @@ local function slam(self)
     audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, prng:random_int(2, 3, PRNG_CLASS.PARTICLES))
     audio:set_pitch(prng:random_int(60, 80, PRNG_CLASS.PARTICLES)/100)
 end
+
+local function spawn_ceiling_skulls(x, layer)
+    for i=-1, 1 do
+        local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, x+i, 122.5, layer, 0, -0.1))
+        skull.angle = prng:random_int(0, 51, PRNG_CLASS.PARTICLES)/5
+    end
+end
+
+local function spawn_ceiling_skulls_above_target(self)
+    -- Slam SFX
+    slam(self)
+    -- Skulls
+    for _, p in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
+        local px, _, _ = get_position(p)
+        spawn_ceiling_skulls(px, self.layer)
+    end
+end
+
 local function yama_return(self, return_state)
     if self.overlay == nil then
         local sx, sy, _ = get_position(self.uid)
@@ -291,6 +310,22 @@ local function phase2_fireballs(self)
         self.user_data.animation_frame = 0
     end
 end
+
+local function both_in_range(ent1_uid, ent2_uid, left, top, right, bottom)
+    local e1x, e1y, _ = get_position(ent1_uid)
+    local e2x, e2y, _ = get_position(ent2_uid)
+    return (
+        commonlib.in_range(e1x, left, right)
+        and commonlib.in_range(e2x, left, right)
+        and commonlib.in_range(e1y, bottom, top)
+        and commonlib.in_range(e2y, bottom, top)
+    )
+end
+
+local function both_in_upper_inside_area(ent1_uid, ent2_uid)
+    return both_in_range(ent1_uid, ent2_uid, 14, 123, 31, 111)
+end
+
 local function yama_head_fly(self)
     -- Passively reduce the timer for the slam attack
     if self.user_data.attack_timer > 0 then
@@ -329,10 +364,7 @@ local function yama_head_fly(self)
     end
     -- If the player and yama are both within the range to chase, chase instead of fly
     for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-        local px, py, _ = get_position(v)
-        local sx, sy, _ = get_position(self.uid)
-        if commonlib.in_range(px, 14, 31) and commonlib.in_range(sx, 14, 31) and
-        commonlib.in_range(py, 111, 123) and commonlib.in_range(sy, 111, 123) then
+        if both_in_upper_inside_area(v, self.uid) then
             self.user_data.state = HEAD_STATE.FLY_CHASE
         end
     end
@@ -353,16 +385,8 @@ local function yama_head_slam(self)
         for _, v in ipairs(get_entities_overlapping_hitbox({0}, MASK.FLOOR | MASK.ACTIVEFLOOR, hb, self.layer)) do
             local w = get_entity(v)
             if test_flag(w.flags, ENT_FLAG.SOLID) then
-                -- Slam SFX
-                slam(self)
-                -- Skulls
-                for _, p in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-                    local px, _, _ = get_position(p)
-                    for i=-1, 1 do
-                        local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+i, 122.5, self.layer, 0, 0))
-                        skull.angle = prng:random_int(0, 51, PRNG_CLASS.PARTICLES)/5
-                    end
-                end
+                spawn_ceiling_skulls_above_target(self)
+
                 -- Go back to fly state
                 self.user_data.attack_timer = 180
                 self.user_data.state = HEAD_STATE.FLY
@@ -486,10 +510,9 @@ local function yama_idle(self)
     if not self.user_data.phase2 then
         local in_range = false
         for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-            local char = get_entity(v)
+            local _, py, _ = get_position(v)
             local _, y, _ = get_position(self.uid)
-            local _, py, _ = get_position(char.uid)
-            if py > y-5 then
+            if py > y-6 then
                 in_range = true
                 break
             end
@@ -1033,15 +1056,14 @@ local function hand_slam(self)
     local in_range = false
     local closest_player_distance = 999
     for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-        local char = get_entity(v)
         local _, y, _ = get_position(self.uid)
-        local _, py, _ = get_position(char.uid)
+        local _, py, _ = get_position(v)
         -- calculate closest player distance
-        local dist = distance(self.uid, char.uid)
+        local dist = distance(self.uid, v)
         if dist < closest_player_distance then
             closest_player_distance = dist
         end
-        if py > y-5 then
+        if py > y-6 then
             in_range = true
         end
     end
@@ -1122,17 +1144,9 @@ local function hand_slam(self)
             if self:can_jump() then
                 self.user_data.attack_timer = 280
                 self.flags = set_flag(self.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
-                -- Slam SFX
-                slam(self)
-                -- Skulls
-                -- Find players
-                for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-                    local px, _, _ = get_position(v)
-                    for i=-1, 1 do
-                        local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+i, 122.5, self.layer, 0, 0))
-                        skull.angle = prng:random_int(0, 51, PRNG_CLASS.PARTICLES)/5
-                    end
-                end
+
+                spawn_ceiling_skulls_above_target(self)
+
                 -- Clear the opposite hands wait + sync
                 if self.user_data.other_hand ~= nil then
                     if type(self.user_data.other_hand.user_data) == "table" then
@@ -1305,21 +1319,16 @@ local function hand_slam_intro(self)
         -- Once we hit some kind of floor, go back up to 280 for a short cooldown
         if self:can_jump() then
             self.user_data.attack_timer = 280
-            -- Slam SFX
-            slam(self)
-            -- Skulls (intro skulls spawn offset)
-                -- Find players
-            for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-                local px, _, _ = get_position(v)
-                for i=-1, 1 do
-                    local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px-6+i, 122.5, self.layer, 0, 0))
-                    skull.angle = prng:random_int(0, 51, PRNG_CLASS.PARTICLES)/5
-                end
-                for i=-1, 1 do
-                    local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+6+i, 122.5, self.layer, 0, 0))
-                    skull.angle = prng:random_int(0, 51, PRNG_CLASS.PARTICLES)/5
-                end
+            local is_left_hand = self.x < 22.5
+            if is_left_hand then
+                -- Slam SFX
+                slam(self)
+                -- Skulls (intro skulls spawn offset)
+                spawn_ceiling_skulls(16.5, self.layer)
+            else
+                spawn_ceiling_skulls(28.5, self.layer)
             end
+
             -- After slamming enter the regular slam state
             self.user_data.state = HAND_STATE.SLAM
         end
