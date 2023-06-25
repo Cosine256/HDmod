@@ -29,7 +29,7 @@ do
     yama_intro_texture_def.tile_width = 256
     yama_intro_texture_def.tile_height = 386
     yama_intro_texture_def.texture_path = 'res/king_yama_intro.png'
-    yama_intro_texture_id = define_texture(yama_intro_texture_def)   
+    yama_intro_texture_id = define_texture(yama_intro_texture_def)
 end
 -- mmmmmmm yummy gibs
 local yama_debris_texture_id
@@ -40,7 +40,7 @@ do
     yama_debris_texture_def.tile_width = 128
     yama_debris_texture_def.tile_height = 128
     yama_debris_texture_def.texture_path = 'res/yama_debris.png'
-    yama_debris_texture_id = define_texture(yama_debris_texture_def)   
+    yama_debris_texture_id = define_texture(yama_debris_texture_def)
 end
 local function create_yama_gib(x, y, l, vx, vy, frame)
     -- like regular gibs but coded by a goober such as myself, 
@@ -62,7 +62,7 @@ local function create_yama_gib(x, y, l, vx, vy, frame)
         if test_flag(self.more_flags, ENT_MORE_FLAG.HIT_GROUND) then
             --create blood
             for _=1, 2 do
-                local rubble = get_entity(spawn(ENT_TYPE.ITEM_BLOOD, sx+math.random(-10, 10)/100, sy+math.random(-10, 10)/100, sl, math.random(-15, 15)/100, math.random(10, 15)/100))
+                spawn(ENT_TYPE.ITEM_BLOOD, sx+math.random(-10, 10)/100, sy+math.random(-10, 10)/100, sl, math.random(-15, 15)/100, math.random(10, 15)/100)
             end
             self:destroy()
         end
@@ -99,12 +99,12 @@ local ANIMATION_INFO = {
     HEAD_EGGPLANT = {
         start = 6;
         finish = 6;
-        speed = 1;        
+        speed = 1;
     };
     HAND_IDLE = {
         start = 14;
         finish = 14;
-        speed = 1; 
+        speed = 1;
     };
     HEAD_INTRO = {
         start = 0;
@@ -114,7 +114,7 @@ local ANIMATION_INFO = {
     HAND_OPEN = {
         start = 14;
         finish = 20;
-        speed = 7; 
+        speed = 7;
     };
 }
 
@@ -179,7 +179,7 @@ local function slam(self)
     commonlib.shake_camera(14, 14, 7, 7, 7, false)
     local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMEC_STOMP, self.uid, 1, false)
     audio:set_volume(0.8)
-    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, self.uid, 1, false)
+    audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, self.uid, 1, false)
     audio:set_volume(0.65)
     audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
     audio:set_pitch(math.random(60, 80)/100)
@@ -204,7 +204,7 @@ local function yama_return(self, return_state)
         elseif movex < 0 then
             if movex > -0.015 then
                 movex = -0.015
-            end            
+            end
         end
         if movey > 0 then
             if movey < 0.015 then
@@ -213,7 +213,7 @@ local function yama_return(self, return_state)
         elseif movey < 0 then
             if movey > -0.015 then
                 movey = -0.015
-            end            
+            end
         end
         if math.abs(abs_x) < 0.015 then
             movex = 0
@@ -269,10 +269,10 @@ local function phase2_fireballs(self)
             if self ~= nil then
                 if not test_flag(self.flags, ENT_FLAG.DEAD) then
                     local m = get_entity(spawn(ENT_TYPE.MONS_MAGMAMAN, self.x, self.y+0.1, self.layer, math.random(-20, 20)/100, 0.1))
-                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1, false)
+                    commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1, false)
                     commonlib.shake_camera(12, 12, 3, 3, 3, false)
-                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_LAVAMANDER_ATK, self.uid, 1, false)
-                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1, false)
+                    commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_LAVAMANDER_ATK, self.uid, 1, false)
+                    commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1, false)
                     generate_world_particles(PARTICLEEMITTER.SMALLFLAME_WARP, m.uid)
                     generate_world_particles(PARTICLEEMITTER.SMALLFLAME_SMOKE, m.uid)
                 end
@@ -324,7 +324,6 @@ local function yama_head_fly(self)
     end
     -- If the player and yama are both within the range to chase, chase instead of fly
     for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-        local char = get_entity(v)
         local px, py, _ = get_position(v)
         local sx, sy, _ = get_position(self.uid)
         if commonlib.in_range(px, 14, 31) and commonlib.in_range(sx, 14, 31) and
@@ -352,10 +351,9 @@ local function yama_head_slam(self)
                 -- Slam SFX
                 slam(self)
                 -- Skulls
-                for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-                    local char = get_entity(v)
-                    local px, py, _ = get_position(v)
-                    for i=-1, 1 do 
+                for _, p in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
+                    local px, _, _ = get_position(p)
+                    for i=-1, 1 do
                         local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+i, 122.5, self.layer, 0, 0))
                         skull.angle = math.random(0, 51)/5
                     end
@@ -528,9 +526,11 @@ local function yama_idle(self)
         self.user_data.attack_timer = 0
         self.user_data.custom_animation = false
         -- Sfx
-        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.uid, 1, true)
+        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.uid, 1, false)
         set_global_timeout(function()
-            audio:stop()
+            if audio then
+                audio:stop()
+            end
         end, 110)
     end
 end
@@ -557,7 +557,7 @@ local function yama_head_rage(self)
         end
         -- Sound effect
         local audio = chosen_yell:play()
-        local x, y, _ = get_position(self.uid)
+        local x, y, l = get_position(self.uid)
         local sx, sy = screen_position(x, y)
         local d = screen_distance(distance(self.uid, self.uid))
         if players[1] ~= nil then
@@ -587,14 +587,16 @@ local function yama_head_rage(self)
             -- Update texture
             self:set_texture(yama_2_texture_id)
             -- Looping fire effect
-            local snd = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_FIREBUG_ATK_LOOP, self.uid, 1, true)
+            local snd = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_FIREBUG_ATK_LOOP, self.uid, 1, false)
             self:set_post_update_state_machine(function()
-                commonlib.update_sound_volume(snd, self.uid, 1)
+                if snd then
+                    commonlib.update_sound_volume(snd, self.uid, 1)
+                end
             end)
             --create blood
-            local x, y, l = get_position(self.uid)
+            x, y, _ = get_position(self.uid)
             for _=1, 12 do
-                local rubble = get_entity(spawn(ENT_TYPE.ITEM_BLOOD, x+math.random(-10, 10)/100, y+math.random(-10, 10)/100, l, math.random(-15, 15)/100, math.random(10, 15)/100))
+                spawn(ENT_TYPE.ITEM_BLOOD, x+math.random(-10, 10)/100, y+math.random(-10, 10)/100, l, math.random(-15, 15)/100, math.random(10, 15)/100)
             end
             -- Setup the red illumination
             self.user_data.ilum = create_illumination(Color:new(0.9, 0.6, 0, 1), 20, self.uid)
@@ -604,10 +606,12 @@ local function yama_head_rage(self)
             self.flags = clr_flag(self.flags, ENT_FLAG.INTERACT_WITH_SEMISOLIDS)
             -- Stop fire SFX
             self:set_pre_destroy(function()
-                snd:stop()
+                if snd then
+                    snd:stop()
+                end
             end)
             local cb = set_callback(function()
-                if snd ~= nil then
+                if snd then
                     snd:stop()
                 end
             end, ON.POST_ROOM_GENERATION)
@@ -953,7 +957,7 @@ local function yama_head_set(self)
         audio:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, d)
         audio:set_parameter(VANILLA_SOUND_PARAM.VALUE, sfx_volume)
         audio:set_volume(sfx_volume)
-        audio:set_pause(false)   
+        audio:set_pause(false)
         -- "Deactivate" hands (if they exist)
         if self.user_data.left_hand ~= nil then
             if type(self.user_data.left_hand.user_data) == "table" then
@@ -972,23 +976,21 @@ local function yama_head_set(self)
             end
         end
         -- After this whole effect (about 4.5 seconds) play the cue for the door opening (for speedrun sake the door is already unlocked, but plays no sfx)
-        set_timeout(function()
-            if state.screen == SCREEN.LEVEL then
-                local ps = nil
-                for _, v in ipairs(get_entities_by(0, MASK.PLAYER, self.layer)) do
-                    local player = get_entity(v)
-                    if player ~= nil then
-                        ps = player
-                        break
-                    end
-                end
-                --[[
-                if ps ~= nil then
-                    commonlib.play_vanilla_sound(VANILLA_SOUND.UI_SECRET, ps.uid, 1, false)
-                end
-                ]]
-            end
-        end, 180)
+        -- set_timeout(function()
+        --     if state.screen == SCREEN.LEVEL then
+        --         local ps = nil
+        --         for _, v in ipairs(get_entities_by(0, MASK.PLAYER, self.layer)) do
+        --             local player = get_entity(v)
+        --             if player ~= nil then
+        --                 ps = player
+        --                 break
+        --             end
+        --         end
+        --         if ps ~= nil then
+        --             commonlib.play_vanilla_sound(VANILLA_SOUND.UI_SECRET, ps.uid, 1, false)
+        --         end
+        --     end
+        -- end, 180)
     end)
     -- Trick character statemachines into thinking the entity can be picked up (entities with no gravity flagged cant be picked up)
     set_timeout(function()
@@ -1000,7 +1002,7 @@ local function yama_head_set(self)
                 self.standing_on_uid = char.standing_on_uid
                 -- We also need to move his head upwards to match the pickup hitbox
                 if test_flag(self.flags, ENT_FLAG.NO_GRAVITY) then
-                    self.y = self.y+1 
+                    self.y = self.y+1
                 end
             end)
             char:set_post_update_state_machine(function()
@@ -1020,17 +1022,14 @@ local function hand_slam(self)
     -- Slam
     local in_range = false
     local closest_player_distance = 999
-    local cpx, cpy = 0, 0
     for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
         local char = get_entity(v)
         local _, y, _ = get_position(self.uid)
-        local px, py, _ = get_position(char.uid)
+        local _, py, _ = get_position(char.uid)
         -- calculate closest player distance
         local dist = distance(self.uid, char.uid)
         if dist < closest_player_distance then
             closest_player_distance = dist
-            cpx = px
-            cpy = py
         end
         if py > y-5 then
             in_range = true
@@ -1085,9 +1084,11 @@ local function hand_slam(self)
                     self.flags = clr_flag(self.flags, ENT_FLAG.COLLIDES_WALLS)
                     self.flags = clr_flag(self.flags, ENT_FLAG.INTERACT_WITH_SEMISOLIDS)
                     -- Sfx
-                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.uid, 1, true)
+                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.uid, 1, false)
                     set_global_timeout(function()
-                        audio:stop()
+                        if audio then
+                            audio:stop()
+                        end
                     end, 55)
                     -- Let the other hand do whatever it wants, we'll sync with it later
                     if self.user_data.other_hand ~= nil then
@@ -1114,14 +1115,12 @@ local function hand_slam(self)
                 -- Slam SFX
                 slam(self)
                 -- Skulls
-                if true then
-                    -- Find players
-                    for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-                        local px, _, _ = get_position(v)
-                        for i=-1, 1 do
-                            local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+i, 122.5, self.layer, 0, 0))
-                            skull.angle = math.random(0, 51)/5
-                        end
+                -- Find players
+                for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
+                    local px, _, _ = get_position(v)
+                    for i=-1, 1 do
+                        local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+i, 122.5, self.layer, 0, 0))
+                        skull.angle = math.random(0, 51)/5
                     end
                 end
                 -- Clear the opposite hands wait + sync
@@ -1267,17 +1266,6 @@ end
 local function hand_slam_intro(self)
     -- Update animation
     self.user_data.animation_info = ANIMATION_INFO.HAND_IDLE
-    -- Slam
-    local in_range = false
-    for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-        local char = get_entity(v)
-        local _, y, _ = get_position(self.uid)
-        local _, py, _ = get_position(char.uid)
-        if py > y-3 then
-            in_range = true
-            break
-        end
-    end
     self.user_data.attack_timer = self.user_data.attack_timer - 1
     -- Sequence
     -- Have the hands rise up
@@ -1294,9 +1282,11 @@ local function hand_slam_intro(self)
         self.user_data.yama.user_data.attack_timer = 0
         self.user_data.yama.user_data.custom_animation = false
         -- Sfx
-        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.user_data.yama.uid, 1, true)
+        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.user_data.yama.uid, 1, false)
         set_global_timeout(function()
-            audio:stop()
+            if audio then
+                audio:stop()
+            end
         end, 110)
    end
     -- At 100 frames, slam down
@@ -1308,19 +1298,16 @@ local function hand_slam_intro(self)
             -- Slam SFX
             slam(self)
             -- Skulls (intro skulls spawn offset)
-            if true then
                 -- Find players
-                for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-                    local char = get_entity(v)
-                    local px, py, _ = get_position(v)
-                    for i=-1, 1 do 
-                        local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px-6+i, 122.5, self.layer, 0, 0))
-                        skull.angle = math.random(0, 51)/5
-                    end
-                    for i=-1, 1 do 
-                        local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+6+i, 122.5, self.layer, 0, 0))
-                        skull.angle = math.random(0, 51)/5
-                    end
+            for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
+                local px, _, _ = get_position(v)
+                for i=-1, 1 do
+                    local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px-6+i, 122.5, self.layer, 0, 0))
+                    skull.angle = math.random(0, 51)/5
+                end
+                for i=-1, 1 do
+                    local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+6+i, 122.5, self.layer, 0, 0))
+                    skull.angle = math.random(0, 51)/5
                 end
             end
             -- After slamming enter the regular slam state
