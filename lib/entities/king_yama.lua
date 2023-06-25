@@ -69,7 +69,6 @@ local function create_yama_gib(x, y, l, vx, vy, frame)
     end)
 end
 -- Sound effect path
-local fart = create_sound('res/sounds/fart.wav')
 local yell = create_sound('res/sounds/yamascream.wav')
 local yell2 = create_sound('res/sounds/yamascream2.wav')
 local yell3 = create_sound('res/sounds/yamascream3.wav')
@@ -80,7 +79,6 @@ local hurt4 = create_sound('res/sounds/yamahurt4.wav')
 local hurt5 = create_sound('res/sounds/yamahurt5.wav')
 local hurt6 = create_sound('res/sounds/yamahurt6.wav')
 local defeat = create_sound('res/sounds/yamadead.wav')
-local sfx = create_sound('')
 local sfx_volume = 0.2
 -- Custom ent type (we need yama's pieces to be fireproof)
 local yama_piece = EntityDB:new(ENT_TYPE.MONS_AMMIT)
@@ -179,9 +177,9 @@ end, SPAWN_TYPE.ANY, 0, {ENT_TYPE.MONS_YAMA})
 local function slam(self)
     -- This does the screen shake and fx of a Yama hand slam. Also spawns skulls above player(s)
     commonlib.shake_camera(14, 14, 7, 7, 7, false)
-    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMEC_STOMP, self.uid, 1)
+    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMEC_STOMP, self.uid, 1, false)
     audio:set_volume(0.8)
-    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, self.uid, 1)
+    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, self.uid, 1, false)
     audio:set_volume(0.65)
     audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
     audio:set_pitch(math.random(60, 80)/100)
@@ -266,15 +264,15 @@ local function phase2_fireballs(self)
         self.user_data.animation_info = ANIMATION_INFO.HEAD_SPIT
         self.user_data.animation_frame = self.user_data.animation_info.start
         self.animation_frame = self.user_data.animation_info.start
-        commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_FROG_GIANT_OPEN, self.uid, 1)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_FROG_GIANT_OPEN, self.uid, 1, false)
         set_timeout(function()
             if self ~= nil then
                 if not test_flag(self.flags, ENT_FLAG.DEAD) then
                     local m = get_entity(spawn(ENT_TYPE.MONS_MAGMAMAN, self.x, self.y+0.1, self.layer, math.random(-20, 20)/100, 0.1))
-                    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1)
+                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1, false)
                     commonlib.shake_camera(12, 12, 3, 3, 3, false)
-                    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_LAVAMANDER_ATK, self.uid, 1)
-                    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1)
+                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_LAVAMANDER_ATK, self.uid, 1, false)
+                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1, false)
                     generate_world_particles(PARTICLEEMITTER.SMALLFLAME_WARP, m.uid)
                     generate_world_particles(PARTICLEEMITTER.SMALLFLAME_SMOKE, m.uid)
                 end
@@ -409,7 +407,7 @@ local function yama_idle(self)
             set_timeout(function()
                 -- The blackbars dont handle moving the camera the way we are and it makes the bars shakey
                 -- To fix this, we're just gonna make the bars show up later!
-                self.user_data.blackbars = get_entity(spawn(ENT_TYPE.LOGICAL_CINEMATIC_ANCHOR, 0, 0, self.layer, 0, 0))           
+                self.user_data.blackbars = get_entity(spawn(ENT_TYPE.LOGICAL_CINEMATIC_ANCHOR, 0, 0, self.layer, 0, 0))
             end, 40)
             -- Hide HUD
             state.level_flags = set_flag(state.level_flags, 22)
@@ -423,15 +421,15 @@ local function yama_idle(self)
         -- Set camera to Yama
         if self.user_data.cutscene_timer < 599 then
             if state.camera.focus_offset_y < 24 then
-                state.camera.focus_offset_y = state.camera.focus_offset_y + 0.2 
+                state.camera.focus_offset_y = state.camera.focus_offset_y + 0.2
             end
         end
         -- Skip cutscene
-        if self.user_data.cutscene_timer < 500 and self.user_data.cutscene_timer > 20 then
-            for _, v in ipairs(get_entities_by({}, MASK.PLAYER, self.layer)) do
-                local char = get_entity(v)
-                -- Jump button
-                if char.input.buttons == 1 then
+        if self.user_data.cutscene_timer < 500 and self.user_data.cutscene_timer > 20 and not test_flag(state.pause, 1) then
+            for _, char in pairs(players) do
+                if test_mask(char.input.buttons, INPUTS.JUMP)
+                or test_mask(char.input.buttons, INPUTS.BOMB)
+                then
                     self.user_data.cutscene_timer = 1
                 end
             end
@@ -457,13 +455,13 @@ local function yama_idle(self)
                                 --  Face right and jump right
                                 mons.flags = clr_flag(mons.flags, ENT_FLAG.FACING_LEFT)
                                 mons.velocityy = 0.10
-                                mons.velocityx = 0.17  
+                                mons.velocityx = 0.17
                                 mons.x = mons.x + 2
-                                mons.y = mons.y + 1.5                      
+                                mons.y = mons.y + 1.5
                             end
                         end
                     end
-                end           
+                end
             end, 10)
             -- Make players damageable and able to move, also give iframes
             for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
@@ -499,7 +497,7 @@ local function yama_idle(self)
         end
         -- Warning
         if self.user_data.imp_timer == 30 then
-            commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_FROG_GIANT_OPEN, self.uid, 1)
+            commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_FROG_GIANT_OPEN, self.uid, 1, false)
         end
         if self.user_data.imp_timer == 0 then
             -- Update animation info
@@ -514,8 +512,8 @@ local function yama_idle(self)
                 get_entity(imp.carrying_uid):destroy()
                 -- effects
                 commonlib.shake_camera(12, 12, 3, 3, 3, false)
-                local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_LAVAMANDER_ATK, self.uid, 1)
-                local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1)
+                commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_LAVAMANDER_ATK, self.uid, 1, false)
+                commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1, false)
                 generate_world_particles(PARTICLEEMITTER.SMALLFLAME_WARP, imp.uid)
                 generate_world_particles(PARTICLEEMITTER.SMALLFLAME_SMOKE, imp.uid)
             end, 18)
@@ -530,7 +528,7 @@ local function yama_idle(self)
         self.user_data.attack_timer = 0
         self.user_data.custom_animation = false
         -- Sfx
-        local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.uid, 1)
+        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.uid, 1, true)
         set_global_timeout(function()
             audio:stop()
         end, 110)
@@ -589,7 +587,7 @@ local function yama_head_rage(self)
             -- Update texture
             self:set_texture(yama_2_texture_id)
             -- Looping fire effect
-            local snd = commonlib.play_sound_at_entity(VANILLA_SOUND.ENEMIES_FIREBUG_ATK_LOOP, self.uid, 1)
+            local snd = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_FIREBUG_ATK_LOOP, self.uid, 1, true)
             self:set_post_update_state_machine(function()
                 commonlib.update_sound_volume(snd, self.uid, 1)
             end)
@@ -686,7 +684,7 @@ local function yama_head_chase(self)
     elseif movex < 0 then
         if movex > -0.015 then
             movex = -0.015
-        end            
+        end
     end
     if movey > 0 then
         if movey < 0.015 then
@@ -695,7 +693,7 @@ local function yama_head_chase(self)
     elseif movey < 0 then
         if movey > -0.015 then
             movey = -0.015
-        end            
+        end
     end
     if math.abs(abs_x) < 0.015 then
         movex = 0
@@ -719,7 +717,6 @@ local function yama_head_chase(self)
     -- If there isnt a player in the chase range go back to flying
     local in_range = false
     for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-        local char = get_entity(v)
         local px, py, _ = get_position(v)
         if commonlib.in_range(px, 14, 31) and commonlib.in_range(py, 111, 123) then
             in_range = true
@@ -802,7 +799,7 @@ local function yama_head_update(self)
     if self.user_data.right_hand ~= nil then
         if type(self.user_data.right_hand.user_data) == "table" then
             if self.user_data.right_hand.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HAND then
-                righthand = true 
+                righthand = true
             end
         end
     end
@@ -934,7 +931,6 @@ local function yama_head_set(self)
     end)
     -- Death sound
     self:set_pre_kill(function()
-        local x, y, l = get_position(self.uid)
         -- gibs
         for i=1, 2 do
             create_yama_gib(self.x+math.random(-10, 10)/100, self.y+math.random(-10, 10)/100, self.layer, math.random(-3, 3)/30, math.random(3, 7)/25, 0)
@@ -974,7 +970,7 @@ local function yama_head_set(self)
                     self.user_data.right_hand.user_data.attack_timer = 240
                 end
             end
-        end 
+        end
         -- After this whole effect (about 4.5 seconds) play the cue for the door opening (for speedrun sake the door is already unlocked, but plays no sfx)
         set_timeout(function()
             if state.screen == SCREEN.LEVEL then
@@ -988,7 +984,7 @@ local function yama_head_set(self)
                 end
                 --[[
                 if ps ~= nil then
-                    commonlib.play_sound_at_entity(VANILLA_SOUND.UI_SECRET, ps.uid, 1)
+                    commonlib.play_vanilla_sound(VANILLA_SOUND.UI_SECRET, ps.uid, 1, false)
                 end
                 ]]
             end
@@ -1010,7 +1006,7 @@ local function yama_head_set(self)
             char:set_post_update_state_machine(function()
                 self.standing_on_uid = real_standing_uid
                 if test_flag(self.flags, ENT_FLAG.NO_GRAVITY) then
-                    self.y = self.y-1 
+                    self.y = self.y-1
                 end
             end)
         end
@@ -1089,7 +1085,7 @@ local function hand_slam(self)
                     self.flags = clr_flag(self.flags, ENT_FLAG.COLLIDES_WALLS)
                     self.flags = clr_flag(self.flags, ENT_FLAG.INTERACT_WITH_SEMISOLIDS)
                     -- Sfx
-                    local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.uid, 1)
+                    local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.uid, 1, true)
                     set_global_timeout(function()
                         audio:stop()
                     end, 55)
@@ -1121,9 +1117,8 @@ local function hand_slam(self)
                 if true then
                     -- Find players
                     for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-                        local char = get_entity(v)
-                        local px, py, _ = get_position(v)
-                        for i=-1, 1 do 
+                        local px, _, _ = get_position(v)
+                        for i=-1, 1 do
                             local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+i, 122.5, self.layer, 0, 0))
                             skull.angle = math.random(0, 51)/5
                         end
@@ -1163,7 +1158,6 @@ local function hand_swing(self)
         local cpx, cpy = 0, 0
         for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
             local char = get_entity(v)
-            local _, y, _ = get_position(self.uid)
             local px, py, _ = get_position(char.uid)
             -- calculate closest player distance
             local dist = distance(self.uid, char.uid)
@@ -1178,7 +1172,7 @@ local function hand_swing(self)
     end
     -- Sound effects!
     if self.user_data.attack_timer == 55 then
-        commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_TOSS, self.uid, 1)
+        commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_TOSS, self.uid, 1, false)
     end
     -- Go towards the target position (set before this state)
     if self.user_data.attack_timer >= 55 then
@@ -1197,7 +1191,7 @@ local function hand_swing(self)
         elseif movex < 0 then
             if movex > -0.015 then
                 movex = -0.015
-            end            
+            end
         end
         if movey > 0 then
             if movey < 0.015 then
@@ -1206,7 +1200,7 @@ local function hand_swing(self)
         elseif movey < 0 then
             if movey > -0.015 then
                 movey = -0.015
-            end            
+            end
         end
         if math.abs(abs_x) < 0.25 then
             movex = 0
@@ -1237,8 +1231,8 @@ local function hand_magmars(self)
         self.animation_frame = 18
         -- Whenever the counter is divisible by 25, spawn a magmaman
         if math.fmod(self.user_data.attack_timer, 25) == 1 then
-            local m = get_entity(spawn(ENT_TYPE.MONS_MAGMAMAN, self.x, self.y+0.1, self.layer, math.random(-35, 35)/100, 0.235))
-            local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1)
+            spawn(ENT_TYPE.MONS_MAGMAMAN, self.x, self.y+0.1, self.layer, math.random(-35, 35)/100, 0.235)
+            commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1, false)
         end
     end
     -- When the animation ends go to the "closed hand" animation
@@ -1300,7 +1294,7 @@ local function hand_slam_intro(self)
         self.user_data.yama.user_data.attack_timer = 0
         self.user_data.yama.user_data.custom_animation = false
         -- Sfx
-        local audio = commonlib.play_sound_at_entity(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.user_data.yama.uid, 1)
+        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, self.user_data.yama.uid, 1, true)
         set_global_timeout(function()
             audio:stop()
         end, 110)

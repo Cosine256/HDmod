@@ -83,7 +83,7 @@ local function hell_miniboss_update(ent)
             move_dir = -1
         end
         local x, y, l = get_position(ent.uid)
-        local px, _, _ = get_position(players[1].uid)
+        local px, py, _ = get_position(players[1].uid)
         --if there's at least a single tile gap to cross and facing the player, switch to JUMP.
         if (
             ent.standing_on_uid ~= -1
@@ -180,43 +180,6 @@ local function hell_miniboss_update(ent)
             ent.cooldown_timer = HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER
             ent.chatting_to_uid = 0
             ent.walk_pause_timer = 45 + prng:random_int(-10, 10, PRNG_CLASS.AI)
-        end
-        --animations
-        if ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-5 then
-            ent.animation_frame = 17
-        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-5 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-10 then
-            ent.animation_frame = 18
-        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-10 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-15 then
-            ent.animation_frame = 19
-        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-15 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-20 then
-            ent.animation_frame = 20
-        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-20 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-25 then
-            ent.animation_frame = 21
-        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-25 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-30 then
-            ent.animation_frame = 22
-        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-30 and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-35 then
-            ent.animation_frame = 23
-        elseif ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-35 then
-            ent.animation_frame = 24
-        else
-            ent.animation_frame = 0
-        end
-    elseif ent.move_state == HELL_MINIBOSS_STATE.THROW_BOMB then --THROW BOMB
-        ent.cooldown_timer = ent.cooldown_timer - 1
-        if ent.cooldown_timer == HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-16 then
-            local x, y, l = get_position(ent.uid)
-            local move_dir = 1
-            if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then
-                move_dir = -1
-            end
-            spawn(ENT_TYPE.ITEM_BOMB, x+0.7*move_dir, y-0.1, l, 0.15*move_dir, 0.004)
-            commonlib.play_sound_at_entity(VANILLA_SOUND.PLAYER_TOSS_ROPE, ent.uid)
-        end
-        if ent.cooldown_timer == HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-35 then
-            ent.move_state = HELL_MINIBOSS_STATE.WALK_TO_PLAYER
-            ent.cooldown_timer = HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER
-            ent.chatting_to_uid = 0
-            ent.walk_pause_timer = 45 + math.random(-10, 10)
         end
         --animations
         if ent.cooldown_timer <= HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER and ent.cooldown_timer > HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER-5 then
