@@ -75,14 +75,13 @@ local function onlevel_replace_border_textures()
 end
 
 local function onlevel_remove_cursedpot()
-	local cursedpot_uids = get_entities_by_type(ENT_TYPE.ITEM_CURSEDPOT)
-	if #cursedpot_uids > 0 and options.hd_og_cursepot_enable == false then
-		local xmin, ymin, _, _ = get_bounds()
-		local void_x = xmin - 3.5
-		local void_y = ymin
-		spawn_entity(ENT_TYPE.FLOOR_BORDERTILE, void_x, void_y, LAYER.FRONT, 0, 0)
-		for _, cursedpot_uid in ipairs(cursedpot_uids) do
-			move_entity(cursedpot_uid, void_x, void_y+1, 0, 0)
+	if not options.hd_og_cursepot_enable then
+		local cursedpot_uids = get_entities_by_type(ENT_TYPE.ITEM_CURSEDPOT)
+		for _, uid in pairs(cursedpot_uids) do
+			local pot = get_entity(uid)
+			if pot then
+				pot:destroy()
+			end
 		end
 	end
 end
