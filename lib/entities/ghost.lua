@@ -18,15 +18,15 @@ set_callback(function()
 end, ON.START)
 
 set_callback(function()
-	if (
-		worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
-	) then
-		set_ghost_spawn_times(GHOST_TIME, GHOST_TIME-1800)
-	elseif(
+	if(
 		worldlib.HD_WORLDSTATE_STATE ~= worldlib.HD_WORLDSTATE_STATUS.NORMAL
 		or feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true
 	) then
 		set_ghost_spawn_times(-1, -1)
+	elseif (
+		worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
+	) then
+		set_ghost_spawn_times(GHOST_TIME, GHOST_TIME-1800)
 	end
 end, ON.LEVEL)
 
