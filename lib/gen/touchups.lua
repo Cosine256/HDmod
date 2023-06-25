@@ -82,8 +82,7 @@ local function onlevel_remove_cursedpot()
 		local void_y = ymin
 		spawn_entity(ENT_TYPE.FLOOR_BORDERTILE, void_x, void_y, LAYER.FRONT, 0, 0)
 		for _, cursedpot_uid in ipairs(cursedpot_uids) do
-			local pot = get_entity(cursedpot_uid)
-			pot:destroy()
+			move_entity(cursedpot_uid, void_x, void_y+1, 0, 0)
 		end
 	end
 end
