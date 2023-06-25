@@ -18,6 +18,7 @@ local pushblocklib = require 'lib.entities.pushblock'
 local idolplatformlib = require 'lib.entities.idol_platform'
 local ladderlib = require 'lib.entities.ladder'
 local succubuslib = require 'lib.entities.succubus'
+local yamalib = require 'lib.entities.king_yama'
 local coffinlib = require 'lib.entities.coffin'
 local liquidfalllib = require 'lib.entities.liquidfall'
 local altarlib = require 'lib.entities.altar'
@@ -1370,7 +1371,15 @@ module.HD_TILENAME = {
 			}
 		},
 		description = "Forcefield top",
-	}
+	},
+	["_"] = {
+		phases = {
+			[1] = {
+				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_PAGODA_PLATFORM, x, y, l) end,},
+			}
+		},
+		description = "Platform",
+	},
 }
 
 

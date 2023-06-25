@@ -166,7 +166,7 @@ local function update_custom_death_messages()
             end
             if d.ent_type == HD_ENT_TYPE.MONS_HELL_MINIBOSS then
                 change_string(strings[I.QUILLBACK_TITLE_ID], "CLOBBERED")
-                change_string(strings[I.QUILLBACK_TEXT_ID], "I Got butchered by an ungulate.")                   
+                change_string(strings[I.QUILLBACK_TEXT_ID], "I got butchered by an ungulate.")                   
             end
             if d.ent_type == HD_ENT_TYPE.MONS_PIRANHA then
                 change_string(strings[I.TADPOLE_TITLE_ID], "MUNCHED")

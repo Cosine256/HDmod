@@ -37,16 +37,19 @@ do
     oxface_texture_id = define_texture(oxface_texture_def)
 end
 
-local function hell_miniboss_set(uid, texture_id)
+local function hell_miniboss_set(uid, texture_id, is_horsehead)
     local ent = get_entity(uid)
     ent:set_texture(texture_id)
     local x, y, l = get_position(uid)
     -- user_data
     ent.user_data = {
         ent_type = HD_ENT_TYPE.MONS_HELL_MINIBOSS;
+        is_horsehead = is_horsehead;
     };
+    -- shorten their hitbox to reflect their sprites
+    ent.hitboxy = ent.hitboxy*1
     --repurposed variables
-    ent.move_state = HELL_MINIBOSS_STATE.WALK_TO_PLAYER --logic
+    ent.move_state = HELL_MINIBOSS_STATE.JUMP_CUTSCENE --logic
     ent.price = 0 --cooldown so whip doesnt hit multiple times
     ent.cooldown_timer = HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER --sequences the jump and bomb attack
     ent.walk_pause_timer = HELL_MINIBOSS_AI_TIMER.WALK_PAUSE_TIMER --same as vanilla
@@ -80,7 +83,7 @@ local function hell_miniboss_update(ent)
             move_dir = -1
         end
         local x, y, l = get_position(ent.uid)
-        local px, _, _ = get_position(players[1].uid)
+        local px, py, _ = get_position(players[1].uid)
         --if there's at least a single tile gap to cross and facing the player, switch to JUMP.
         if (
             ent.standing_on_uid ~= -1
@@ -96,7 +99,7 @@ local function hell_miniboss_update(ent)
                 ent.chatting_to_uid = 1
             end
             --if the player is close enough, do an attack
-            if math.abs(px-x) <= 4 then
+            if math.abs(px-x) <= 4 and math.abs(py-y) <= 6 then
                 ent.move_state = HELL_MINIBOSS_STATE.JUMP
                 ent.state = 12
                 if prng:random_chance(3, PRNG_CLASS.AI) then
@@ -198,6 +201,13 @@ local function hell_miniboss_update(ent)
         else
             ent.animation_frame = 0
         end
+    elseif ent.move_state == HELL_MINIBOSS_STATE.JUMP_CUTSCENE then -- CUTSCENE
+        -- Basically wait until an outside entity takes us off the ground (under regular circumstances this is from the Yama entity)
+        if not ent:can_jump() then
+            ent.move_state = HELL_MINIBOSS_STATE.JUMP
+            ent.state = 12
+            ent.cooldown_timer = HELL_MINIBOSS_AI_TIMER.COOLDOWN_TIMER         
+        end
     end
 end
 local function take_damage_from_whip(ent, collision_ent)
@@ -211,7 +221,7 @@ end
 local function create_hell_miniboss(x, y, l, is_horsehead)
     is_horsehead = is_horsehead or false
     local hell_miniboss = spawn(ENT_TYPE.MONS_CAVEMAN_BOSS, x, y, l, 0, 0)
-    hell_miniboss_set(hell_miniboss, is_horsehead and horsehead_texture_id or oxface_texture_id)
+    hell_miniboss_set(hell_miniboss, is_horsehead and horsehead_texture_id or oxface_texture_id, is_horsehead)
     set_post_statemachine(hell_miniboss, hell_miniboss_update)
     set_pre_collision2(hell_miniboss, take_damage_from_whip)
 end
