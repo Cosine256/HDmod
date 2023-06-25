@@ -47,7 +47,7 @@ local function create_yama_gib(x, y, l, vx, vy, frame)
     -- explodes into blood chunks when they hit the ground
     local gib = get_entity(spawn(ENT_TYPE.ITEM_ROCK, x, y, l, vx, vy))
     gib.flags = set_flag(gib.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
-    if math.random(2) == 1 then gib.flags = set_flag(gib.flags, ENT_FLAG.FACING_LEFT) end
+    if prng:random_chance(2, PRNG_CLASS.PARTICLES) then gib.flags = set_flag(gib.flags, ENT_FLAG.FACING_LEFT) end
     gib:set_texture(yama_debris_texture_id)
     gib.width = gib.width*0.75
     gib.height = gib.height*0.75
@@ -56,13 +56,18 @@ local function create_yama_gib(x, y, l, vx, vy, frame)
     local lor = 1
     if test_flag(gib.flags, ENT_FLAG.FACING_LEFT) then lor = -1 end
     gib:set_post_update_state_machine(function(self)
-        local sx, sy, sl = get_position(self.uid)
+        local x, y, l = get_position(self.uid)
         self.animation_frame = frame
         self.angle = self.angle + math.abs(self.velocityx*2)*lor + math.abs((self.velocityy*0.5))*lor
         if test_flag(self.more_flags, ENT_MORE_FLAG.HIT_GROUND) then
             --create blood
             for _=1, 2 do
-                spawn(ENT_TYPE.ITEM_BLOOD, sx+math.random(-10, 10)/100, sy+math.random(-10, 10)/100, sl, math.random(-15, 15)/100, math.random(10, 15)/100)
+                spawn(ENT_TYPE.ITEM_BLOOD,
+                x+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100,
+                y+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100,
+                l,
+                prng:random_int(-15, 15, PRNG_CLASS.PARTICLES)/100,
+                prng:random_int(10, 15, PRNG_CLASS.PARTICLES)/100)
             end
             self:destroy()
         end
@@ -181,8 +186,8 @@ local function slam(self)
     audio:set_volume(0.8)
     audio = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_OLMITE_ARMOR_BREAK, self.uid, 1, false)
     audio:set_volume(0.65)
-    audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, math.random(2, 3))
-    audio:set_pitch(math.random(60, 80)/100)
+    audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, prng:random_int(2, 3, PRNG_CLASS.PARTICLES))
+    audio:set_pitch(prng:random_int(60, 80, PRNG_CLASS.PARTICLES)/100)
 end
 local function yama_return(self, return_state)
     if self.overlay == nil then
@@ -268,7 +273,7 @@ local function phase2_fireballs(self)
         set_timeout(function()
             if self ~= nil then
                 if not test_flag(self.flags, ENT_FLAG.DEAD) then
-                    local m = get_entity(spawn(ENT_TYPE.MONS_MAGMAMAN, self.x, self.y+0.1, self.layer, math.random(-20, 20)/100, 0.1))
+                    local m = get_entity(spawn(ENT_TYPE.MONS_MAGMAMAN, self.x, self.y+0.1, self.layer, prng:random_int(-20, 20, PRNG_CLASS.AI)/100, 0.1))
                     commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1, false)
                     commonlib.shake_camera(12, 12, 3, 3, 3, false)
                     commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_LAVAMANDER_ATK, self.uid, 1, false)
@@ -355,25 +360,25 @@ local function yama_head_slam(self)
                     local px, _, _ = get_position(p)
                     for i=-1, 1 do
                         local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+i, 122.5, self.layer, 0, 0))
-                        skull.angle = math.random(0, 51)/5
+                        skull.angle = prng:random_int(0, 51, PRNG_CLASS.PARTICLES)/5
                     end
                 end
                 -- Go back to fly state
                 self.user_data.attack_timer = 180
                 self.user_data.state = HEAD_STATE.FLY
             end
-        end  
-    end  
+        end
+    end
 end
 local function create_yama_flame(x, y, l)
-    local f = get_entity(spawn(ENT_TYPE.ITEM_ROCK, x+math.random(-5, 5)/10, y+math.random(-5, 5)/10, l, math.random(-11, 11)/650, math.random(3, 15)/350))
+    local f = get_entity(spawn(ENT_TYPE.ITEM_ROCK, x+prng:random_int(-5, 5, PRNG_CLASS.PARTICLES)/10, y+prng:random_int(-5, 5, PRNG_CLASS.PARTICLES)/10, l, prng:random_int(-11, 11, PRNG_CLASS.PARTICLES)/650, prng:random_int(3, 15, PRNG_CLASS.PARTICLES)/350))
     f.flags = set_flag(f.flags, ENT_FLAG.NO_GRAVITY)
     f.flags = set_flag(f.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
     f.flags = clr_flag(f.flags, ENT_FLAG.COLLIDES_WALLS)
     f.user_data = {
-        turn_rate = math.random(-3, 3)/100;
-        decay_timer = math.random(90, 110);
-        frame = math.random(1, 3);
+        turn_rate = prng:random_int(-3, 3, PRNG_CLASS.PARTICLES)/100;
+        decay_timer = prng:random_int(90, 110, PRNG_CLASS.PARTICLES);
+        frame = prng:random_index(3, PRNG_CLASS.PARTICLES);
     }
     f:set_texture(TEXTURE.DATA_TEXTURES_FX_SMALL_0)
     f:set_post_update_state_machine(function(self)
@@ -385,9 +390,9 @@ local function create_yama_flame(x, y, l)
         f.color:set_rgba(255, 255, 255, math.floor(255*self.user_data.decay_timer/90))
         self.angle = self.angle + self.user_data.turn_rate
         -- Random deviation
-        if math.random(100) then
-            self.velocityx = math.random(-11, 11)/650
-        end
+        -- if prng:random_index(100, PRNG_CLASS.PARTICLES) then
+            self.velocityx = prng:random_int(-11, 11, PRNG_CLASS.PARTICLES)/650
+        -- end
     end)
     generate_world_particles(PARTICLEEMITTER.LAVAHEAT, f.uid)
     generate_world_particles(PARTICLEEMITTER.SMALLFLAME_SMOKE, f.uid)
@@ -548,7 +553,7 @@ local function yama_head_rage(self)
     end
     -- Scream + sfx
     if self.user_data.attack_timer == 100 then
-        local roll = math.random(2)
+        local roll = prng:random_index(2, PRNG_CLASS.AI)
         local chosen_yell = yell
         if roll == 1 then
             chosen_yell = yell2
@@ -595,8 +600,13 @@ local function yama_head_rage(self)
             end)
             --create blood
             x, y, _ = get_position(self.uid)
-            for _=1, 12 do
-                spawn(ENT_TYPE.ITEM_BLOOD, x+math.random(-10, 10)/100, y+math.random(-10, 10)/100, l, math.random(-15, 15)/100, math.random(10, 15)/100)
+            for i=1, 12 do
+                spawn(ENT_TYPE.ITEM_BLOOD,
+                x+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100,
+                y+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100,
+                l,
+                prng:random_int(-15, 15, PRNG_CLASS.PARTICLES)/100,
+                prng:random_int(10, 15, PRNG_CLASS.PARTICLES)/100)
             end
             -- Setup the red illumination
             self.user_data.ilum = create_illumination(Color:new(0.9, 0.6, 0, 1), 20, self.uid)
@@ -897,12 +907,12 @@ local function yama_head_set(self)
     self:set_post_damage(animate_entity)
     -- Sound effects when getting hurt (sometimes)
     self:set_post_damage(function()
-        if math.random(4) == 1 and self ~= nil then
+        if prng:random_chance(4, PRNG_CLASS.AI) and self ~= nil then
             if self.user_data.fireball_timer > 0 then
                 self.user_data.hurt_timer = 20
             end
-            --needs more variation, like atelast 6 different sounds
-            local roll = math.random(5)
+            --needs more variation, like at least 6 different sounds
+            local roll = prng:random_index(5, PRNG_CLASS.AI)
             local chosen_hurt = hurt
             if roll == 1 then
                 chosen_hurt = hurt2
@@ -937,10 +947,10 @@ local function yama_head_set(self)
     self:set_pre_kill(function()
         -- gibs
         for i=1, 2 do
-            create_yama_gib(self.x+math.random(-10, 10)/100, self.y+math.random(-10, 10)/100, self.layer, math.random(-3, 3)/30, math.random(3, 7)/25, 0)
+            create_yama_gib(self.x+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, self.y+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, self.layer, prng:random_int(-3, 3, PRNG_CLASS.PARTICLES)/30, prng:random_int(3, 7, PRNG_CLASS.PARTICLES)/25, 0)
         end
         for i=1, 4 do
-            create_yama_gib(self.x+math.random(-10, 10)/100, self.y+math.random(-10, 10)/100, self.layer, math.random(-3, 3)/30, math.random(3, 7)/26, 1)
+            create_yama_gib(self.x+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, self.y+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, self.layer, prng:random_int(-3, 3, PRNG_CLASS.PARTICLES)/30, prng:random_int(3, 7, PRNG_CLASS.PARTICLES)/26, 1)
         end
         -- Sound effect
         local audio = defeat:play()
@@ -1043,7 +1053,7 @@ local function hand_slam(self)
     if self.overlay == nil and not self.user_data.wait then
         -- Decide a special attack if the player is near
         if self.user_data.attack_timer == 200 and closest_player_distance < 4 then
-            local roll = math.random(4)
+            local roll = prng:random_index(4, PRNG_CLASS.AI)
             if roll == 1 then
                 -- MAGMAR SPAWNING HAND STATE
                 -- Since I programmed this in the complete wrong way, we will hijack here and switch states and clear some timers
@@ -1120,7 +1130,7 @@ local function hand_slam(self)
                     local px, _, _ = get_position(v)
                     for i=-1, 1 do
                         local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+i, 122.5, self.layer, 0, 0))
-                        skull.angle = math.random(0, 51)/5
+                        skull.angle = prng:random_int(0, 51, PRNG_CLASS.PARTICLES)/5
                     end
                 end
                 -- Clear the opposite hands wait + sync
@@ -1230,7 +1240,7 @@ local function hand_magmars(self)
         self.animation_frame = 18
         -- Whenever the counter is divisible by 25, spawn a magmaman
         if math.fmod(self.user_data.attack_timer, 25) == 1 then
-            spawn(ENT_TYPE.MONS_MAGMAMAN, self.x, self.y+0.1, self.layer, math.random(-35, 35)/100, 0.235)
+            spawn(ENT_TYPE.MONS_MAGMAMAN, self.x, self.y+0.1, self.layer, prng:random_int(-35, 35, PRNG_CLASS.AI)/100, 0.235)
             commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_FIRE_IGNITE, self.uid, 1, false)
         end
     end
@@ -1303,11 +1313,11 @@ local function hand_slam_intro(self)
                 local px, _, _ = get_position(v)
                 for i=-1, 1 do
                     local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px-6+i, 122.5, self.layer, 0, 0))
-                    skull.angle = math.random(0, 51)/5
+                    skull.angle = prng:random_int(0, 51, PRNG_CLASS.PARTICLES)/5
                 end
                 for i=-1, 1 do
                     local skull = get_entity(spawn(ENT_TYPE.ITEM_SKULL, px+6+i, 122.5, self.layer, 0, 0))
-                    skull.angle = math.random(0, 51)/5
+                    skull.angle = prng:random_int(0, 51, PRNG_CLASS.PARTICLES)/5
                 end
             end
             -- After slamming enter the regular slam state
@@ -1431,7 +1441,7 @@ local function yama_hand_set(self)
     self:set_pre_kill(function(self)
         -- gibs
         for i=1, 5 do
-            create_yama_gib(self.x+math.random(-10, 10)/100, self.y+math.random(-10, 10)/100, self.layer, math.random(-3, 3)/30, math.random(3, 7)/26, 2)
+            create_yama_gib(self.x+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, self.y+prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, self.layer, prng:random_int(-3, 3, PRNG_CLASS.PARTICLES)/30, prng:random_int(3, 7, PRNG_CLASS.PARTICLES)/26, 2)
         end
         if self.user_data.yama ~= nil then
             if type(self.user_data.yama.user_data) == "table" then
@@ -1452,7 +1462,7 @@ local function yama_hand_set(self)
                     self.user_data.other_hand.user_data.wait = false
                 end
             end
-        end        
+        end
     end)
     -- Trick character statemachines into thinking the entity can be picked up (entities with no gravity flagged cant be picked up)
     set_timeout(function()
