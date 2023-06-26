@@ -39,7 +39,7 @@ end
 
 module.HELL_CUSTOM_MUSIC = {
     settings = {
-        base_volume = 0.5,
+        base_volume = 0.4,
         start_sound_id = "intro",
         sounds = {
             {
