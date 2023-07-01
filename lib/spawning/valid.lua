@@ -136,7 +136,7 @@ end
 function module.is_valid_climbable_space(x, y, l)
 	return not (
 		get_entities_at(0, MASK.FLOOR | MASK.ACTIVEFLOOR, x, y-1, l, 0.5)[1] ~= nil
-		or is_door_at(x, y-2, l)
+		or is_door_at(x, y-1, l)
 		or is_liquid_at(x, y-1)
 		or is_fountainhead_at(x, y-1)
 	)
@@ -182,7 +182,8 @@ end
 
 local function is_valid_monster_floor(x, y, l)
 	local flags = get_entity_flags(get_grid_entity_at(x, y, l))
-    return test_flag(flags, ENT_FLAG.SOLID) or test_flag(flags, ENT_FLAG.IS_PLATFORM)
+    return test_flag(flags, ENT_FLAG.SOLID)
+	--or test_flag(flags, ENT_FLAG.IS_PLATFORM)
 end
 
 local function default_ground_monster_condition(x, y, l)
@@ -613,9 +614,16 @@ function module.is_valid_arrowtrap_spawn(x, y, l)
     return true
 end
 
-local function is_valid_tiki_crushtrap_room(x, y, _)
+local function is_valid_generic_trap_room(x, y)
 	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+
+	-- avoid temple altar rooms
+	if state.theme == THEME.TEMPLE
+	and _subchunk_id == roomdeflib.HD_SUBCHUNKID.ALTAR then
+		return false
+	end
+
 	return (
 		_subchunk_id == roomdeflib.HD_SUBCHUNKID.SIDE
 		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.EXIT
@@ -633,6 +641,8 @@ local function is_valid_tiki_crushtrap_room(x, y, _)
 		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP
 		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
 		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.ALTAR
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.IDOL
 	)
 end
 
@@ -653,7 +663,7 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	-- 	return false
 	-- end
 
-	if not is_valid_tiki_crushtrap_room(x, y, l) then
+	if not is_valid_generic_trap_room(x, y) then
 		return false
 	end
 
@@ -780,7 +790,7 @@ function module.is_valid_crushtrap_spawn(x, y, l)
 	-- if is_pushblock_at(x, y+1, l) then return false end
 
 	-- can only spawn in certain room ids
-	if not is_valid_tiki_crushtrap_room(x, y, l) then
+	if not is_valid_generic_trap_room(x, y) then
 		return false
 	end
 
@@ -806,19 +816,13 @@ end
 
 function module.is_valid_tombstone_spawn(x, y, l)
 	-- need subchunkid of what room we're in
-	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 	-- prevent spawning in lake
 	if roomy > 4 then return false end
 
-	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
-	if _subchunk_id == roomdeflib.HD_SUBCHUNKID.RESTLESS_TOMB then
+	if not is_valid_generic_trap_room(x, y) then
 		return false
 	end
-
-	-- local below_type = get_entity_type(get_grid_entity_at(x, y-1, l))
-	-- if below_type == ENT_TYPE.FLOORSTYLED_BEEHIVE then
-	-- 	return false
-	-- end
 
 	if is_door_at(x, y, l)
 	or is_door_at(x, y+1, l) then

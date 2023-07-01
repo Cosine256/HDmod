@@ -80,6 +80,7 @@ local function onlevel_remove_cursedpot()
 		for _, uid in pairs(cursedpot_uids) do
 			local pot = get_entity(uid)
 			if pot then
+				pot.flags = set_flag(pot.flags, ENT_FLAG.INVISIBLE)
 				pot:destroy()
 			end
 		end
