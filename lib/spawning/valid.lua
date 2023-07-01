@@ -182,7 +182,8 @@ end
 
 local function is_valid_monster_floor(x, y, l)
 	local flags = get_entity_flags(get_grid_entity_at(x, y, l))
-    return test_flag(flags, ENT_FLAG.SOLID) or test_flag(flags, ENT_FLAG.IS_PLATFORM)
+    return test_flag(flags, ENT_FLAG.SOLID)
+	--or test_flag(flags, ENT_FLAG.IS_PLATFORM)
 end
 
 local function default_ground_monster_condition(x, y, l)
