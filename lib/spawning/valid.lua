@@ -771,7 +771,6 @@ local function is_valid_block_against_crushtrap(x, y, l)
 end
 
 local function is_invalid_block_against_crushtrap(x, y, l)
-	if is_anti_trap_at(x, y) then return true end
 	local uid = get_grid_entity_at(x, y, l)
 	if uid ~= -1 and get_entity(uid).type.id == ENT_TYPE.FLOOR_ARROW_TRAP then
 		-- message("crushtrap avoided arrowtrap")
@@ -785,30 +784,25 @@ function module.is_valid_crushtrap_spawn(x, y, l)
 	if is_non_grid_entity_at(x, y, l) then return false end
 	if is_liquid_at(x, y) then return false end
 
-	-- probably don't even need this
-	-- -- cannot spawn under a pushblock
-	-- if is_pushblock_at(x, y+1, l) then return false end
-
 	-- can only spawn in certain room ids
 	if not is_valid_generic_trap_room(x, y) then
 		return false
 	end
 
-	-- Has at least one block occupide on any side
-	if (
-		not is_valid_block_against_crushtrap(x-1, y, l)
-		and not is_valid_block_against_crushtrap(x, y+1, l)
-		and not is_valid_block_against_crushtrap(x+1, y, l)
-		and not is_valid_block_against_crushtrap(x, y-1, l)
-	) then return false end
+	-- Has a floor below
+	if not is_valid_block_against_crushtrap(x, y-1, l) then
+		return false
+	end
 
 	-- cannot be up against an arrow trap or anti-trap block
 	if (
 		is_invalid_block_against_crushtrap(x-1, y, l)
-		or is_invalid_block_against_crushtrap(x, y+1, l)
 		or is_invalid_block_against_crushtrap(x+1, y, l)
-		or is_invalid_block_against_crushtrap(x, y-1, l)
-	) then return false end
+	) then
+		return false
+	end
+
+	if is_anti_trap_at(x, y-1) then return false end
 
 	-- debug_add_valid_space(x, y, DEBUG_RGB_ORANGE)
 	return true
