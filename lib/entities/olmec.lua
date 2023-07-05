@@ -113,8 +113,8 @@ function module.onlevel_olmec_init()
 		BOSS_STATE = BOSS_SEQUENCE.CUTSCENE
 		cutscene_arrange_olmec_pre()
 		cutscene_arrange_worshipers()
-		
-		doorslib.create_door_ending(41, 98, LAYER.FRONT)--99, LAYER.FRONT)
+
+		olmeclib.DOOR_ENDGAME_OLMEC_UID = doorslib.create_door_ending(41, 98, LAYER.FRONT)
 
 		botdlib.set_hell_x()
 		doorslib.create_door_exit_to_hell(botdlib.hell_x, HELL_Y, LAYER.FRONT)

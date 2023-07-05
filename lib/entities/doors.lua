@@ -208,7 +208,7 @@ function module.create_door_ending(x, y, l)
 	-- # TODO: Remove exit door from the editor and spawn it manually here.
 	-- Why? Currently the exit door spawns tidepool-specific critters and ambience sounds, which will probably go away once an exit door isn't there initially.
 	-- ALTERNATIVE: kill ambient entities and critters. May allow compass to work.
-	olmeclib.DOOR_ENDGAME_OLMEC_UID = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
+	local door = spawn_entity(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
 	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	if options.hd_debug_boss_exits_unlock then
 		get_entity(door_bg).animation_frame = 1
@@ -218,6 +218,8 @@ function module.create_door_ending(x, y, l)
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	
 	roomgenlib.global_levelassembly.exit = {x = x, y = y}
+
+	return door
 end
 
 return module
