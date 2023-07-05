@@ -204,55 +204,14 @@ function module.create_door_exit_to_hauntedcastle(x, y, l)
 	set_interval(entrance_hauntedcastle, 1)
 end
 
--- # TODO: Either merge `exit_*BOSS*` methods or make exit_yama more specific
-local function exit_boss(yama)
-	local yama = false or yama
-	local win_state = WIN_STATE.NO_WIN
-	for i = 1, #players, 1 do
-		local x, y, l = get_position(players[i].uid)
-		if (
-			-- (get_entity(olmeclib.DOOR_ENDGAME_OLMEC_UID).entered == true)
-			(players[i].state == CHAR_STATE.ENTERING)
-		) then
-			if yama == false then
-				if (y > 95) then
-					win_state = WIN_STATE.TIAMAT_WIN
-					-- state.theme = THEME.TIAMAT
-					break
-				end
-			else
-				win_state = WIN_STATE.HUNDUN_WIN
-				-- state.theme = THEME.HUNDUN
-				break
-			end
-		end
-	end
-	state.win_state = win_state
-end
-
-local function exit_olmec()
-	exit_boss()
-end
-
-local function exit_yama()
-	exit_boss(true)
-end
-
 function module.create_door_ending(x, y, l)
 	-- # TODO: Remove exit door from the editor and spawn it manually here.
 	-- Why? Currently the exit door spawns tidepool-specific critters and ambience sounds, which will probably go away once an exit door isn't there initially.
 	-- ALTERNATIVE: kill ambient entities and critters. May allow compass to work.
 	olmeclib.DOOR_ENDGAME_OLMEC_UID = spawn(ENT_TYPE.FLOOR_DOOR_EXIT, x, y, l, 0, 0)
-	set_door_target(olmeclib.DOOR_ENDGAME_OLMEC_UID, 4, 2, THEME.TIAMAT)
 	local door_bg = spawn_entity(ENT_TYPE.BG_DOOR, x, y+0.31, l, 0, 0)
 	if options.hd_debug_boss_exits_unlock == false then
 		lock_door_at(x, y)
-	end
-	-- Olmec/Yama Win
-	if state.theme == THEME.OLMEC then
-		set_interval(exit_olmec, 1)
-	elseif feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
-		set_interval(exit_yama, 1)
 	end
 	spawn_entity(ENT_TYPE.LOGICAL_PLATFORM_SPAWNER, x, y-1, l, 0, 0)
 	
