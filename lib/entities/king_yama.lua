@@ -1008,6 +1008,8 @@ local function yama_head_set(self)
                 end
             end
         end
+        -- Unlock exit door immediately
+        unlock_door_at(roomgenlib.global_levelassembly.exit.x, roomgenlib.global_levelassembly.exit.y)
         -- After this whole effect (about 4.5 seconds) play the cue for the door opening (for speedrun sake the door is already unlocked, but plays no sfx)
         -- set_timeout(function()
         --     if state.screen == SCREEN.LEVEL then
