@@ -18,6 +18,7 @@ unlockslib = require 'lib.unlocks'
 cooplib = require 'lib.coop'
 locatelib = require 'lib.locate'
 custommusiclib = require 'lib.music.custommusic'
+require 'lib.ending'
 
 validlib = require 'lib.spawning.valid'
 spawndeflib = require 'lib.spawning.spawndef'
