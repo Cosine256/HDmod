@@ -1,6 +1,6 @@
 -- In the vanilla game, a win is triggered by the player's state machine when the player finishes entering a win door. Emulate this behavior in the Olmec and Yama levels.
 set_post_entity_spawn(function(ent)
-    if state.theme == THEME.OLMEC or feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
+    if state.screen == SCREEN.LEVEL and (state.theme == THEME.OLMEC or feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA)) then
         ent:set_post_virtual(ENTITY_OVERRIDE.UPDATE_STATE_MACHINE, function(ent)
             if ent.last_state == CHAR_STATE.ENTERING and ent.state == CHAR_STATE.LOADING then
                 if state.theme == THEME.OLMEC then
