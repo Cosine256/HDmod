@@ -17,6 +17,35 @@ set_post_entity_spawn(function(ent)
             end
         end)
     end
+    if state.screen == SCREEN.WIN then
+        message("YOU WINNED")
+        ent.flags = clr_flag(ent.flags, ENT_FLAG.STUNNABLE)
+        local stun_attempt = false
+        ent:set_post_update_state_machine(
+            ---@param self Movable | Entity | Player
+            function (self)
+                if self.velocityy >= 0.090 then
+                    self.velocityy = 0
+                    stun_attempt = true
+                    -- continue walking for a second
+                    steal_input(self.uid)
+                    set_timeout(function ()
+                        stun_attempt = false
+                    end, 1000)
+                end
+                if stun_attempt then
+                    send_input(self.uid, INPUTS.RIGHT)
+                    message("MOVING RIGHT")
+                end
+                -- if self:get_behavior() ~= 1 then
+                --     self:set_behavior(1)
+                -- end
+                -- if self.stun_timer > 0 then
+                --     self.stun_timer = 0
+                -- end
+            end
+        )
+    end
 end, SPAWN_TYPE.ANY, MASK.PLAYER)
 
 set_callback(function()
