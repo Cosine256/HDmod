@@ -501,6 +501,7 @@ local function yama_idle(self)
             state.level_flags = clr_flag(state.level_flags, 22)
             -- Reset camera
             state.camera.focus_offset_y = 0
+            custommusiclib.play_boss_music()
         end
         if self.user_data.cutscene_timer > 0 then
             self.user_data.cutscene_timer = self.user_data.cutscene_timer - 1

@@ -140,6 +140,7 @@ local function onframe_olmec_cutscene() -- **Move to set_interval() that you can
 			cutscene_move_hawkman_post()
 			set_post_cutscene_hawkman()
 			BOSS_STATE = BOSS_SEQUENCE.FIGHT
+			custommusiclib.play_boss_music()
 		end
 	end
 end

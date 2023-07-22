@@ -2,8 +2,11 @@
 
 local custom_music_engine = require "lib.music.custom_music_engine"
 local hellmusic = require "lib.music.hell.hellmusic"
+local hdmusic = require "lib.music.hdmusic"
 
 local module = {}
+
+optionslib.register_option_bool("hd_og_level_music_enable", "OG: Replace level music with music from Spelunky HD", nil, false)
 
 optionslib.register_option_bool("hd_debug_custom_level_music_disable", "Custom music - Disable for special levels", nil, false, true)
 optionslib.register_option_bool("hd_debug_custom_title_music_disable", "Custom music - Disable for title screen", nil, false, true)
@@ -87,13 +90,25 @@ local TITLE_CUSTOM_MUSIC = TITLE_LOOP_SOUND and {
 }
 
 local current_custom_level_music
+local hd_og_music_enabled
 local custom_title_music_enabled
+local CUSTOM_MUSIC_TABLE
 
 local function update_custom_level_music()
+    -- Check if we have HD level music enabled and update the music table reference accordingly
+    if hd_og_music_enabled ~= options.hd_og_level_music_enable then
+        hd_og_music_enabled = options.hd_og_level_music_enable
+        if hd_og_music_enabled then
+            CUSTOM_MUSIC_TABLE = hdmusic.HD_LEVEL_MUSICS
+        else
+            CUSTOM_MUSIC_TABLE = CUSTOM_LEVEL_MUSICS
+        end
+    end
+
     -- Check whether any custom level music should be playing right now.
     local new_custom_level_music = nil
     if not options.hd_debug_custom_level_music_disable then
-        for _, custom_level_music in ipairs(CUSTOM_LEVEL_MUSICS) do
+        for _, custom_level_music in ipairs(CUSTOM_MUSIC_TABLE) do
             if custom_level_music.should_play() then
                 new_custom_level_music = custom_level_music
                 break
@@ -118,6 +133,18 @@ local function update_custom_title_music()
             custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_TITLE, TITLE_CUSTOM_MUSIC)
         else
             custom_music_engine.clear_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_TITLE)
+        end
+    end
+end
+
+function module.play_boss_music()
+    if hd_og_music_enabled then
+        if state.theme == THEME.OLMEC then
+            custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, hdmusic.OLMEC_BOSS_CUSTOM_MUSIC)
+            current_custom_level_music = hdmusic.OLMEC_BOSS_CUSTOM_MUSIC
+        elseif state.theme == THEME.VOLCANA and feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
+            custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, hdmusic.YAMA_BOSS_CUSTOM_MUSIC)
+            current_custom_level_music = hdmusic.YAMA_BOSS_CUSTOM_MUSIC
         end
     end
 end
