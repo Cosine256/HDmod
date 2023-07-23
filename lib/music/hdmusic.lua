@@ -475,7 +475,7 @@ table.insert(module.HD_LEVEL_MUSICS, {
         }
     },
     should_play = function()
-        return (state.screen == SCREEN.TRANSITION)
+        return state.screen == SCREEN.TRANSITION
     end
 })
 
