@@ -1,4 +1,4 @@
-local celib = require 'lib.entities.custom_entities'
+local commonlib = require 'lib.common'
 local animationlib = require "animation"
 
 local module = {}
@@ -34,6 +34,16 @@ do
     texture_def.texture_path = 'res/babyfrog.png'
     texture_id = define_texture(texture_def)
 end
+
+local jump_sound = {
+    create_sound('res/sounds/critterfrog1.wav'),
+    create_sound('res/sounds/critterfrog2.wav'),
+    create_sound('res/sounds/critterfrog3.wav'),
+    create_sound('res/sounds/critterfrog4.wav'),
+    create_sound('res/sounds/critterfrog5.wav'),
+    create_sound('res/sounds/critterfrog6.wav'),
+    create_sound('res/sounds/critterfrog7.wav')
+}
 
 local CRITTERFROG_STATE <const> = {
     IDLE = 0,
@@ -77,7 +87,7 @@ local function critterfrog_update(ent)
             end
             ent.velocityx = 0.065*move_dir
             ent.velocityy = 0.16
-            commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_ALIEN_JUMP, ent.uid, 0.90, false)
+            commonlib.play_custom_sound(jump_sound[prng:random_index(#jump_sound, PRNG_CLASS.FX)], ent.uid, 0.90, false)
         end
     elseif ent.user_data.state == CRITTERFROG_STATE.JUMP then
         if ent.standing_on_uid ~= -1 then
