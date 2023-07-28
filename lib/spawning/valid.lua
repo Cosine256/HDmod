@@ -632,6 +632,14 @@ local function is_valid_generic_trap_room(x, y)
 		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.PATH_DROP
 		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.PATH_DROP_NOTOP
 		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.PATH_NOTOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.TIKIVILLAGE_PATH
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP_LEFT
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_NOTOP_RIGHT
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_LEFT
+		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT
 		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_EXIT
 		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_PATH
 		or _subchunk_id == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_SIDE
@@ -668,7 +676,7 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	end
 
 	local here = get_grid_entity_at(x, y, l)
-	if commonlib.has({ENT_TYPE.FLOOR_ALTAR, ENT_TYPE.FLOOR_SPIKES}, get_entity_type(here)) then
+	if commonlib.has({ENT_TYPE.FLOOR_ALTAR, ENT_TYPE.FLOOR_SPIKES, ENT_TYPE.FLOOR_IDOL_BLOCK}, get_entity_type(here)) then
 		return false
 	end
 
@@ -747,6 +755,10 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 	if bottom == -1 then
 		return false
 	end
+	if commonlib.has({ENT_TYPE.FLOOR_ALTAR, ENT_TYPE.FLOOR_SPIKES, ENT_TYPE.FLOOR_IDOL_BLOCK}, get_entity_type(bottom)) then
+		return false
+	end
+
 	if not commonlib.has(valid_floors, get_entity_type(bottom)) then
 		return false
 	end
