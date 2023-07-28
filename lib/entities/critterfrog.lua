@@ -36,13 +36,13 @@ do
 end
 
 local jump_sound = {
-    create_sound('res/sounds/critterfrog1.wav'),
-    create_sound('res/sounds/critterfrog2.wav'),
-    create_sound('res/sounds/critterfrog3.wav'),
-    create_sound('res/sounds/critterfrog4.wav'),
-    create_sound('res/sounds/critterfrog5.wav'),
-    create_sound('res/sounds/critterfrog6.wav'),
-    create_sound('res/sounds/critterfrog7.wav')
+    create_sound('res/sounds/critterfrog1.ogg'),
+    create_sound('res/sounds/critterfrog2.ogg'),
+    create_sound('res/sounds/critterfrog3.ogg'),
+    create_sound('res/sounds/critterfrog4.ogg'),
+    create_sound('res/sounds/critterfrog5.ogg'),
+    create_sound('res/sounds/critterfrog6.ogg'),
+    create_sound('res/sounds/critterfrog7.ogg')
 }
 
 local CRITTERFROG_STATE <const> = {
@@ -87,7 +87,7 @@ local function critterfrog_update(ent)
             end
             ent.velocityx = 0.065*move_dir
             ent.velocityy = 0.16
-            commonlib.play_custom_sound(jump_sound[prng:random_index(#jump_sound, PRNG_CLASS.FX)], ent.uid, 0.90, false)
+            commonlib.play_custom_sound(jump_sound[prng:random_index(#jump_sound, PRNG_CLASS.FX)], ent.uid, 0.35, false)
         end
     elseif ent.user_data.state == CRITTERFROG_STATE.JUMP then
         if ent.standing_on_uid ~= -1 then
