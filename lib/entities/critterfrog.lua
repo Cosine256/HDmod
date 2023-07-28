@@ -36,13 +36,13 @@ do
 end
 
 local jump_sound = {
-    create_sound('res/sounds/critterfrog1.ogg'),
-    create_sound('res/sounds/critterfrog2.ogg'),
-    create_sound('res/sounds/critterfrog3.ogg'),
-    create_sound('res/sounds/critterfrog4.ogg'),
-    create_sound('res/sounds/critterfrog5.ogg'),
-    create_sound('res/sounds/critterfrog6.ogg'),
-    create_sound('res/sounds/critterfrog7.ogg')
+    create_sound('res/sounds/critterfrog1.wav'),
+    create_sound('res/sounds/critterfrog2.wav'),
+    create_sound('res/sounds/critterfrog3.wav'),
+    create_sound('res/sounds/critterfrog4.wav'),
+    create_sound('res/sounds/critterfrog5.wav'),
+    create_sound('res/sounds/critterfrog6.wav'),
+    create_sound('res/sounds/critterfrog7.wav')
 }
 
 local CRITTERFROG_STATE <const> = {
