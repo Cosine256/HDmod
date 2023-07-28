@@ -50,7 +50,7 @@ module.HELL_CUSTOM_MUSIC = {
             },
             {
                 id = "avici",
-                sound = create_sound("res/music/BGM_Hell_Avīci.ogg"),
+                sound = create_sound("res/music/BGM_Hell_Avici.ogg"),
                 length = 14666,
                 next_sound_id = function(ctx)
                     -- A cycle is defined by the return to Avici.
