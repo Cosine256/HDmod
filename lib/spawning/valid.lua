@@ -610,6 +610,11 @@ function module.is_valid_arrowtrap_spawn(x, y, l)
 		return false
 	end
 
+	local above = get_grid_entity_at(x, y+1, l)
+	if commonlib.has({ENT_TYPE.FLOOR_TOTEM_TRAP, ENT_TYPE.FLOOR_LION_TRAP}, get_entity_type(above)) then
+		return false
+	end
+
 	-- debug_add_valid_space(x, y, DEBUG_RGB_GREEN)
     return true
 end
