@@ -45,7 +45,7 @@
 \?floor%50                         2
 \?styled_floor                     =
 \?entrance                         E
-\?water                            w
+\?lava                             w
 \?treasure                         t
 
 
