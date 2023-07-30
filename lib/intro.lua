@@ -1,4 +1,5 @@
 local palmtreelib = require('lib.entities.palmtree')
+local camellib = require('lib.entities.camel')
 local module = {}
 
 ---@type Entity | Movable | Player
