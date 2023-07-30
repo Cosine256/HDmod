@@ -3,25 +3,51 @@ local endingplatformlib = require('lib.entities.endingplatform')
 
 local chest
 
+local hell_transition_texture_id
+do
+    local hell_transition_texture_def = TextureDefinition.new()
+    hell_transition_texture_def.width = 128
+    hell_transition_texture_def.height = 128
+    hell_transition_texture_def.tile_width = 128
+    hell_transition_texture_def.tile_height = 128
+    hell_transition_texture_def.texture_path = "res/hell_transition.png"
+    hell_transition_texture_id = define_texture(hell_transition_texture_def)
+end
+
 set_callback(function ()
-    chest = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 42.500, 105.4, LAYER.FRONT))
+    local hard_win = state.win_state == WIN_STATE.HUNDUN_WIN
+
+    chest = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 42.5, 105.4, LAYER.FRONT))
     for _, uid in pairs(get_entities_by_type(ENT_TYPE.MIDBG)) do
         get_entity(uid):destroy()
     end
     -- spawn bg ouroboro
     local ouroboro = get_entity(spawn_entity(ENT_TYPE.BG_OUROBORO, 37.5, 107, LAYER.FRONT, 0, 0))
-    if state.win_state == WIN_STATE.HUNDUN_WIN then
+    if hard_win then
         ouroboro.color.r = 1
         ouroboro.color.g = 0.31
         ouroboro.color.b = 0.31
     end
 
     -- backwalls
-    local backwalls = get_entities_by(ENT_TYPE.BG_LEVEL_BACKWALL, 0, LAYER.FRONT)
+    local backwalls = get_entities_by_type(ENT_TYPE.BG_LEVEL_BACKWALL)
     if #backwalls > 0 then
-        get_entity(backwalls[1]):set_texture(state.win_state == WIN_STATE.HUNDUN_WIN and TEXTURE.DATA_TEXTURES_BG_VOLCANO_0 or TEXTURE.DATA_TEXTURES_BG_CAVE_0)
+        get_entity(backwalls[1]):set_texture(hard_win and TEXTURE.DATA_TEXTURES_BG_VOLCANO_0 or TEXTURE.DATA_TEXTURES_BG_CAVE_0)
     end
-    if state.win_state == WIN_STATE.HUNDUN_WIN then
+    local backwall = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_BACKWALL, 5.5, 102.5, LAYER.FRONT, 0, 0))
+    backwall:set_texture(hard_win and TEXTURE.DATA_TEXTURES_BG_VLAD_0 or TEXTURE.DATA_TEXTURES_BG_STONE_0)
+    backwall:set_draw_depth(49)
+    backwall.width, backwall.height = 8, 8
+    backwall.tile_width = hard_win and 1 or 2
+    backwall.tile_height = hard_win and 1 or 2
+    backwall.hitboxx, backwall.hitboxy = backwall.width/2, backwall.height/2
+    for i = 0, 4, 1 do
+        local trans_deco = get_entity(spawn_entity(ENT_TYPE.DECORATION_BG_TRANSITIONCOVER, 10, 105-i, LAYER.FRONT, 0, 0))
+        flip_entity(trans_deco.uid)
+        trans_deco:set_texture(hard_win and hell_transition_texture_id or TEXTURE.DATA_TEXTURES_FLOORSTYLED_STONE_1)
+    end
+
+    if hard_win then
         local chain_coords = {
             {x = 42, y = 110},
             {x = 43, y = 110},
@@ -57,9 +83,8 @@ end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_PARENTSSHIP, ENT_TYPE.ITEM_OLMECSH
 
 local function end_winscene()
     ---@type TreasureHook | Entity | Movable
-    local hook = get_entity(spawn_entity(ENT_TYPE.ITEM_EGGSHIP_HOOK, 42.5, 117, LAYER.FRONT, 0, 0))--spawn in hook at the location, force behavior to 5
-
-    --This isn't working. Maybe spawning temporary treasure with the hook would trigger the end?
+    local hook = get_entity(spawn_entity(ENT_TYPE.ITEM_EGGSHIP_HOOK, 42.5, 117, LAYER.FRONT, 0, 0))
+    spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 42.5, 117, LAYER.FRONT)
 
     -- set_post_statemachine(hook.uid, function (self)
     --     if self:get_behavior() ~= 5 then
@@ -80,7 +105,7 @@ local function eject_ending_treasure()
     chest.animation_frame = 8
     -- particle effects
     -- create_ending_treasure
-    create_ending_treasure(42.500, 105.75, LAYER.FRONT, -0.115, 0.175, state.win_state == WIN_STATE.HUNDUN_WIN)
+    create_ending_treasure(42.5, 105.75, LAYER.FRONT, -0.115, 0.175, state.win_state == WIN_STATE.HUNDUN_WIN)
     -- if hard ending, spawn coins as well
 end
 
@@ -134,6 +159,31 @@ set_post_entity_spawn(function(ent)
         )
     end
 end, SPAWN_TYPE.ANY, MASK.PLAYER)
+
+local theme_win = CustomTheme:new(100, THEME.OLMEC)
+theme_win:override(THEME_OVERRIDE.SPAWN_EFFECTS, THEME.DWELLING)
+theme_win:override(THEME_OVERRIDE.SPAWN_BACKGROUND, THEME.DWELLING)
+theme_win:override(THEME_OVERRIDE.SPAWN_DECORATION, THEME.DWELLING)
+theme_win.textures[DYNAMIC_TEXTURE.FLOOR] = TEXTURE.DATA_TEXTURES_FLOOR_CAVE_0
+theme_win.textures[DYNAMIC_TEXTURE.BACKGROUND] = TEXTURE.DATA_TEXTURES_BG_CAVE_0
+
+local theme_win_hard = CustomTheme:new(101, THEME.VOLCANA)
+theme_win_hard:override(THEME_OVERRIDE.SPAWN_EFFECTS, THEME.VOLCANA)
+theme_win_hard:override(THEME_OVERRIDE.SPAWN_BACKGROUND, THEME.VOLCANA)
+theme_win_hard:override(THEME_OVERRIDE.SPAWN_DECORATION, THEME.VOLCANA)
+theme_win_hard.textures[DYNAMIC_TEXTURE.FLOOR] = TEXTURE.DATA_TEXTURES_FLOOR_VOLCANO_0
+theme_win_hard.textures[DYNAMIC_TEXTURE.BACKGROUND] = TEXTURE.DATA_TEXTURES_BG_VOLCANO_0
+theme_win_hard:override(THEME_OVERRIDE.GRAVITY, THEME.VOLCANA)
+
+set_callback(function(ctx)
+    if state.screen == SCREEN.WIN then
+        if state.win_state == WIN_STATE.TIAMAT_WIN then
+            force_custom_theme(theme_win)
+        elseif state.win_state == WIN_STATE.HUNDUN_WIN then
+            force_custom_theme(theme_win_hard)
+        end
+    end
+end, ON.PRE_LOAD_LEVEL_FILES)
 
 set_callback(function()
     if state.loading == 2 and state.screen_next == SCREEN.WIN then

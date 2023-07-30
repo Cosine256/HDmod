@@ -389,6 +389,35 @@ set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
     -- print("HI PET")
 end, SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL, 0, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER)
 
+--Set transition tiles for temple
+set_pre_tile_code_callback(function (x, y, layer)
+	if not options.hd_og_floorstyle_temple then return false end
+    spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, layer)
+    return true
+end, "temple_floor")
+
+--Set transition tiles for mothership
+set_pre_tile_code_callback(function (x, y, layer)
+    spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, layer)
+    return true
+end, "babylon_floor")
+
+--Set ending tiles
+set_pre_tile_code_callback(function (x, y, layer)
+	if state.screen ~= SCREEN.WIN then return false end
+    spawn_grid_entity(
+		state.win_state == WIN_STATE.TIAMAT_WIN
+			and (
+				-- options.hd_og_floorstyle_temple and 
+				ENT_TYPE.FLOORSTYLED_STONE
+				-- or ENT_TYPE.FLOORSTYLED_TEMPLE
+			)
+			or ENT_TYPE.FLOORSTYLED_VLAD,
+		x, y, layer
+	)
+    return true
+end, "minewood_floor")
+
 -- Prevent fog at the bottom of the worm
 state.level_gen.themes[THEME.EGGPLANT_WORLD]:set_pre_spawn_effects(function(theme)
 	state.level_gen.themes[THEME.DWELLING]:spawn_effects()
