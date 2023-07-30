@@ -90,7 +90,7 @@ local function critterfrog_update(ent)
     animationlib.update_timer(ent.user_data)
 end
 
----@param ent CritterCrab | Entitye
+---@param ent CritterCrab | Entity
 local function critterfrog_set(ent)
     ent:set_texture(texture_id)
     ent.user_data = {
