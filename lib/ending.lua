@@ -1,5 +1,6 @@
 local ladderlib = require('lib.entities.ladder')
 local endingplatformlib = require('lib.entities.endingplatform')
+local endingtreasurelib = require('lib.entities.endingtreasure')
 
 local chest
 
@@ -18,6 +19,7 @@ set_callback(function ()
     local hard_win = state.win_state == WIN_STATE.HUNDUN_WIN
 
     chest = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 42.5, 105.4, LAYER.FRONT))
+    chest:set_draw_depth(31)
     for _, uid in pairs(get_entities_by_type(ENT_TYPE.MIDBG)) do
         get_entity(uid):destroy()
     end
@@ -85,18 +87,6 @@ local function end_winscene()
     ---@type TreasureHook | Entity | Movable
     local hook = get_entity(spawn_entity(ENT_TYPE.ITEM_EGGSHIP_HOOK, 42.5, 117, LAYER.FRONT, 0, 0))
     spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 42.5, 117, LAYER.FRONT)
-
-    -- set_post_statemachine(hook.uid, function (self)
-    --     if self:get_behavior() ~= 5 then
-    --         self:set_behavior(5)
-    --     end
-    -- end)
-end
-
----@param hard boolean
-local function create_ending_treasure(x, y, l, vx, vy, hard)
-    local ent = get_entity(spawn_entity(ENT_TYPE.ITEM_ENDINGTREASURE_TIAMAT, x, y, l, vx, vy))
-    return ent.uid
 end
 
 -- burst open treasure chest
@@ -105,7 +95,7 @@ local function eject_ending_treasure()
     chest.animation_frame = 8
     -- particle effects
     -- create_ending_treasure
-    create_ending_treasure(42.5, 105.75, LAYER.FRONT, -0.115, 0.175, state.win_state == WIN_STATE.HUNDUN_WIN)
+    endingtreasurelib.create_ending_treasure(42.5, 105.75, LAYER.FRONT, -0.0735, 0.2, state.win_state == WIN_STATE.HUNDUN_WIN)
     -- if hard ending, spawn coins as well
 end
 
@@ -143,17 +133,17 @@ set_post_entity_spawn(function(ent)
             function (self)
                 local x, _, _ = get_position(ent.uid)
                 -- continue walking until you get to the center of the platform
-                if x > 34.5 and x < 37.5 then
+                if x > 34.5 and x < 37.4 then
                     -- don't trip
                     if self.velocityy >= 0.090 then
                         self.velocityy = 0
                     end
                     -- This appears to animate guy as well.
                     ent.velocityx = 0.072--0.105 is ana's intro walking speed
-                elseif x >= 37.5 and not reached_center then
+                elseif x >= 37.4 and not reached_center then
                     reached_center = true
                     eject_ending_treasure()
-                    end_winscene()
+                    -- end_winscene()
                 end
             end
         )
@@ -184,15 +174,3 @@ set_callback(function(ctx)
         end
     end
 end, ON.PRE_LOAD_LEVEL_FILES)
-
-set_callback(function()
-    if state.loading == 2 and state.screen_next == SCREEN.WIN then
-        if state.win_state == WIN_STATE.TIAMAT_WIN then
-            -- The game will crash if it tries to generate the win level with the Olmec theme. Force the temple theme instead.
-            state:force_current_theme(THEME.TEMPLE)
-        elseif state.win_state == WIN_STATE.HUNDUN_WIN then
-            -- TODO: The win level contains styled floors, but the volcana theme does not have a styled floor. Volcana's styled floors generate as totem traps and the win level becomes completely broken. Force the Hundun theme as a workaround until the volcana generation is fixed.
-            state:force_current_theme(THEME.HUNDUN)
-        end
-    end
-end, ON.LOADING)
