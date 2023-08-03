@@ -3,7 +3,7 @@ local camellib = require('lib.entities.camel')
 local module = {}
 
 local TIMEOUT_GENERAL = 65
-
+local TIMEOUT_PRE_ENTRANCE = 120
 
 ---@type Entity | Movable | Player
 local guy
@@ -20,10 +20,13 @@ set_callback(function()
 
     state.camera.focused_entity_uid = guy.uid
 
+    local pre_entrance_timeout = TIMEOUT_PRE_ENTRANCE
     local dismount_timeout = TIMEOUT_GENERAL
     -- Traditional inputs don't seem to be working in the intro
     set_post_statemachine(camel.uid, function (ent)
-        if ent.x < 25 then
+        if pre_entrance_timeout > 0 then
+            pre_entrance_timeout = pre_entrance_timeout - 1
+        elseif ent.x < 25 then
             -- This appears to animate guy as well.
             ent.velocityx = 0.072--0.105 is ana's intro walking speed
         elseif dismount_timeout > 0 then
