@@ -133,7 +133,7 @@ local function state_charge(self)
     -- Keep running until we hit a wall
     -- Speed boost
     if self.movex ~= 0 then
-        self.x = self.x + 0.025*self.movex
+        self.x = self.x + 0.05*self.movex
     end
     -- Detect wall and destroy it
     if not test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
@@ -345,10 +345,11 @@ local function devil_set(self)
         if other ~= nil then
             if other.type.search_flags == MASK.PLAYER then
                 -- Let the player stomp the devil if they have spike shoes
-                if not other:has_powerup(ENT_TYPE.ITEM_POWERUP_SPIKE_SHOES) then
+                -- Or if the devil is charging
+                if (not other:has_powerup(ENT_TYPE.ITEM_POWERUP_SPIKE_SHOES)) then
                     local px, py, _ = get_position(other.uid)
                     local sx, sy, _ = get_position(self.uid)
-                    if py > sy then
+                    if (py > sy) and self.user_data.state ~= DEVIL_STATE.CHARGE then-- and self.frozen_timer ~= 0 then
                         other:damage(self.uid, 1, 100, 0.08, 0, 30)
                         return true
                     end

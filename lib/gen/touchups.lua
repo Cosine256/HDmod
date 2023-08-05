@@ -75,14 +75,14 @@ local function onlevel_replace_border_textures()
 end
 
 local function onlevel_remove_cursedpot()
-	local cursedpot_uids = get_entities_by_type(ENT_TYPE.ITEM_CURSEDPOT)
-	if #cursedpot_uids > 0 and options.hd_og_cursepot_enable == false then
-		local xmin, ymin, _, _ = get_bounds()
-		local void_x = xmin - 3.5
-		local void_y = ymin
-		spawn_entity(ENT_TYPE.FLOOR_BORDERTILE, void_x, void_y, LAYER.FRONT, 0, 0)
-		for _, cursedpot_uid in ipairs(cursedpot_uids) do
-			move_entity(cursedpot_uid, void_x, void_y+1, 0, 0)
+	if not options.hd_og_cursepot_enable then
+		local cursedpot_uids = get_entities_by_type(ENT_TYPE.ITEM_CURSEDPOT)
+		for _, uid in pairs(cursedpot_uids) do
+			local pot = get_entity(uid)
+			if pot then
+				pot.flags = set_flag(pot.flags, ENT_FLAG.INVISIBLE)
+				pot:destroy()
+			end
 		end
 	end
 end
@@ -388,6 +388,35 @@ set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
     end
     -- print("HI PET")
 end, SPAWN_TYPE.LEVEL_GEN_GENERAL | SPAWN_TYPE.LEVEL_GEN_PROCEDURAL, 0, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER)
+
+--Set transition tiles for temple
+set_pre_tile_code_callback(function (x, y, layer)
+	if not options.hd_og_floorstyle_temple then return false end
+    spawn_grid_entity(ENT_TYPE.FLOORSTYLED_STONE, x, y, layer)
+    return true
+end, "temple_floor")
+
+--Set transition tiles for mothership
+set_pre_tile_code_callback(function (x, y, layer)
+    spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, layer)
+    return true
+end, "babylon_floor")
+
+--Set ending tiles
+set_pre_tile_code_callback(function (x, y, layer)
+	if state.screen ~= SCREEN.WIN then return false end
+    spawn_grid_entity(
+		state.win_state == WIN_STATE.TIAMAT_WIN
+			and (
+				-- options.hd_og_floorstyle_temple and 
+				ENT_TYPE.FLOORSTYLED_STONE
+				-- or ENT_TYPE.FLOORSTYLED_TEMPLE
+			)
+			or ENT_TYPE.FLOORSTYLED_VLAD,
+		x, y, layer
+	)
+    return true
+end, "minewood_floor")
 
 -- Prevent fog at the bottom of the worm
 state.level_gen.themes[THEME.EGGPLANT_WORLD]:set_pre_spawn_effects(function(theme)

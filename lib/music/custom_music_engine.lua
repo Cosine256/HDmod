@@ -1,5 +1,5 @@
 --[[
-Custom Music Engine v1.2.0
+Custom Music Engine v1.2.1
 
 This module provides functions to replace vanilla music with custom music for levels, transitions, and the title screen.
 
@@ -214,7 +214,7 @@ function Custom_Music:modify_psounds()
     local volume = 1.0
     if state.screen == SCREEN.TRANSITION and state.theme ~= THEME.COSMIC_OCEAN then
         -- Reduce volume while in a non-CO level transition. There is a muffling effect for vanilla music, but this change sounds reasonably close.
-        volume = 0.2
+        volume = 0.25
     elseif state.pause & PAUSE.MENU > 0 then
         -- Reduce volume while paused. There is a muffling effect for vanilla music, but this change sounds reasonably close.
         volume = 0.4

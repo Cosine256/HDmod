@@ -129,6 +129,16 @@ local function draw_feeling_button(ctx, name, world, level, theme, cb)
     end
 end
 
+local function draw_win_button(ctx, name, win_state)
+    if ctx:win_button(name) then
+        reset_run()
+        worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
+        warp(4, 4, THEME.OLMEC)
+        state.screen_next = SCREEN.WIN
+        state.win_state = win_state
+    end
+end
+
 ---@param ctx GuiDrawContext
 module.register_dev_section("Warps", function(ctx)
     draw_warp_button(ctx, "Camp", 1, 1, THEME.BASE_CAMP)
@@ -175,7 +185,7 @@ module.register_dev_section("Warps", function(ctx)
     ctx:win_inline()
     draw_warp_button(ctx, "4-3", 4, 3, THEME.TEMPLE)
     ctx:win_inline()
-    draw_warp_button(ctx, "4-4", 4, 4, THEME.OLMEC)
+    draw_warp_button(ctx, "OLMEC", 4, 4, THEME.OLMEC)
     ctx:win_inline()
     draw_warp_button(ctx, "CoG", 4, 3, THEME.CITY_OF_GOLD)
 
@@ -185,11 +195,15 @@ module.register_dev_section("Warps", function(ctx)
     ctx:win_inline()
     draw_warp_button(ctx, "5-3", 5, 3, THEME.VOLCANA)
     ctx:win_inline()
-    draw_warp_button(ctx, "5-4", 5, 4, THEME.VOLCANA)
+    draw_warp_button(ctx, "YAMA", 5, 4, THEME.VOLCANA)
+
+    draw_win_button(ctx, "Normal Win", WIN_STATE.TIAMAT_WIN)
+    ctx:win_inline()
+    draw_win_button(ctx, "Hard Win", WIN_STATE.HUNDUN_WIN)
 
     draw_warp_button(ctx, "Test 1", 1, 1, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
     ctx:win_inline()
-    draw_warp_button(ctx, "Test 2", 1, 1, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
+    draw_warp_button(ctx, "Test 2", 1, 2, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
 
     ctx:win_separator()
 

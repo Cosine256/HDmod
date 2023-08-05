@@ -18,6 +18,8 @@ unlockslib = require 'lib.unlocks'
 cooplib = require 'lib.coop'
 locatelib = require 'lib.locate'
 custommusiclib = require 'lib.music.custommusic'
+require 'lib.ending'
+require 'lib.intro'
 
 validlib = require 'lib.spawning.valid'
 spawndeflib = require 'lib.spawning.spawndef'
@@ -89,10 +91,8 @@ end, ON.POST_ROOM_GENERATION)
 
 set_callback(function()
 	if state.screen == SCREEN.LEVEL then
-		
-		roomgenlib.onlevel_generation_execution_phase_three()
 
-		custommusiclib.on_start_level()
+		roomgenlib.onlevel_generation_execution_phase_three()
 
 		--[[
 			Procedural Spawn post_level_generation stuff
@@ -135,15 +135,3 @@ set_callback(function()
 
 	liquidlib.spawn_liquid_illumination()
 end, ON.LEVEL)
-
-set_callback(function()
-	-- Detect loading from a level into anything other than the options screen. This should capture every level ending scenario, including instant restarts and warps.
-	if state.loading == 2 and state.screen == SCREEN.LEVEL and state.screen_next ~= SCREEN.OPTIONS then
-		custommusiclib.on_end_level()
-	end
-	-- Check whether custom title music has been enabled/disabled in the options right before loading the title screen.
-	-- Two loading events are checked because the script API sometimes misses one of them the first time the title screen loads.
-	if (state.loading == 1 or state.loading == 2) and state.screen_next == SCREEN.TITLE then
-		custommusiclib.update_custom_title_music_enabled()
-	end
-end, ON.LOADING)
