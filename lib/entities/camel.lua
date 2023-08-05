@@ -1,3 +1,4 @@
+local animationlib = require('lib.entities.animation')
 local module = {}
 
 local camel_texture_id
@@ -5,7 +6,7 @@ local cannon_texture_id
 do
 	local camel_texture_def = TextureDefinition.new()
     camel_texture_def.width = 2048
-    camel_texture_def.height = 768
+    camel_texture_def.height = 1024
     camel_texture_def.tile_width = 256
     camel_texture_def.tile_height = 256
 	camel_texture_def.texture_path = "res/camel.png"
@@ -25,16 +26,21 @@ local CAMEL_STATE <const> = {
     TRANSITION_TO_MINIGAME = 1,
     MINIGAME = 2
 }
+local CANNON_ANIMATIONS <const> = {
+  STARTUP = {0, loop = false, frames = 1, frame_time = 60},
+  IDLE = {1, loop = true, frames = 1, frame_time = 4}
+}
 
 --[[ # TODO: Credits mode:
     Auto walks in one direction until the player presses a button
-    Upon pressing any button, a laser gun pops out of the saddle, starting a minigame.
+    Upon pressing any button, a laser cannon pops out of the saddle, starting a minigame.
     During the minigame the camel acts like the camel in metal slug;
         - Always faces left, even when the player moves right.
         - Can jump
-        - Moving to the left/right alters the angle of the laser gun
+        - Inputting left/right alters the angle of the laser cannon
+        - Inputting whip fires the laser cannon
+        - Cannot use bombs or ropes
         - Cannot dismount
-        - Cannot crouch
 ]]
 
 local function set_dimensions(ent)
@@ -84,6 +90,30 @@ local function camel_update(ent)
         ent.animation_frame = 15
     elseif ent.animation_frame == 125 then
         ent.animation_frame = 16
+    elseif ent.animation_frame == 80 then
+        ent.animation_frame = 17
+    elseif ent.animation_frame == 81 then
+        ent.animation_frame = 18
+    elseif ent.animation_frame == 82 then
+        ent.animation_frame = 19
+    elseif ent.animation_frame == 83 then
+        ent.animation_frame = 20
+    elseif ent.animation_frame == 84 then
+        ent.animation_frame = 21
+    elseif ent.animation_frame == 85 then
+        ent.animation_frame = 22
+    elseif ent.animation_frame == 86 then
+        ent.animation_frame = 23
+    elseif ent.animation_frame == 87 then
+        ent.animation_frame = 24
+    elseif ent.animation_frame == 88 then
+        ent.animation_frame = 25
+    elseif ent.animation_frame == 89 then
+        ent.animation_frame = 26
+    elseif ent.animation_frame == 90 then
+        ent.animation_frame = 27
+    elseif ent.animation_frame == 91 then
+        ent.animation_frame = 28
     end
 end
 
@@ -92,22 +122,44 @@ local function camel_update_credits(ent)
     camel_update(ent)
     -- Force facing one direction
     set_entity_flags(ent.uid, set_flag(get_entity_flags(ent.uid), ENT_FLAG.FACING_LEFT))
+
+    local cannon = get_entity(ent.user_data.cannon_uid)
+    cannon.animation_frame = 1
+
     if ent.rider_uid ~= -1 then
         set_entity_flags(ent.rider_uid, set_flag(get_entity_flags(ent.rider_uid), ENT_FLAG.FACING_LEFT))
         local rider = get_entity(ent.rider_uid)
         rider.x = math.abs(rider.x)
 
         -- upon any input from the rider, set to transition to minigame
+        local input = read_input(rider.uid)
+        if ent.user_data.state == CAMEL_STATE.PRE_MINIGAME then
+            if (
+                test_flag(input, INPUT_FLAG.WHIP)
+                -- or test_flag(input, INPUT_FLAG.JUMP)
+                -- or test_flag(input, INPUT_FLAG.BOMB)
+                -- or test_flag(input, INPUT_FLAG.ROPE)
+                -- or test_flag(input, INPUT_FLAG.LEFT)
+                -- or test_flag(input, INPUT_FLAG.RIGHT)
+                -- or test_flag(input, INPUT_FLAG.UP)
+                -- or test_flag(input, INPUT_FLAG.DOWN)
+            ) then
+                cannon.flags = clr_flag(cannon.flags, ENT_FLAG.INVISIBLE)
+                ent.user_data.state = CAMEL_STATE.TRANSITION_TO_MINIGAME
+                animationlib.set_animation(ent.user_data, CANNON_ANIMATIONS.STARTUP)
+            end
+        elseif ent.user_data.state == CAMEL_STATE.TRANSITION_TO_MINIGAME
+            and ent.user_data.animation_timer == 0
+        then
+            ent.user_data.state = CAMEL_STATE.MINIGAME
+            animationlib.set_animation(ent.user_data, CANNON_ANIMATIONS.IDLE)
+        elseif ent.user_data.state == CAMEL_STATE.MINIGAME
+        then
+        end
+        cannon.animation_frame = animationlib.get_animation_frame(ent.user_data)
+        animationlib.update_timer(ent.user_data)
+        -- message(string.format("animation_timer: %s", ent.user_data.animation_timer))
     end
-
-
-    local cannon = get_entity(ent.user_data.cannon_uid)
-
-    cannon.animation_frame = 1
-
-    -- if ent.user_data.state ~= CAMEL_STATE.PRE_MINIGAME and test_flag(cannon.flags, ENT_FLAG.INVISIBLE) then
-    --     cannon.flags = clr_flag(cannon.flags, ENT_FLAG.INVISIBLE)
-    -- end
 end
 
 ---@param ent Entity | Movable
@@ -115,7 +167,9 @@ local function cannon_set(ent)
     ent:set_texture(cannon_texture_id)
     ent:set_draw_depth(23)
     ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
-    -- ent.flags = set_flag(ent.flags, ENT_FLAG.INVISIBLE)
+    ent.flags = set_flag(ent.flags, ENT_FLAG.INVISIBLE)
+    ent.flags = set_flag(ent.flags, ENT_FLAG.TAKE_NO_DAMAGE)
+    ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
 end
 
 ---@param ent Rockdog | Mount | Entity | Movable | PowerupCapable
@@ -129,11 +183,13 @@ local function camel_set(ent, cannon_uid)
         set_entity_flags(ent.uid, set_flag(get_entity_flags(ent.uid), ENT_FLAG.FACING_LEFT))
         ent.user_data = {
             state = CAMEL_STATE.PRE_MINIGAME,
-            cannon_uid = cannon_uid
+            cannon_uid = cannon_uid,
+            animation_state = CANNON_ANIMATIONS.IDLE,
+            animation_timer = 0,
         }
+        animationlib.set_animation(ent.user_data, CANNON_ANIMATIONS.IDLE)
     end
     set_post_statemachine(ent.uid, cannon_uid ~= -1 and camel_update_credits or camel_update)
-
 end
 
 function module.create_camel(x, y, layer)
