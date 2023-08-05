@@ -12,10 +12,19 @@ do
 end
 
 ---@param hard boolean
+function module.set_ending_treasure_texture(ent, hard)
+    ent:set_texture(idol_texture_id)
+end
+
+---@param hard boolean
 function module.create_ending_treasure(x, y, l, vx, vy, hard)
     local ent = get_entity(spawn_entity(ENT_TYPE.ITEM_ENDINGTREASURE_TIAMAT, x, y, l, vx, vy))
-    ent:set_texture(idol_texture_id)
+    module.set_ending_treasure_texture(ent, hard)
     return ent.uid
+end
+
+function module.set_ending_treasure_texture(ent, hard)
+    ent:set_texture(idol_texture_id)
 end
 
 return module
