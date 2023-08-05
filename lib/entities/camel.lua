@@ -37,7 +37,7 @@ local CANNON_ANIMATIONS <const> = {
     During the minigame the camel acts like the camel in metal slug;
         - Always faces left, even when the player moves right.
         - Can jump
-        - Inputting left/right alters the angle of the laser cannon
+        - Inputting left/up/right/down alters the angle of the laser cannon
         - Inputting whip fires the laser cannon
         - Cannot use bombs or ropes
         - Cannot dismount
@@ -124,12 +124,13 @@ local function camel_update_credits(ent)
     set_entity_flags(ent.uid, set_flag(get_entity_flags(ent.uid), ENT_FLAG.FACING_LEFT))
 
     local cannon = get_entity(ent.user_data.cannon_uid)
-    cannon.animation_frame = 1
 
     if ent.rider_uid ~= -1 then
+        -- force rider to face left
         set_entity_flags(ent.rider_uid, set_flag(get_entity_flags(ent.rider_uid), ENT_FLAG.FACING_LEFT))
         local rider = get_entity(ent.rider_uid)
         rider.x = math.abs(rider.x)
+
 
         -- upon any input from the rider, set to transition to minigame
         local input = read_input(rider.uid)
@@ -155,11 +156,35 @@ local function camel_update_credits(ent)
             animationlib.set_animation(ent.user_data, CANNON_ANIMATIONS.IDLE)
         elseif ent.user_data.state == CAMEL_STATE.MINIGAME
         then
+            -- # TODO: Cannon firing and angling
         end
+
         cannon.animation_frame = animationlib.get_animation_frame(ent.user_data)
         animationlib.update_timer(ent.user_data)
         -- message(string.format("animation_timer: %s", ent.user_data.animation_timer))
     end
+
+    if ent.animation_frame == 17
+    or ent.animation_frame == 21
+    then
+        cannon.y = 0.00
+    elseif ent.animation_frame == 18
+    or ent.animation_frame == 20
+    then
+        cannon.y = -0.1
+    elseif ent.animation_frame == 19
+    or (
+        ent.animation_frame >= 22
+        and ent.animation_frame <= 28
+    )
+    then
+        cannon.y = -0.15
+    else
+        cannon.y = 0.05
+    end
+    --low: 17 or 21
+    --lower: 18 or 20
+    --lowest: 19 or 22..28
 end
 
 ---@param ent Entity | Movable
