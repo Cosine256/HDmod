@@ -132,6 +132,10 @@ function module.assign_s2_room_templates(room_gen_ctx)
 						-- vault
 						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.VAULT) then
 							template_to_set = ROOM_TEMPLATE.VAULT
+							
+						-- outpost
+						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.OUTPOST) then
+							template_to_set = ROOM_TEMPLATE.POSSE
 						
 						-- altar
 						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.ALTAR) then

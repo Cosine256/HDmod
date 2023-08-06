@@ -697,7 +697,12 @@ module.HD_TILENAME = {
 		phases = {
 			[1] = {
 				default = {
-					function(x, y, l) spawn_entity(ENT_TYPE.MONS_SHOPKEEPER, x, y, l, 0, 0) end,
+					function(x, y, l)
+						local shopkeeper = get_entity(spawn_entity(ENT_TYPE.MONS_SHOPKEEPER, x, y, l, 0, 0))
+						if state.shoppie_aggro_next > 0 then
+							shopkeeper.is_patrolling = true
+						end
+					end,
 				},
 			}
 		},
@@ -773,11 +778,6 @@ module.HD_TILENAME = {
 							spawn_grid_entity(ENT_TYPE.MONS_SNAKE, x, y, l)
 						end
 					end,
-				},
-				alternate = {
-					[THEME.JUNGLE] = {
-						function(x, y, l) spawn_entity(ENT_TYPE.ITEM_LITWALLTORCH, x, y+.2, l, 0, 0) end,
-					}
 				}
 			}
 		},
@@ -868,6 +868,21 @@ module.HD_TILENAME = {
 		description = "Vines Obstacle Block",
 	},
 	["W"] = {
+		phases = {
+			[1] = {
+				default = {
+					function(x, y, l)
+						spawn_entity(ENT_TYPE.BG_SHOPWANTEDPOSTER, x+.5, y-.5, l, 0, 0)
+						local portrait = get_entity(spawn_entity(ENT_TYPE.BG_SHOPWANTEDPORTRAIT, x+.5, y-.75, l, 0, 0))
+						set_timeout(function ()
+							if players[1] then
+								portrait:set_texture(players[1]:get_texture())
+							end
+						end, 1)
+					end,
+				},
+			}
+		},
 		description = "Wanted Poster",--"Unknown: Something Shop-Related",
 	},
 	["X"] = {
@@ -1379,6 +1394,14 @@ module.HD_TILENAME = {
 			}
 		},
 		description = "Platform",
+	},
+	["{"] = {
+		phases = {
+			[1] = {
+				default = {function(x, y, l) spawn_entity(ENT_TYPE.ITEM_LITWALLTORCH, x, y+.2, l, 0, 0) end},
+			}
+		},
+		description = "Wall torch",
 	},
 }
 

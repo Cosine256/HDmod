@@ -2,6 +2,7 @@ local spikeslib = require 'lib.entities.spikes'
 local hideyholelib = require 'lib.entities.hideyhole'
 local shopslib = require 'lib.entities.shops'
 local tutorialsignslib = require 'lib.entities.tutorial_signs'
+local outpostlib = require 'lib.outpost'
 
 local module = {}
 
@@ -9,8 +10,6 @@ optionslib.register_option_bool("hd_debug_scripted_levelgen_path_info", "Level g
 optionslib.register_option_string("hd_debug_scripted_levelgen_tilecodes_blacklist", "Level gen - Blacklist tilecodes", nil, "", true)
 
 POSTTILE_STARTBOOL = false
-FRAG_PREVENTION_UID = nil
-
 
 module.global_levelassembly = nil
 
@@ -20,8 +19,6 @@ end
 
 
 local function init_onlevel()
-	FRAG_PREVENTION_UID = nil
-
 	createlib.init()
 	botdlib.init()
 	wormtonguelib.init()
@@ -172,7 +169,7 @@ end, ON.RESET)
 
 local levelrooms_setn, levelrooms_setn_rowfive, levelcode_setn, level_generation_method_side
 local level_generation_method_setrooms, detect_level_allow_path_gen, level_generation_method_world_coffin
-local level_generation_method_coffin_coop, level_generation_method_shops
+local level_generation_method_coffin_coop, level_generation_method_shops, level_generation_method_outpost
 local gen_levelrooms_nonpath, gen_levelcode_fill, gen_levelrooms_path
 --[[
 	CHUNK GENERATION - ON.LEVEL
@@ -209,6 +206,8 @@ function module.onlevel_generation_modification()
 		level_generation_method_coffin_coop()
 
 		level_generation_method_shops()
+
+		level_generation_method_outpost()
 		
 		level_generation_method_side()
 	else
@@ -699,6 +698,72 @@ do
 						roomcodes = roomdeflib.HD_ROOMOBJECT.GENERIC[shop_id_right]
 					}
 				}
+			)
+		end
+	end
+end
+
+local function detect_spawn_outpost()
+    if (
+		module.detect_level_non_boss()
+		and module.detect_level_non_special()
+    ) then
+        if (
+            not outpostlib.SPAWNED_20
+            and state.shoppie_aggro_next >= 20
+        ) then
+            outpostlib.SPAWNED_20 = true
+            return true
+        elseif (
+            not outpostlib.SPAWNED_40
+            and state.shoppie_aggro_next >= 40
+        ) then
+            outpostlib.SPAWNED_40 = true
+            return true
+        elseif (
+            not outpostlib.SPAWNED_60
+            and state.shoppie_aggro_next >= 60
+        ) then
+            outpostlib.SPAWNED_60 = true
+            return true
+        elseif (
+            not outpostlib.SPAWNED_80
+            and state.shoppie_aggro_next >= 80
+        ) then
+            outpostlib.SPAWNED_80 = true
+            return true
+        end
+    end
+    return false
+end
+
+function level_generation_method_outpost()
+	if detect_spawn_outpost() then
+		local levelw, levelh = #roomgenlib.global_levelassembly.modification.levelrooms[1], #roomgenlib.global_levelassembly.modification.levelrooms
+		
+		local spots = {}
+		for room_y = 1, levelh, 1 do
+			for room_x = 1, levelw, 1 do
+				local path_to_replace = roomgenlib.global_levelassembly.modification.levelrooms[room_y][room_x]
+				
+				if (
+					path_to_replace == roomdeflib.HD_SUBCHUNKID.PATH
+					or path_to_replace == roomdeflib.HD_SUBCHUNKID.PATH_NOTOP
+					or path_to_replace == roomdeflib.HD_SUBCHUNKID.PATH_DROP
+					or path_to_replace == roomdeflib.HD_SUBCHUNKID.PATH_DROP_NOTOP
+				) then
+					table.insert(spots, {x = room_x, y = room_y})
+				end
+			
+			end
+		end
+		if #spots ~= 0 then
+			-- pick random place to fill
+			local spot = spots[prng:random_index(#spots, PRNG_CLASS.LEVEL_GEN)]
+			module.levelcode_inject_roomcode(
+				roomdeflib.HD_SUBCHUNKID.OUTPOST,
+				roomdeflib.HD_ROOMOBJECT.GENERIC[roomdeflib.HD_SUBCHUNKID.OUTPOST],
+				spot.y, spot.x
 			)
 		end
 	end
