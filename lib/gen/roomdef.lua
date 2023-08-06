@@ -2970,7 +2970,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.JUNGLE] = {
 					module.CHUNKBOOL_IDOL = true
 					return {idol = true}
 				else
-					local chunkPool_rand_index = prng:random_index(7, PRNG_CLASS.LEVEL_GEN)
+					local chunkPool_rand_index = prng:random_index(8, PRNG_CLASS.LEVEL_GEN)
 					return {index = chunkPool_rand_index}
 				end
 			end,
