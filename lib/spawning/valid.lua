@@ -511,7 +511,7 @@ end
 
 module.is_valid_lantern_spawn = ceiling_entity_condition_clearance_2
 
-module.is_valid_webnest_spawn = ceiling_entity_condition_clearance_2
+module.is_valid_webnest_spawn = ceiling_entity_condition_clearance_1
 
 function module.is_valid_turret_spawn(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
