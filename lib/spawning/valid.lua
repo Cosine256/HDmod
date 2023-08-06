@@ -404,6 +404,7 @@ function module.is_valid_landmine_spawn(x, y, l)
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP_NOTOP
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_LEFTSIDE
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_MIDDLE
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
 end
 
 function module.is_valid_bouncetrap_spawn(x, y, l)
@@ -417,6 +418,7 @@ function module.is_valid_bouncetrap_spawn(x, y, l)
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP_NOTOP
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
 end
 
 module.is_valid_caveman_spawn = spiderlair_ground_monster_condition
@@ -431,8 +433,10 @@ module.is_valid_firefrog_spawn = default_ground_monster_condition
 module.is_valid_frog_spawn = default_ground_monster_condition
 
 function module.is_valid_yeti_spawn(x, y, l)
+	local room = locatelib.get_levelroom_at_game_position(x, y)
 	return default_ground_monster_condition(x, y, l)
 	and get_grid_entity_at(x, y+1, l) == -1
+	and room ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
 end
 
 module.is_valid_hawkman_spawn = default_ground_monster_condition
@@ -514,9 +518,11 @@ module.is_valid_lantern_spawn = ceiling_entity_condition_clearance_2
 module.is_valid_webnest_spawn = ceiling_entity_condition_clearance_1
 
 function module.is_valid_turret_spawn(x, y, l)
+	local room = locatelib.get_levelroom_at_game_position(x, y)
 	return get_grid_entity_at(x, y, l) == -1
 		and get_entity_type(get_grid_entity_at(x, y+1, l)) == ENT_TYPE.FLOORSTYLED_MOTHERSHIP
 		and check_empty_space(x-1, y, l, 3, 3)
+		and room ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
 end
 
 local function is_over_or_next_to_liquid(x, y)
