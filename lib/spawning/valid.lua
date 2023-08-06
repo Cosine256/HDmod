@@ -928,7 +928,7 @@ function module.is_valid_ufo_spawn(x, y, l)
 		-- HD also avoids the coffin rooms here, but I think the API already accounts for that since we set S2 coffin rooms
 		room ~= roomdeflib.HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN
 		and room ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
-		and ceiling_entity_condition_clearance_2(x, y, l)
+		and ceiling_entity_condition(x, y, l)
 	)
 end
 
