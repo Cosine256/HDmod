@@ -83,8 +83,26 @@ function module.assign_s2_room_templates(room_gen_ctx)
 							template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
 						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.TIKIVILLAGE_PATH_DROP_NOTOP_RIGHT then
 							template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
+
+						-- spiderlair paths
+						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE then
+							template_to_set = ROOM_TEMPLATE.PATH_NORMAL
+						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_DROP then
+							template_to_set = ROOM_TEMPLATE.PATH_DROP
+						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_NOTOP then
+							template_to_set = ROOM_TEMPLATE.PATH_NOTOP
+						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_DROP_NOTOP then
+							template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
+						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE then
+							template_to_set = ROOM_TEMPLATE.PATH_NORMAL
+						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_DROP then
+							template_to_set = ROOM_TEMPLATE.PATH_DROP
+						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_NOTOP then
+							template_to_set = ROOM_TEMPLATE.PATH_NOTOP
+						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_RIGHTSIDE_DROP_NOTOP then
+							template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
 	
-						-- flooded paths
+						-- rushing water paths
 						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_SIDE then
 							template_to_set = ROOM_TEMPLATE.SIDE
 						elseif _template_hd == roomdeflib.HD_SUBCHUNKID.RUSHING_WATER_PATH_NOTOP then
@@ -114,6 +132,10 @@ function module.assign_s2_room_templates(room_gen_ctx)
 						-- vault
 						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.VAULT) then
 							template_to_set = ROOM_TEMPLATE.VAULT
+							
+						-- outpost
+						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.OUTPOST) then
+							template_to_set = ROOM_TEMPLATE.POSSE
 						
 						-- altar
 						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.ALTAR) then
@@ -130,23 +152,52 @@ function module.assign_s2_room_templates(room_gen_ctx)
 							template_to_set = ROOM_TEMPLATE.SHOP_ENTRANCE_UP_LEFT--s2_room_template_blackmarket_ankh
 
 						-- coop coffin
-						
 						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP) then
-							if state.level == 4 and state.world == 1 then
-								template_to_set = ROOM_TEMPLATE.PATH_NORMAL
-							else
-								template_to_set = ROOM_TEMPLATE.COFFIN_PLAYER
-							end
+							template_to_set = (state.level == 4 and state.world == 1)
+								and ROOM_TEMPLATE.PATH_NORMAL
+								or ROOM_TEMPLATE.COFFIN_PLAYER_VERTICAL
+						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP) then
+							template_to_set = (state.level == 4 and state.world == 1)
+								and ROOM_TEMPLATE.PATH_DROP_NOTOP
+								or ROOM_TEMPLATE.COFFIN_PLAYER_VERTICAL
+						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP) then
+							template_to_set = (state.level == 4 and state.world == 1)
+								and ROOM_TEMPLATE.PATH_DROP
+								or ROOM_TEMPLATE.COFFIN_PLAYER_VERTICAL
+						elseif (_template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP) then
+							template_to_set = (state.level == 4 and state.world == 1)
+								and ROOM_TEMPLATE.PATH_DROP_NOTOP
+								or ROOM_TEMPLATE.COFFIN_PLAYER_VERTICAL
+
+						-- unlock coffin
 						elseif (
-							_template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_NOTOP
-							or _template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP
-							or _template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_COOP_DROP_NOTOP
+							_template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_UNLOCK
+							or _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK
 						) then
-							if state.level == 4 and state.world == 1 then
-								template_to_set = ROOM_TEMPLATE.PATH_DROP_NOTOP
-							else
-								template_to_set = ROOM_TEMPLATE.COFFIN_PLAYER_VERTICAL
-							end
+							template_to_set = (state.level == 4 and state.world == 1)
+								and ROOM_TEMPLATE.PATH_NORMAL
+								or ROOM_TEMPLATE.COFFIN_UNLOCKABLE
+						elseif (
+							_template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_UNLOCK_NOTOP
+							or _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK_NOTOP
+						) then
+							template_to_set = (state.level == 4 and state.world == 1)
+								and ROOM_TEMPLATE.PATH_DROP_NOTOP
+								or ROOM_TEMPLATE.COFFIN_UNLOCKABLE
+						elseif (
+							_template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP
+							or _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK_DROP
+						) then
+							template_to_set = (state.level == 4 and state.world == 1)
+								and ROOM_TEMPLATE.PATH_DROP
+								or ROOM_TEMPLATE.COFFIN_UNLOCKABLE
+						elseif (
+							_template_hd == roomdeflib.HD_SUBCHUNKID.COFFIN_UNLOCK_DROP_NOTOP
+							or _template_hd == roomdeflib.HD_SUBCHUNKID.SPIDERLAIR_LEFTSIDE_UNLOCK_DROP_NOTOP
+						) then
+							template_to_set = (state.level == 4 and state.world == 1)
+								and ROOM_TEMPLATE.PATH_DROP_NOTOP
+								or ROOM_TEMPLATE.COFFIN_UNLOCKABLE
 
 						end
 					end

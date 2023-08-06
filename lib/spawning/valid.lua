@@ -206,14 +206,23 @@ local function is_falling_platform_at(x, y, l)
 	return #get_entities_overlapping_hitbox(ENT_TYPE.ACTIVEFLOOR_FALLING_PLATFORM, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
 end
 
-local function default_ceiling_entity_condition(x, y, l)
+local function ceiling_entity_condition(x, y, l)
 	return get_grid_entity_at(x, y, l) == -1
 	and not is_ladder_tile_at(x, y)
 	and module.is_solid_grid_entity(x, y+1, l)
-	and get_grid_entity_at(x, y-1, l) == -1
-	and get_grid_entity_at(x, y-2, l) == -1
 	and detect_entrance_room_template(x, y, l) == false
 	and not is_liquid_at(x, y)
+end
+
+local function ceiling_entity_condition_clearance_1(x, y, l)
+	return ceiling_entity_condition(x, y, l)
+	and get_grid_entity_at(x, y-1, l) == -1
+end
+
+local function ceiling_entity_condition_clearance_2(x, y, l)
+	return ceiling_entity_condition(x, y, l)
+	and get_grid_entity_at(x, y-1, l) == -1
+	and get_grid_entity_at(x, y-2, l) == -1
 end
 
 local function default_hell_ceiling_entity_condition(x, y, l)
@@ -395,6 +404,7 @@ function module.is_valid_landmine_spawn(x, y, l)
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP_NOTOP
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_LEFTSIDE
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_MIDDLE
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
 end
 
 function module.is_valid_bouncetrap_spawn(x, y, l)
@@ -408,6 +418,7 @@ function module.is_valid_bouncetrap_spawn(x, y, l)
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_NOTOP
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP
 	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.YETIKINGDOM_YETIKING_DROP_NOTOP
+	and _subchunk_id ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
 end
 
 module.is_valid_caveman_spawn = spiderlair_ground_monster_condition
@@ -422,8 +433,10 @@ module.is_valid_firefrog_spawn = default_ground_monster_condition
 module.is_valid_frog_spawn = default_ground_monster_condition
 
 function module.is_valid_yeti_spawn(x, y, l)
+	local room = locatelib.get_levelroom_at_game_position(x, y)
 	return default_ground_monster_condition(x, y, l)
 	and get_grid_entity_at(x, y+1, l) == -1
+	and room ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
 end
 
 module.is_valid_hawkman_spawn = default_ground_monster_condition
@@ -480,16 +493,16 @@ end
 
 function module.is_valid_hangspider_spawn(x, y, l)
 	return (
-		default_ceiling_entity_condition(x, y, l)
+		ceiling_entity_condition_clearance_2(x, y, l)
 		and get_grid_entity_at(x, y-3, l) == -1
 	)
 end
 
-module.is_valid_bat_spawn = default_ceiling_entity_condition
+module.is_valid_bat_spawn = ceiling_entity_condition_clearance_2
 
-module.is_valid_spider_spawn = default_ceiling_entity_condition
+module.is_valid_spider_spawn = ceiling_entity_condition_clearance_2
 
-module.is_valid_vampire_spawn = default_ceiling_entity_condition
+module.is_valid_vampire_spawn = ceiling_entity_condition_clearance_2
 
 module.is_valid_imp_spawn = default_hell_ceiling_entity_condition
 
@@ -500,14 +513,16 @@ function module.is_valid_mshiplight_spawn(x, y, l)
 		and module.is_solid_grid_entity(x, y+1, l)
 end
 
-module.is_valid_lantern_spawn = default_ceiling_entity_condition
+module.is_valid_lantern_spawn = ceiling_entity_condition_clearance_2
 
-module.is_valid_webnest_spawn = default_ceiling_entity_condition
+module.is_valid_webnest_spawn = ceiling_entity_condition_clearance_1
 
 function module.is_valid_turret_spawn(x, y, l)
+	local room = locatelib.get_levelroom_at_game_position(x, y)
 	return get_grid_entity_at(x, y, l) == -1
 		and get_entity_type(get_grid_entity_at(x, y+1, l)) == ENT_TYPE.FLOORSTYLED_MOTHERSHIP
 		and check_empty_space(x-1, y, l, 3, 3)
+		and room ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
 end
 
 local function is_over_or_next_to_liquid(x, y)
@@ -919,7 +934,7 @@ function module.is_valid_ufo_spawn(x, y, l)
 		-- HD also avoids the coffin rooms here, but I think the API already accounts for that since we set S2 coffin rooms
 		room ~= roomdeflib.HD_SUBCHUNKID.MOTHERSHIP_ALIENQUEEN
 		and room ~= roomdeflib.HD_SUBCHUNKID.UFO_RIGHTSIDE
-		and default_ceiling_entity_condition(x, y, l)
+		and ceiling_entity_condition(x, y, l)
 	)
 end
 
