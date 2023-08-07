@@ -1,9 +1,12 @@
 local surfacelib = require('lib.surface')
+local camellib = require('lib.entities.camel')
 local ladderlib = require('lib.entities.ladder')
 local endingplatformlib = require('lib.entities.endingplatform')
 local endingtreasurelib = require('lib.entities.endingtreasure')
 
 local chest
+---@type Rockdog | Mount | Entity | Movable | PowerupCapable
+local camel
 
 local hell_transition_texture_id
 do
@@ -199,10 +202,15 @@ end, ON.SCORES)
 
 
 set_callback(function ()
-    --build floor
-    --x: 14..34 (extend to 40 for room for the people to walk in from)
-    --y: 107
-end, ON.SCORES)
+    surfacelib.build_credits_surface()
+    spawn_player(1, 23, 111)
+
+    camel = get_entity(camellib.create_camel_credits(23, 111, LAYER.FRONT))
+    spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
+
+    local player = get_entity(players[1].uid)
+    carry(camel.uid, player.uid)
+end, ON.CREDITS)
 
 set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
 	if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, layer, 0, 0) end
