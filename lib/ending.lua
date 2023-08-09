@@ -212,6 +212,25 @@ set_callback(function ()
     carry(camel.uid, player.uid)
 end, ON.CREDITS)
 
+set_callback(function()
+    -- prevent fading out of the credits screen (when pressing jump or credits end)
+    if state.screen == SCREEN.CREDITS
+    and state.loading == 1
+    then
+        local normal_credits_end = true
+        for _, player in pairs(players) do
+            local input = read_input(player.uid)
+            if test_flag(input, INPUT_FLAG.JUMP) then
+                normal_credits_end = false
+            end
+        end
+        if not normal_credits_end then
+            -- stop loading next scene
+            state.loading = 0
+        end
+    end
+end, ON.LOADING)
+
 set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
 	if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, layer, 0, 0) end
 end, SPAWN_TYPE.ANY, 0,
