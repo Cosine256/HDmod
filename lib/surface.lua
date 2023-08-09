@@ -41,7 +41,7 @@ local function create_surface_layer_looping(x)
     bg_surface_layer_1.tile_height = 1
     bg_surface_layer_1.animation_frame = 3
     bg_surface_layer_1:set_post_update_state_machine(
-        ---@param self Movable | Entity | Player
+        ---@param self Movable | Entity | BGSurfaceLayer
         function (self)
             if self.relative_x >= 93 then
                 self.relative_x = self.relative_x - 119.97
@@ -56,8 +56,10 @@ function module.build_credits_surface()
     for x = 3, 38, 1 do
         spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, x, 110, LAYER.FRONT)
     end
-    spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, 4, 111, LAYER.FRONT)
-    spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, 24, 111, LAYER.FRONT)
+    for y = 111, 113, 1 do
+        spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, 4, y, LAYER.FRONT)
+        spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, 24, y, LAYER.FRONT)
+    end
 
     local bg_sky = get_entity(spawn_entity(ENT_TYPE.BG_SPACE, 27.5, 112.950, LAYER.FRONT, 0, 0))
     local bg_sun = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_NEBULA, 14, 115, LAYER.FRONT, 0, 0))
