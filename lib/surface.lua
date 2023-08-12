@@ -149,15 +149,15 @@ function module.decorate_surface()
             if bg.animation_frame == 3 then
                 --front-background
                 bg:set_draw_depth(palmtreelib.SURFACE_BG_DEPTH.BACKGROUND)
-                palmtreelib.create_palmtree(16, 103, 2, palmtreelib.SURFACE_BG_DEPTH.BACKGROUND)
+                palmtreelib.create_palmtree(14, 103, 2, palmtreelib.SURFACE_BG_DEPTH.BACKGROUND)
                 palmtreelib.create_palmtree(23, 103, 0, palmtreelib.SURFACE_BG_DEPTH.BACKGROUND)
                 palmtreelib.create_palmtree(32, 103, 1, palmtreelib.SURFACE_BG_DEPTH.BACKGROUND, true)
             elseif bg.animation_frame == 2 then
                 --mid-background
                 bg:set_draw_depth(palmtreelib.SURFACE_BG_DEPTH.MID_BACKGROUND)
-                palmtreelib.create_palmtree_relative(-7, 2, 1, palmtreelib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
+                palmtreelib.create_palmtree_relative(-8, 1.6, 1, palmtreelib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
                 palmtreelib.create_palmtree_relative(-3, 1, 0, palmtreelib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
-                palmtreelib.create_palmtree_relative(3.5, 1, 2, palmtreelib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
+                palmtreelib.create_palmtree_relative(3.1, 0.8, 2, palmtreelib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
             elseif bg.animation_frame == 1 then
                 --back-background
                 bg:set_draw_depth(palmtreelib.SURFACE_BG_DEPTH.BACK_BACKGROUND)
