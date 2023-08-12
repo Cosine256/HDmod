@@ -6,6 +6,17 @@ shopslib = require 'lib.entities.shops'
 
 local module = {}
 
+module.SURFACE_BG_DEPTH = {
+    FOREGROUND = 5,
+    BACKWALL = 49,
+    BACKGROUND = 50,
+    -- FRONT_BACKGROUND = 50,
+    MID_BACKGROUND = 51,
+    BACK_BACKGROUND = 52,
+    SUN = 53,
+    SKY = 53,
+}
+
 local function add_decorations()
     snowlib.add_snow_to_floor()
     treelib.onlevel_decorate_haunted()

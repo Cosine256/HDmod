@@ -1,4 +1,5 @@
 local module = {}
+local decorlib = require('lib.gen.decor')
 
 local day_texture_id
 local night_texture_id
@@ -42,25 +43,14 @@ do
     night_layered_texture_id = define_texture(night_layered_texture_def)
 end
 
-module.SURFACE_BG_DEPTH = {
-    FOREGROUND = 5,
-    BACKWALL = 49,
-    BACKGROUND = 50,
-    -- FRONT_BACKGROUND = 50,
-    MID_BACKGROUND = 51,
-    BACK_BACKGROUND = 52,
-    SUN = 53,
-    SKY = 53,
-}
-
 function module.create_palmtree(relative_x, relative_y, animation_frame, depth, flipped)
     local flipped = flipped or false
     local size = 1
-    if depth == module.SURFACE_BG_DEPTH.FOREGROUND then
+    if depth == decorlib.SURFACE_BG_DEPTH.FOREGROUND then
         size = 1.2
-    elseif depth == module.SURFACE_BG_DEPTH.MID_BACKGROUND then
+    elseif depth == decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND then
         size = 0.6
-    elseif depth == module.SURFACE_BG_DEPTH.BACK_BACKGROUND then
+    elseif depth == decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND then
         size = 0.3
     end
     ---@type BGSurfaceLayer
@@ -74,9 +64,9 @@ function module.create_palmtree(relative_x, relative_y, animation_frame, depth, 
     palmtree.hitboxy = 3.75*size
     local texture_id
     if state.win_state == WIN_STATE.HUNDUN_WIN then
-        texture_id = depth > module.SURFACE_BG_DEPTH.BACKGROUND and night_layered_texture_id or night_texture_id
+        texture_id = depth > decorlib.SURFACE_BG_DEPTH.BACKGROUND and night_layered_texture_id or night_texture_id
     else
-        texture_id = depth > module.SURFACE_BG_DEPTH.BACKGROUND and day_layered_texture_id or day_texture_id
+        texture_id = depth > decorlib.SURFACE_BG_DEPTH.BACKGROUND and day_layered_texture_id or day_texture_id
     end
     palmtree:set_texture(texture_id)
     palmtree.animation_frame = animation_frame

@@ -11,7 +11,7 @@ local guy
 local camel
 
 set_callback(function()
-    surfacelib.decorate_surface()
+    surfacelib.decorate_existing_surface()
 
     camel = get_entity(camellib.create_camel(7, 100, LAYER.FRONT))
     spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)

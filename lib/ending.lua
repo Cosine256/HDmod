@@ -188,8 +188,8 @@ end, SPAWN_TYPE.ANY, MASK.PLAYER)
 
 
 set_callback(function ()
-    surfacelib.decorate_surface()
-    
+    surfacelib.decorate_existing_surface()
+
 	state.camera.bounds_top = 109.6640
 	-- state.camera.bounds_bottom = 
 	-- state.camera.bounds_left = 
@@ -209,6 +209,7 @@ set_callback(function ()
     spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
 
     local player = get_entity(players[1].uid)
+    set_entity_flags(player.uid, set_flag(get_entity_flags(player.uid), ENT_FLAG.TAKE_NO_DAMAGE))
     carry(camel.uid, player.uid)
 end, ON.CREDITS)
 

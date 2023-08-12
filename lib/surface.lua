@@ -1,6 +1,7 @@
 local module = {}
 
 local palmtreelib = require('lib.entities.palmtree')
+local decorlib = require('lib.gen.decor')
 
 local sky_hard_texture_id
 local surface_hard_texture_id
@@ -89,7 +90,7 @@ function module.build_credits_surface()
     ]]
 end
 
-function module.decorate_surface()
+function module.decorate_existing_surface()
     local TO_REMOVE = {ENT_TYPE.ITEM_EGGSHIP, ENT_TYPE.FX_EGGSHIP_DOOR, ENT_TYPE.FX_EGGSHIP_SHELL, ENT_TYPE.BG_SURFACE_STAR}
     local TO_MOVE = {ENT_TYPE.BG_LEVEL_BACKWALL, ENT_TYPE.BG_SURFACE_BACKGROUNDSEAM}
     local TO_DECORATE = {ENT_TYPE.BG_SURFACE_LAYER, ENT_TYPE.BG_SURFACE_ENTITY}
@@ -102,7 +103,7 @@ function module.decorate_surface()
         local x, _, _ = get_position(uid)
         local deco = get_entity(uid)
         if deco.type.id == ENT_TYPE.BG_LEVEL_BACKWALL then
-            deco:set_draw_depth(palmtreelib.SURFACE_BG_DEPTH.BACKWALL)
+            deco:set_draw_depth(decorlib.SURFACE_BG_DEPTH.BACKWALL)
         end
         if x < 40 then
             deco:destroy()
@@ -112,12 +113,12 @@ function module.decorate_surface()
     end
 
     local sky = get_entity(get_entities_by_type(ENT_TYPE.BG_SPACE)[1])
-    sky:set_draw_depth(palmtreelib.SURFACE_BG_DEPTH.SKY)
+    sky:set_draw_depth(decorlib.SURFACE_BG_DEPTH.SKY)
 
     local sun = get_entity(get_entities_by_type(ENT_TYPE.BG_SURFACE_NEBULA)[1])
     sun.width = 9
     sun.height = 4.5
-    sun:set_draw_depth(palmtreelib.SURFACE_BG_DEPTH.SUN)
+    sun:set_draw_depth(decorlib.SURFACE_BG_DEPTH.SUN)
 
     if state.win_state == WIN_STATE.HUNDUN_WIN then
         sun:set_texture(TEXTURE.DATA_TEXTURES_BG_DUAT2_0)
@@ -130,7 +131,7 @@ function module.decorate_surface()
     -- prevent teetering animation in intro
     spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, 53, 99, LAYER.FRONT)
 
-    palmtreelib.create_palmtree(30, 100, 1, palmtreelib.SURFACE_BG_DEPTH.FOREGROUND)
+    palmtreelib.create_palmtree(30, 100, 1, decorlib.SURFACE_BG_DEPTH.FOREGROUND)
 
     for _, uid in pairs(get_entities_by_type(TO_DECORATE)) do
         ---@type BGSurfaceLayer
@@ -141,27 +142,27 @@ function module.decorate_surface()
                 bg:set_texture(surface_foreground_hard_texture_id)
             end
             --foreground
-            bg:set_draw_depth(palmtreelib.SURFACE_BG_DEPTH.FOREGROUND)
+            bg:set_draw_depth(decorlib.SURFACE_BG_DEPTH.FOREGROUND)
         elseif texture_id == TEXTURE.DATA_TEXTURES_BASE_SURFACE_0 then
             if state.win_state == WIN_STATE.HUNDUN_WIN then
                 bg:set_texture(surface_hard_texture_id)
             end
             if bg.animation_frame == 3 then
                 --front-background
-                bg:set_draw_depth(palmtreelib.SURFACE_BG_DEPTH.BACKGROUND)
-                palmtreelib.create_palmtree(14, 103, 2, palmtreelib.SURFACE_BG_DEPTH.BACKGROUND)
-                palmtreelib.create_palmtree(23, 103, 0, palmtreelib.SURFACE_BG_DEPTH.BACKGROUND)
-                palmtreelib.create_palmtree(32, 103, 1, palmtreelib.SURFACE_BG_DEPTH.BACKGROUND, true)
+                bg:set_draw_depth(decorlib.SURFACE_BG_DEPTH.BACKGROUND)
+                palmtreelib.create_palmtree(14, 103, 2, decorlib.SURFACE_BG_DEPTH.BACKGROUND)
+                palmtreelib.create_palmtree(23, 103, 0, decorlib.SURFACE_BG_DEPTH.BACKGROUND)
+                palmtreelib.create_palmtree(32, 103, 1, decorlib.SURFACE_BG_DEPTH.BACKGROUND, true)
             elseif bg.animation_frame == 2 then
                 --mid-background
-                bg:set_draw_depth(palmtreelib.SURFACE_BG_DEPTH.MID_BACKGROUND)
-                palmtreelib.create_palmtree_relative(-8, 1.6, 1, palmtreelib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-                palmtreelib.create_palmtree_relative(-3, 1, 0, palmtreelib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
-                palmtreelib.create_palmtree_relative(3.1, 0.8, 2, palmtreelib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
+                bg:set_draw_depth(decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND)
+                palmtreelib.create_palmtree_relative(-8, 1.6, 1, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
+                palmtreelib.create_palmtree_relative(-3, 1, 0, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
+                palmtreelib.create_palmtree_relative(3.1, 0.8, 2, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
             elseif bg.animation_frame == 1 then
                 --back-background
-                bg:set_draw_depth(palmtreelib.SURFACE_BG_DEPTH.BACK_BACKGROUND)
-                -- palmtreelib.create_palmtree_relative(-10, -1, 0, palmtreelib.SURFACE_BG_DEPTH.BACK_BACKGROUND, bg, true)
+                bg:set_draw_depth(decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND)
+                -- palmtreelib.create_palmtree_relative(-10, -1, 0, decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND, bg, true)
                 -- No palmtrees in back_background!
             end
         end
