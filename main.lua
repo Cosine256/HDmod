@@ -77,12 +77,14 @@ set_callback(function(room_gen_ctx)
 
 			shopslib.set_blackmarket_shoprooms(room_gen_ctx)
 
+			s2roomctxlib.assign_s2_room_templates(room_gen_ctx)
+
 			roomgenlib.onlevel_generation_execution_phase_one()
 			roomgenlib.onlevel_generation_execution_phase_two()
 
+		else
+			s2roomctxlib.assign_s2_room_templates(room_gen_ctx)
 		end
-
-		s2roomctxlib.assign_s2_room_templates(room_gen_ctx)
 
 		spawndeflib.set_chances(room_gen_ctx)
 
