@@ -211,6 +211,7 @@ set_callback(function ()
 
     local player = get_entity(players[1].uid)
     player.flags = set_flag(player.flags, ENT_FLAG.TAKE_NO_DAMAGE)
+    player.flags = set_flag(player.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
     player.more_flags = set_flag(player.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
     carry(camel.uid, player.uid)
 end, ON.CREDITS)

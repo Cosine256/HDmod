@@ -17,6 +17,8 @@ module.SURFACE_BG_DEPTH = {
     SKY = 53,
 }
 
+module.CREDITS_SCROLLING = false
+
 local function add_decorations()
     snowlib.add_snow_to_floor()
     treelib.onlevel_decorate_haunted()

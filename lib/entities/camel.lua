@@ -138,7 +138,7 @@ function module.set_camel_walk_in(camel)
     camel.user_data.state = CAMEL_STATE.WALK_IN
     camel:set_pre_update_state_machine(function (self)
         if camel.user_data.state == CAMEL_STATE.PRE_MINIGAME then
-            surfacelib.build_credits_bounds()
+            surfacelib.start_scrolling()
             clear_callback()
         end
     end)
@@ -250,6 +250,7 @@ local function cannon_set(ent)
     ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
     ent.flags = set_flag(ent.flags, ENT_FLAG.INVISIBLE)
     ent.flags = set_flag(ent.flags, ENT_FLAG.TAKE_NO_DAMAGE)
+    ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
     ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
     ent.user_data = {
         animation_state = CANNON_ANIMATIONS.IDLE,
@@ -265,6 +266,7 @@ local function camel_set(ent, cannon_uid)
     set_dimensions(ent)
     ent:tame(true)
     ent.flags = set_flag(ent.flags, ENT_FLAG.TAKE_NO_DAMAGE)
+    ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
     -- animationlib.set_animation(ent.user_data, ANIMATIONS.IDLE)
     if cannon_uid ~= -1 then
         ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
