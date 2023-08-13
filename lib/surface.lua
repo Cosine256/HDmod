@@ -38,9 +38,9 @@ function module.build_credits_surface()
         ---@param self Movable | Entity | Player
         function (self)
             if self.relative_x ~= 0 or self.relative_y ~= 0 then
-                self.relative_x, self.relative_y = 0, 117.5
+                self.relative_x, self.relative_y = 0, 0
             end
-            -- self.y = 117.5
+            -- # TOFIX: setting self.y or self.relative_y here for some reason doesn't work. Find a way to set to 117 in the future.
         end
     )
 

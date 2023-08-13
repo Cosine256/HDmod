@@ -1,5 +1,6 @@
 local module = {}
 local decorlib = require('lib.gen.decor')
+local palmtreelib = require('lib.entities.palmtree')
 
 local surface_hard_texture_id
 local surface_foreground_hard_texture_id
@@ -48,12 +49,11 @@ local function _create_surface_layer_looping_sub(x, y, depth)
     bg_surface_layer.relative_x, bg_surface_layer.relative_y = x, y--seems to be 10 higher than intro
     module.set(bg_surface_layer, depth)
 
-    local speed = 0.02
     if depth == decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND then
-        speed = 0.015
+        -- # TODO: If this palmtree actually sticks with the moving background, then break up create_surface_layer_looping so we can decorate them with palmtrees in surface.lua
+        palmtreelib.create_palmtree_relative(-8, 1.6, 1, depth, bg_surface_layer)
         bg_surface_layer.animation_frame = 2
     elseif depth == decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND then
-        speed = 0.01
         bg_surface_layer.animation_frame = 1
     end
 
@@ -63,7 +63,7 @@ local function _create_surface_layer_looping_sub(x, y, depth)
             if self.relative_x >= 93 then
                 self.relative_x = self.relative_x - 119.97
             elseif decorlib.CREDITS_SCROLLING then
-                self.relative_x = self.relative_x + speed
+                self.relative_x = self.relative_x + decorlib.get_surface_bg_speed(depth)
             end
         end
     )

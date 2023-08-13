@@ -19,6 +19,16 @@ module.SURFACE_BG_DEPTH = {
 
 module.CREDITS_SCROLLING = false
 
+local SURFACE_BG_SPEED = {}
+SURFACE_BG_SPEED[module.SURFACE_BG_DEPTH.FOREGROUND] = 0.02
+SURFACE_BG_SPEED[module.SURFACE_BG_DEPTH.BACKGROUND] = 0.02
+SURFACE_BG_SPEED[module.SURFACE_BG_DEPTH.MID_BACKGROUND] = 0.015
+SURFACE_BG_SPEED[module.SURFACE_BG_DEPTH.BACK_BACKGROUND] = 0.01
+
+function module.get_surface_bg_speed(depth)
+    return SURFACE_BG_SPEED[depth] and SURFACE_BG_SPEED[depth] or 0
+end
+
 local function add_decorations()
     snowlib.add_snow_to_floor()
     treelib.onlevel_decorate_haunted()
