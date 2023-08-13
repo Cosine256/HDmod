@@ -29,12 +29,12 @@ function module.build_credits_surface()
         spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, x, 110, LAYER.FRONT)
     end
 
-    local bg_sky = get_entity(spawn_entity(ENT_TYPE.BG_SPACE, 27.5, 123.50, LAYER.FRONT, 0, 0))-- intro's is high enough to see the white part
-    local bg_sun = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_NEBULA, 14, 115, LAYER.FRONT, 0, 0))
-    bg_sun.width = 9
-    bg_sun.height = 4.5
-    bg_sun.relative_x, bg_sun.relative_y = 0, 0
-    bg_sun:set_post_update_state_machine(
+    local sky = get_entity(spawn_entity(ENT_TYPE.BG_SPACE, 27.5, 123.50, LAYER.FRONT, 0, 0))-- intro's is high enough to see the white part
+    local sun = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_NEBULA, 14, 115, LAYER.FRONT, 0, 0))
+    sun.width = 9
+    sun.height = 4.5
+    sun.relative_x, sun.relative_y = 0, 0
+    sun:set_post_update_state_machine(
         ---@param self Movable | Entity | Player
         function (self)
             if self.relative_x ~= 0 or self.relative_y ~= 0 then
@@ -48,7 +48,8 @@ function module.build_credits_surface()
     surfacelayerlib.create_surface_layer_looping(25, 112.6, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND)
     surfacelayerlib.create_surface_layer_looping(25, 113.6, decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND)
     if state.win_state == WIN_STATE.HUNDUN_WIN then
-        bg_sky:set_texture(sky_hard_texture_id)
+        sun:set_texture(TEXTURE.DATA_TEXTURES_BG_DUAT2_0)
+        sky:set_texture(sky_hard_texture_id)
     end
 
     decorlib.CREDITS_SCROLLING = false
