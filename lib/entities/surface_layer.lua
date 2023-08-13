@@ -1,18 +1,9 @@
 local module = {}
 local decorlib = require('lib.gen.decor')
 
-local sky_hard_texture_id
 local surface_hard_texture_id
 local surface_foreground_hard_texture_id
 do
-    local sky_hard_texture_def = TextureDefinition.new()
-    sky_hard_texture_def.width = 512
-    sky_hard_texture_def.height = 512
-    sky_hard_texture_def.tile_width = 512
-    sky_hard_texture_def.tile_height = 512
-    sky_hard_texture_def.texture_path = "res/base_sky_hardending.png"
-    sky_hard_texture_id = define_texture(sky_hard_texture_def)
-
     local surface_hard_texture_def = TextureDefinition.new()
     surface_hard_texture_def.width = 1024
     surface_hard_texture_def.height = 1024
