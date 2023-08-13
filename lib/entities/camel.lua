@@ -1,4 +1,5 @@
 local animationlib = require('lib.entities.animation')
+local surfacelib = require('lib.surface')
 local module = {}
 
 local camel_texture_id
@@ -22,9 +23,14 @@ do
 end
 
 local CAMEL_STATE <const> = {
-    PRE_MINIGAME = 0,
-    TRANSITION_TO_MINIGAME = 1,
-    MINIGAME = 2
+    WALK_IN = 0,
+    PRE_MINIGAME = 1,
+    TRANSITION_TO_MINIGAME = 2,
+    MINIGAME = 3
+}
+local CAMEL_ANIMATIONS <const> = {
+    NOT_FAKE_WALKING = {0, loop = false, frames = 1, frame_time = 4},
+    FAKE_WALKING = {1, 2, 3, 4, 5, 6, 7, 8, loop = true, frames = 8, frame_time = 4}
 }
 local CANNON_ANIMATIONS <const> = {
   STARTUP = {0, loop = false, frames = 1, frame_time = 60},
@@ -117,24 +123,53 @@ local function camel_update(ent)
     end
 end
 
+local function shoot_gun(ent, xdiff, ydiff)
+    local x, y, l = get_position(ent.uid)
+    local dist = math.sqrt(xdiff*xdiff + ydiff*ydiff) * 3
+    local vx, vy = xdiff / dist, ydiff / dist
+    local projectile = get_entity(spawn(ENT_TYPE.ITEM_BULLET, x+vx*2, y+vy*2, l, vx, vy))
+    -- projectile.angle = ent.angle
+    commonlib.play_vanilla_sound(VANILLA_SOUND.ITEMS_WEBGUN, ent.uid, 1, false)
+end
+
+---camel
+---@param camel Rockdog | Mount | Entity | Movable | PowerupCapable
+function module.set_camel_walk_in(camel)
+    camel.user_data.state = CAMEL_STATE.WALK_IN
+    camel:set_pre_update_state_machine(function (self)
+        if camel.user_data.state == CAMEL_STATE.PRE_MINIGAME then
+            surfacelib.build_credits_bounds()
+            clear_callback()
+        end
+    end)
+end
+
 ---@param ent Rockdog | Mount | Entity | Movable | PowerupCapable
 local function camel_update_credits(ent)
     camel_update(ent)
     -- Force facing one direction
-    set_entity_flags(ent.uid, set_flag(get_entity_flags(ent.uid), ENT_FLAG.FACING_LEFT))
+    ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
 
     local cannon = get_entity(ent.user_data.cannon_uid)
 
     if ent.rider_uid ~= -1 then
         -- force rider to face left
-        set_entity_flags(ent.rider_uid, set_flag(get_entity_flags(ent.rider_uid), ENT_FLAG.FACING_LEFT))
         local rider = get_entity(ent.rider_uid)
+        rider.flags = set_flag(rider.flags, ENT_FLAG.FACING_LEFT)
         rider.x = math.abs(rider.x)
 
 
         -- upon any input from the rider, set to transition to minigame
         local input = read_input(rider.uid)
-        if ent.user_data.state == CAMEL_STATE.PRE_MINIGAME then
+        if ent.user_data.state == CAMEL_STATE.WALK_IN then
+            local x, _, _ = get_position(ent.uid)
+            if x < 14.5 then
+                ent.user_data.state = CAMEL_STATE.PRE_MINIGAME
+                rider.more_flags = clr_flag(rider.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
+            else
+                ent.velocityx = -0.072
+            end
+        elseif ent.user_data.state == CAMEL_STATE.PRE_MINIGAME then
             if (
                 test_flag(input, INPUT_FLAG.LEFT)
                 or test_flag(input, INPUT_FLAG.RIGHT)
@@ -143,20 +178,45 @@ local function camel_update_credits(ent)
             ) then
                 cannon.flags = clr_flag(cannon.flags, ENT_FLAG.INVISIBLE)
                 ent.user_data.state = CAMEL_STATE.TRANSITION_TO_MINIGAME
-                animationlib.set_animation(ent.user_data, CANNON_ANIMATIONS.STARTUP)
+                animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.STARTUP)
             end
         elseif ent.user_data.state == CAMEL_STATE.TRANSITION_TO_MINIGAME
-            and ent.user_data.animation_timer == 0
+            and cannon.user_data.animation_timer == 0
         then
             ent.user_data.state = CAMEL_STATE.MINIGAME
-            animationlib.set_animation(ent.user_data, CANNON_ANIMATIONS.IDLE)
+            animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.IDLE)
         elseif ent.user_data.state == CAMEL_STATE.MINIGAME
         then
             -- # TODO: Cannon firing and angling
+            if cannon.user_data.cannon_timer > 0 then
+                cannon.user_data.cannon_timer = cannon.user_data.cannon_timer - 1
+            end
+            
+            -- Angles: (depending on the current angle of the turret, add or subtract degrees)
+            -- When input:
+            -- left, angle cannon until left
+            -- left and up, angle cannon until left up
+            -- up, angle cannon until up
+            -- right, angle cannon until right
+            -- right and down, angle cannon right
+            -- down, angle cannon down
+            -- down and left, angle cannon down left
+
+            -- When input whip, fire the cannon.
+            if test_flag(input, INPUT_FLAG.WHIP) and cannon.user_data.cannon_timer == 0 then
+                shoot_gun(cannon, 0, 0)
+                message("BLAM")
+                cannon.user_data.cannon_timer = 10
+            end
         end
 
-        cannon.animation_frame = animationlib.get_animation_frame(ent.user_data)
-        animationlib.update_timer(ent.user_data)
+        --when not moving, use custom animations to animate it fake walking.
+        -- if ent.standing_on_uid ~= 0 and ent.velocityx == 0 then
+        --     ent.animation_frame = animationlib.get_animation_frame(ent.user_data)
+        --     animationlib.update_timer(ent.user_data)
+        -- end
+        cannon.animation_frame = animationlib.get_animation_frame(cannon.user_data)
+        animationlib.update_timer(cannon.user_data)
         -- message(string.format("animation_timer: %s", ent.user_data.animation_timer))
     end
 
@@ -191,6 +251,11 @@ local function cannon_set(ent)
     ent.flags = set_flag(ent.flags, ENT_FLAG.INVISIBLE)
     ent.flags = set_flag(ent.flags, ENT_FLAG.TAKE_NO_DAMAGE)
     ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
+    ent.user_data = {
+        animation_state = CANNON_ANIMATIONS.IDLE,
+        animation_timer = 0,
+        cannon_timer = 0,
+    }
 end
 
 ---@param ent Rockdog | Mount | Entity | Movable | PowerupCapable
@@ -199,16 +264,17 @@ local function camel_set(ent, cannon_uid)
     ent:set_texture(camel_texture_id)
     set_dimensions(ent)
     ent:tame(true)
+    ent.flags = set_flag(ent.flags, ENT_FLAG.TAKE_NO_DAMAGE)
     -- animationlib.set_animation(ent.user_data, ANIMATIONS.IDLE)
     if cannon_uid ~= -1 then
-        set_entity_flags(ent.uid, set_flag(get_entity_flags(ent.uid), ENT_FLAG.FACING_LEFT))
+        ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
         ent.user_data = {
             state = CAMEL_STATE.PRE_MINIGAME,
             cannon_uid = cannon_uid,
-            animation_state = CANNON_ANIMATIONS.IDLE,
+            animation_state = CAMEL_ANIMATIONS.NOT_FAKE_WALKING,
             animation_timer = 0,
         }
-        animationlib.set_animation(ent.user_data, CANNON_ANIMATIONS.IDLE)
+        animationlib.set_animation(get_entity(cannon_uid).user_data, CANNON_ANIMATIONS.IDLE)
     end
     set_post_statemachine(ent.uid, cannon_uid ~= -1 and camel_update_credits or camel_update)
 end

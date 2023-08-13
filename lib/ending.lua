@@ -203,13 +203,15 @@ end, ON.SCORES)
 
 set_callback(function ()
     surfacelib.build_credits_surface()
-    spawn_player(1, 23, 111)
+    spawn_player(1, 25, 111)
 
-    camel = get_entity(camellib.create_camel_credits(23, 111, LAYER.FRONT))
+    camel = get_entity(camellib.create_camel_credits(25, 111, LAYER.FRONT))
     spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
+    camellib.set_camel_walk_in(camel)
 
     local player = get_entity(players[1].uid)
-    set_entity_flags(player.uid, set_flag(get_entity_flags(player.uid), ENT_FLAG.TAKE_NO_DAMAGE))
+    player.flags = set_flag(player.flags, ENT_FLAG.TAKE_NO_DAMAGE)
+    player.more_flags = set_flag(player.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
     carry(camel.uid, player.uid)
 end, ON.CREDITS)
 

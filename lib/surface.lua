@@ -54,7 +54,7 @@ local function _create_surface_layer_looping_sub(x, y, depth)
         speed = 0.01
         bg_surface_layer.animation_frame = 1
     end
-    
+
     bg_surface_layer:set_post_update_state_machine(
         ---@param self Movable | Entity | BGSurfaceLayer
         function (self)
@@ -72,16 +72,19 @@ local function create_surface_layer_looping(x, y, depth)
     _create_surface_layer_looping_sub(x - 60, y, depth)
 end
 
-function module.build_credits_surface()
-    for x = 3, 38, 1 do
-        spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, x, 110, LAYER.FRONT)
-    end
+function module.build_credits_bounds()
     for y = 111, 113, 1 do
         spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, 4, y, LAYER.FRONT)
         spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, 24, y, LAYER.FRONT)
     end
+end
 
-    local bg_sky = get_entity(spawn_entity(ENT_TYPE.BG_SPACE, 27.5, 112.950, LAYER.FRONT, 0, 0))
+function module.build_credits_surface()
+    for x = 3, 38, 1 do
+        spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, x, 110, LAYER.FRONT)
+    end
+
+    local bg_sky = get_entity(spawn_entity(ENT_TYPE.BG_SPACE, 27.5, 123.50, LAYER.FRONT, 0, 0))-- intro's is high enough to see the white part
     local bg_sun = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_NEBULA, 14, 115, LAYER.FRONT, 0, 0))
     bg_sun.width = 9
     bg_sun.height = 4.5
@@ -90,9 +93,10 @@ function module.build_credits_surface()
     bg_sun:set_post_update_state_machine(
         ---@param self Movable | Entity | Player
         function (self)
-            if self.relative_x ~= 0 or self.relative_y ~= 0 then
-                self.relative_x, self.relative_y = 0, 0
-            end
+            -- if self.relative_x ~= 0 or self.relative_y ~= 0 then
+            --     self.relative_x, self.relative_y = 0, 0
+            -- end
+            self.y = 117.5
         end
     )
 
