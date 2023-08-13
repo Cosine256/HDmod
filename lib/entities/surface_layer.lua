@@ -30,20 +30,32 @@ do
     surface_foreground_hard_texture_id = define_texture(surface_foreground_hard_texture_def)
 end
 
+function module.set(ent, depth)
+    if depth ~= decorlib.SURFACE_BG_DEPTH.FOREGROUND then
+        ent.width = 60
+        ent.height = 3.75
+        ent.hitboxx = 30
+        ent.hitboxy = 1.875
+        ent.tile_width = 4
+        ent.tile_height = 1
+        if depth == decorlib.SURFACE_BG_DEPTH.BACKGROUND then
+            ent.animation_frame = 3
+        elseif depth == decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND then
+            ent.animation_frame = 2
+        elseif depth == decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND then
+            ent.animation_frame = 1
+        end
+    end
+    ent:set_draw_depth(depth)
+    if state.win_state == WIN_STATE.HUNDUN_WIN then
+        ent:set_texture(depth == decorlib.SURFACE_BG_DEPTH.FOREGROUND and surface_foreground_hard_texture_id or surface_hard_texture_id)
+    end
+end
+
 local function _create_surface_layer_looping_sub(x, y, depth)
     local bg_surface_layer = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_LAYER, 0, 0, LAYER.FRONT, 0, 0))
     bg_surface_layer.relative_x, bg_surface_layer.relative_y = x, y--seems to be 10 higher than intro
-    bg_surface_layer.width = 60
-    bg_surface_layer.height = 3.75
-    bg_surface_layer.hitboxx = 30
-    bg_surface_layer.hitboxy = 1.875
-    bg_surface_layer.tile_width = 4
-    bg_surface_layer.tile_height = 1
-    bg_surface_layer.animation_frame = 3
-    bg_surface_layer:set_draw_depth(depth)
-    if state.win_state == WIN_STATE.HUNDUN_WIN then
-        bg_surface_layer:set_texture(surface_hard_texture_id)
-    end
+    module.set(bg_surface_layer, depth)
 
     local speed = 0.02
     if depth == decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND then

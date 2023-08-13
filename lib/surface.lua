@@ -5,8 +5,6 @@ local palmtreelib = require('lib.entities.palmtree')
 local decorlib = require('lib.gen.decor')
 
 local sky_hard_texture_id
-local surface_hard_texture_id
-local surface_foreground_hard_texture_id
 do
     local sky_hard_texture_def = TextureDefinition.new()
     sky_hard_texture_def.width = 512
@@ -15,22 +13,6 @@ do
     sky_hard_texture_def.tile_height = 512
     sky_hard_texture_def.texture_path = "res/base_sky_hardending.png"
     sky_hard_texture_id = define_texture(sky_hard_texture_def)
-
-    local surface_hard_texture_def = TextureDefinition.new()
-    surface_hard_texture_def.width = 1024
-    surface_hard_texture_def.height = 1024
-    surface_hard_texture_def.tile_width = 1024
-    surface_hard_texture_def.tile_height = 256
-    surface_hard_texture_def.texture_path = "res/base_surface_hardending.png"
-    surface_hard_texture_id = define_texture(surface_hard_texture_def)
-
-    local surface_foreground_hard_texture_def = TextureDefinition.new()
-    surface_foreground_hard_texture_def.width = 1024
-    surface_foreground_hard_texture_def.height = 1024
-    surface_foreground_hard_texture_def.tile_width = 512
-    surface_foreground_hard_texture_def.tile_height = 256
-    surface_foreground_hard_texture_def.texture_path = "res/base_surface_hardending.png"
-    surface_foreground_hard_texture_id = define_texture(surface_foreground_hard_texture_def)
 end
 
 
@@ -56,9 +38,9 @@ function module.build_credits_surface()
         ---@param self Movable | Entity | Player
         function (self)
             if self.relative_x ~= 0 or self.relative_y ~= 0 then
-                self.relative_x, self.relative_y = 0, 0
+                self.relative_x, self.relative_y = 0, 117.5
             end
-            self.y = 117.5
+            -- self.y = 117.5
         end
     )
 
@@ -120,34 +102,26 @@ function module.decorate_existing_surface()
         local bg = get_entity(uid)
         local texture_id = bg:get_texture()
         if texture_id == TEXTURE.DATA_TEXTURES_BASE_SURFACE_1 then
-            if state.win_state == WIN_STATE.HUNDUN_WIN then
-                bg:set_texture(surface_foreground_hard_texture_id)
-            end
-            --foreground
-            bg:set_draw_depth(decorlib.SURFACE_BG_DEPTH.FOREGROUND)
+            surfacelayerlib.set(bg, decorlib.SURFACE_BG_DEPTH.FOREGROUND)
         elseif texture_id == TEXTURE.DATA_TEXTURES_BASE_SURFACE_0 then
-            if state.win_state == WIN_STATE.HUNDUN_WIN then
-                bg:set_texture(surface_hard_texture_id)
-            end
+            --default back-background, animation_frame == 1. We don't need to add palmtrees for it.
+            local depth = decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND
             if bg.animation_frame == 3 then
                 --front-background
-                bg:set_draw_depth(decorlib.SURFACE_BG_DEPTH.BACKGROUND)
+                depth = decorlib.SURFACE_BG_DEPTH.BACKGROUND
                 palmtreelib.create_palmtree(14, 103, 2, decorlib.SURFACE_BG_DEPTH.BACKGROUND)
                 palmtreelib.create_palmtree(23, 103, 0, decorlib.SURFACE_BG_DEPTH.BACKGROUND)
                 palmtreelib.create_palmtree(32, 103, 1, decorlib.SURFACE_BG_DEPTH.BACKGROUND, true)
             elseif bg.animation_frame == 2 then
                 --mid-background
-                bg:set_draw_depth(decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND)
+                depth = decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND
                 palmtreelib.create_palmtree_relative(-8, 1.6, 1, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
                 palmtreelib.create_palmtree_relative(-3, 1, 0, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
                 palmtreelib.create_palmtree_relative(3.1, 0.8, 2, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
-            elseif bg.animation_frame == 1 then
-                --back-background
-                bg:set_draw_depth(decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND)
-                -- palmtreelib.create_palmtree_relative(-10, -1, 0, decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND, bg, true)
-                -- No palmtrees in back_background!
             end
+            surfacelayerlib.set(bg, depth)
         end
+
     end
 end
 
