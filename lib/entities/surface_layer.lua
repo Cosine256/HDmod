@@ -24,7 +24,7 @@ end
 
 function module.set(ent, depth)
     if depth ~= decorlib.SURFACE_BG_DEPTH.FOREGROUND then
-        ent.width = 60
+        ent.width = decorlib.BG_WIDTH
         ent.height = 3.75
         ent.hitboxx = 30
         ent.hitboxy = 1.875
@@ -44,20 +44,18 @@ function module.set(ent, depth)
     end
 end
 
-local function _create_surface_layer_looping_sub(x, y, depth)
-    local bg_surface_layer = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_LAYER, 0, 0, LAYER.FRONT, 0, 0))
-    bg_surface_layer.relative_x, bg_surface_layer.relative_y = x, y--seems to be 10 higher than intro
-    module.set(bg_surface_layer, depth)
+function module.create_surface_layer_looping(y, depth, is_offset)
+    local ent = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_LAYER, 0, 0, LAYER.FRONT, 0, 0))
+    ent.relative_x, ent.relative_y = decorlib.BG_CENTER + (is_offset and decorlib.BG_WIDTH or 0), y--seems to be 10 higher than intro
+    module.set(ent, depth)
 
     if depth == decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND then
-        -- # TODO: If this palmtree actually sticks with the moving background, then break up create_surface_layer_looping so we can decorate them with palmtrees in surface.lua
-        palmtreelib.create_palmtree_relative(-8, 1.6, 1, depth, bg_surface_layer)
-        bg_surface_layer.animation_frame = 2
+        ent.animation_frame = 2
     elseif depth == decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND then
-        bg_surface_layer.animation_frame = 1
+        ent.animation_frame = 1
     end
 
-    bg_surface_layer:set_post_update_state_machine(
+    ent:set_post_update_state_machine(
         ---@param self Movable | Entity | BGSurfaceLayer
         function (self)
             if self.relative_x >= 93 then
@@ -67,11 +65,7 @@ local function _create_surface_layer_looping_sub(x, y, depth)
             end
         end
     )
-end
-
-function module.create_surface_layer_looping(x, y, depth)
-    _create_surface_layer_looping_sub(x, y, depth)
-    _create_surface_layer_looping_sub(x - 60, y, depth)
+    return ent
 end
 
 return module

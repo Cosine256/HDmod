@@ -17,6 +17,9 @@ module.SURFACE_BG_DEPTH = {
     SKY = 53,
 }
 
+module.BG_WIDTH = 60
+module.BG_CENTER = 25
+
 module.CREDITS_SCROLLING = false
 
 local SURFACE_BG_SPEED = {}
