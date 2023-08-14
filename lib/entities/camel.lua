@@ -165,7 +165,6 @@ local function camel_update_credits(ent)
             local x, _, _ = get_position(ent.uid)
             if x < 14.5 then
                 ent.user_data.state = CAMEL_STATE.PRE_MINIGAME
-                rider.more_flags = clr_flag(rider.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
             else
                 ent.velocityx = -0.072
             end
@@ -175,6 +174,7 @@ local function camel_update_credits(ent)
                 or test_flag(input, INPUT_FLAG.RIGHT)
                 or test_flag(input, INPUT_FLAG.UP)
                 or test_flag(input, INPUT_FLAG.DOWN)
+                or test_flag(input, INPUT_FLAG.JUMP)
             ) then
                 cannon.flags = clr_flag(cannon.flags, ENT_FLAG.INVISIBLE)
                 ent.user_data.state = CAMEL_STATE.TRANSITION_TO_MINIGAME
@@ -185,6 +185,7 @@ local function camel_update_credits(ent)
         then
             ent.user_data.state = CAMEL_STATE.MINIGAME
             animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.IDLE)
+            rider.more_flags = clr_flag(rider.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
         elseif ent.user_data.state == CAMEL_STATE.MINIGAME
         then
             -- # TODO: Cannon firing and angling
