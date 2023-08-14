@@ -1,6 +1,5 @@
 local module = {}
 local decorlib = require('lib.gen.decor')
-local palmtreelib = require('lib.entities.palmtree')
 
 local surface_hard_texture_id
 local surface_foreground_hard_texture_id
@@ -23,7 +22,15 @@ do
 end
 
 function module.set(ent, depth)
-    if depth ~= decorlib.SURFACE_BG_DEPTH.FOREGROUND then
+    if depth == decorlib.SURFACE_BG_DEPTH.FOREGROUND then
+        ent.width = 7.5
+        ent.height = 3.75
+        ent.hitboxx = 3.75
+        ent.hitboxy = 1.875
+        ent.tile_width = 1
+        ent.tile_height = 1
+        ent:set_texture(TEXTURE.DATA_TEXTURES_BASE_SURFACE_1)
+    else
         ent.width = decorlib.BG_WIDTH
         ent.height = 3.75
         ent.hitboxx = 30
@@ -44,12 +51,14 @@ function module.set(ent, depth)
     end
 end
 
-function module.create_surface_layer_looping(y, depth, is_offset)
+function module.create_surface_layer_looping(y, depth, is_offset, animation_frame)
     local ent = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_LAYER, 0, 0, LAYER.FRONT, 0, 0))
     ent.relative_x, ent.relative_y = decorlib.BG_CENTER + (is_offset and decorlib.BG_WIDTH or 0), y--seems to be 10 higher than intro
     module.set(ent, depth)
 
-    if depth == decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND then
+    if animation_frame then -- # TODO: Refactor setting animation frame into module.set()
+        ent.animation_frame = animation_frame
+    elseif depth == decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND then
         ent.animation_frame = 2
     elseif depth == decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND then
         ent.animation_frame = 1
@@ -66,6 +75,17 @@ function module.create_surface_layer_looping(y, depth, is_offset)
         end
     )
     return ent
+end
+
+function module.create_surface_layer_foreground_relative(offset_x, offset_y, animation_frame, overlay)
+    local ent = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_LAYER, 0, 0, LAYER.FRONT, 0, 0))
+    module.set(ent, decorlib.SURFACE_BG_DEPTH.FOREGROUND)
+    ent.animation_frame = animation_frame
+    ent.relative_x, ent.relative_y = overlay.relative_x+offset_x, overlay.relative_y+offset_y
+    ent:set_post_update_state_machine(function (self)
+        self.x = overlay.x + offset_x
+        self.y = overlay.y + offset_y
+    end)
 end
 
 return module

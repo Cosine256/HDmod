@@ -44,43 +44,91 @@ function module.build_credits_surface()
         end
     )
 
+    local depth
     local bg
-    bg = surfacelayerlib.create_surface_layer_looping(111.15, decorlib.SURFACE_BG_DEPTH.BACKGROUND)
 
-    bg = surfacelayerlib.create_surface_layer_looping(111.15, decorlib.SURFACE_BG_DEPTH.BACKGROUND, true)
+    --foreground
+    depth = decorlib.SURFACE_BG_DEPTH.FOREGROUND
+    bg = surfacelayerlib.create_surface_layer_looping(110.5, depth, false, 0)
+    -- -26..26, -0.2..1.2
+    surfacelayerlib.create_surface_layer_foreground_relative(-26, 0.2, 1, bg)
+    palmtreelib.create_palmtree_relative(-22, -1.0, 1, depth, bg, true)
+    surfacelayerlib.create_surface_layer_foreground_relative(-18, 0.5, 1, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(-10, 0, 0, bg)
+    palmtreelib.create_palmtree_relative(-8, 1.0, 2, depth, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(-5, -0.2, 1, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(0, 1, 1, bg)
+    palmtreelib.create_palmtree_relative(3, 0, 0, depth, bg, true)
+    surfacelayerlib.create_surface_layer_foreground_relative(5, 0, 1, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(10, 0.4, 1, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(18, 1, 0, bg)
+    palmtreelib.create_palmtree_relative(20, -1.3, 1, depth, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(26, 0, 1, bg)
+
+    bg = surfacelayerlib.create_surface_layer_looping(110.5, depth, true, 0)
+    surfacelayerlib.create_surface_layer_foreground_relative(-26, 0, 1, bg)
+    palmtreelib.create_palmtree_relative(-20, 1.3, 2, depth, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(-18, 0, 0, bg)
+    palmtreelib.create_palmtree_relative(-14, -0.4, 2, depth, bg, true)
+    surfacelayerlib.create_surface_layer_foreground_relative(-10, 0.4, 1, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(-5, 0, 1, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(0, 1.2, 0, bg)
+    palmtreelib.create_palmtree_relative(2, -0.4, 0, depth, bg, true)
+    surfacelayerlib.create_surface_layer_foreground_relative(5, 0, 1, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(10, -.2, 0, bg)
+    palmtreelib.create_palmtree_relative(12, -0.4, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(14, 1.2, 1, depth, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(18, 1, 1, bg)
+    surfacelayerlib.create_surface_layer_foreground_relative(26, 0.8, 1, bg)
 
 
+    --background
+    depth = decorlib.SURFACE_BG_DEPTH.BACKGROUND
+    bg = surfacelayerlib.create_surface_layer_looping(111.15, depth, false)
+    -- -26..26, 3..3.55
+    palmtreelib.create_palmtree_relative(-20, 3, 2, depth, bg, true)
+    palmtreelib.create_palmtree_relative(-12, 3.4, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(6, 3.4, 1, depth, bg, true)
+    palmtreelib.create_palmtree_relative(10, 3, 2, depth, bg)
+    palmtreelib.create_palmtree_relative(20, 3, 1, depth, bg, true)
+    palmtreelib.create_palmtree_relative(24, 3.3, 1, depth, bg)
+
+    bg = surfacelayerlib.create_surface_layer_looping(111.15, depth, true)
 
 
-    bg = surfacelayerlib.create_surface_layer_looping(112.6, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND)
-    -- -28, 28, 0.5..1.6
-    palmtreelib.create_palmtree_relative(-27, 0.8, 2, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
-    palmtreelib.create_palmtree_relative(-20, 1.6, 2, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-    palmtreelib.create_palmtree_relative(-7, 1.6, 0, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-    palmtreelib.create_palmtree_relative(-8, 1.6, 1, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-    palmtreelib.create_palmtree_relative(-1, 0.6, 0, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-    palmtreelib.create_palmtree_relative(3, 0.8, 0, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-    palmtreelib.create_palmtree_relative(10, 0.8, 1, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
-    palmtreelib.create_palmtree_relative(17, 1.0, 0, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-    palmtreelib.create_palmtree_relative(22, 0.8, 2, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
-    palmtreelib.create_palmtree_relative(28, 1.2, 0, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
+    --mid background
+    depth = decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND
+    bg = surfacelayerlib.create_surface_layer_looping(112.6, depth, false)
+    -- -28..28, 0.5..1.6
+    -- palmtreelib.create_palmtree_relative(-30, 3, 2, depth, bg)
+    palmtreelib.create_palmtree_relative(-27, 0.8, 2, depth, bg, true)
+    palmtreelib.create_palmtree_relative(-20, 1.6, 2, depth, bg)
+    palmtreelib.create_palmtree_relative(-7, 1.6, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(-8, 1.6, 1, depth, bg)
+    palmtreelib.create_palmtree_relative(-1, 0.6, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(3, 0.8, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(10, 0.8, 1, depth, bg, true)
+    palmtreelib.create_palmtree_relative(17, 1.0, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(22, 0.8, 2, depth, bg, true)
+    palmtreelib.create_palmtree_relative(28, 1.2, 0, depth, bg, true)
+    -- palmtreelib.create_palmtree_relative(30, 3, 2, depth, bg)
 
-    bg = surfacelayerlib.create_surface_layer_looping(112.6, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, true)
-    palmtreelib.create_palmtree_relative(-30, 3, 2, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-    palmtreelib.create_palmtree_relative(-25, 0.6, 1, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
-    palmtreelib.create_palmtree_relative(-20, 1.0, 0, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-    palmtreelib.create_palmtree_relative(-10, 1.0, 1, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
-    palmtreelib.create_palmtree_relative(2, 1.2, 2, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
-    palmtreelib.create_palmtree_relative(0, 1.2, 0, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-    palmtreelib.create_palmtree_relative(13, 1.2, 1, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-    palmtreelib.create_palmtree_relative(25, 1.2, 0, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
-    palmtreelib.create_palmtree_relative(30, 3, 2, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
+    bg = surfacelayerlib.create_surface_layer_looping(112.6, depth, true)
+    -- palmtreelib.create_palmtree_relative(-30, 3, 2, depth, bg)
+    palmtreelib.create_palmtree_relative(-25, 0.6, 1, depth, bg, true)
+    palmtreelib.create_palmtree_relative(-20, 1.0, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(-10, 1.0, 1, depth, bg, true)
+    palmtreelib.create_palmtree_relative(2, 1.2, 2, depth, bg, true)
+    palmtreelib.create_palmtree_relative(0, 1.2, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(13, 1.2, 1, depth, bg)
+    palmtreelib.create_palmtree_relative(25, 1.2, 0, depth, bg)
+    -- palmtreelib.create_palmtree_relative(30, 3, 2, depth, bg)
 
 
-
-
-    surfacelayerlib.create_surface_layer_looping(113.6, decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND)
-    surfacelayerlib.create_surface_layer_looping(113.6, decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND, true)
+    --back background
+    depth = decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND
+    surfacelayerlib.create_surface_layer_looping(113.6, depth, false)
+    surfacelayerlib.create_surface_layer_looping(113.6, depth, true)
 
     if state.win_state == WIN_STATE.HUNDUN_WIN then
         sun:set_texture(TEXTURE.DATA_TEXTURES_BG_DUAT2_0)
