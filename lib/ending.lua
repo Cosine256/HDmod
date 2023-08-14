@@ -101,7 +101,7 @@ local function eject_ending_treasure()
     chest.animation_frame = 8
     -- particle effects
     -- create_ending_treasure
-    endingtreasurelib.create_ending_treasure(42.5, 105.75, LAYER.FRONT, -0.0735, 0.2, state.win_state == WIN_STATE.HUNDUN_WIN)
+    endingtreasurelib.create_ending_treasure(42.5, 105.75, LAYER.FRONT, -0.0735, 0.2)
     -- if hard ending, spawn coins as well
 end
 
@@ -214,6 +214,9 @@ set_callback(function ()
     player.flags = set_flag(player.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
     player.more_flags = set_flag(player.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
     carry(camel.uid, player.uid)
+
+
+    endingtreasurelib.create_credits_treasure(30, 111, LAYER.FRONT)
 end, ON.CREDITS)
 
 set_callback(function()
@@ -248,7 +251,7 @@ end, SPAWN_TYPE.ANY, 0,
 
 set_post_entity_spawn(function (entity)
 	if state.screen == SCREEN.SCORES then
-        endingtreasurelib.set_ending_treasure_texture(entity, state.win_state == WIN_STATE.HUNDUN_WIN)
+        endingtreasurelib.set_ending_treasure(entity)
     end
 end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_ENDINGTREASURE_TIAMAT, ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN)
 
