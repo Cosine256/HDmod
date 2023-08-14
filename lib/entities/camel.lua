@@ -22,15 +22,20 @@ do
 	cannon_texture_id = define_texture(cannon_texture_def)
 end
 
-local CAMEL_STATE <const> = {
+local MINIGAME_STATE <const> = {
     WALK_IN = 0,
     PRE_MINIGAME = 1,
     TRANSITION_TO_MINIGAME = 2,
     MINIGAME = 3
 }
+
+local CAMEL_WALKING_STATE <const> = {
+    NOT_FAKE_WALKING = 0,
+    FAKE_WALKING = 1
+}
 local CAMEL_ANIMATIONS <const> = {
     NOT_FAKE_WALKING = {0, loop = false, frames = 1, frame_time = 4},
-    FAKE_WALKING = {1, 2, 3, 4, 5, 6, 7, 8, loop = true, frames = 8, frame_time = 4}
+    FAKE_WALKING = {8, 7, 6, 5, 4, 3, 2, 1, loop = true, frames = 8, frame_time = 6}
 }
 local CANNON_ANIMATIONS <const> = {
   STARTUP = {0, loop = false, frames = 1, frame_time = 60},
@@ -135,9 +140,9 @@ end
 ---camel
 ---@param camel Rockdog | Mount | Entity | Movable | PowerupCapable
 function module.set_camel_walk_in(camel)
-    camel.user_data.state = CAMEL_STATE.WALK_IN
+    camel.user_data.state = MINIGAME_STATE.WALK_IN
     camel:set_pre_update_state_machine(function (self)
-        if camel.user_data.state == CAMEL_STATE.PRE_MINIGAME then
+        if camel.user_data.state == MINIGAME_STATE.PRE_MINIGAME then
             surfacelib.start_scrolling()
             clear_callback()
         end
@@ -161,14 +166,14 @@ local function camel_update_credits(ent)
 
         -- upon any input from the rider, set to transition to minigame
         local input = read_input(rider.uid)
-        if ent.user_data.state == CAMEL_STATE.WALK_IN then
+        if ent.user_data.state == MINIGAME_STATE.WALK_IN then
             local x, _, _ = get_position(ent.uid)
             if x < 14.5 then
-                ent.user_data.state = CAMEL_STATE.PRE_MINIGAME
+                ent.user_data.state = MINIGAME_STATE.PRE_MINIGAME
             else
                 ent.velocityx = -0.072
             end
-        elseif ent.user_data.state == CAMEL_STATE.PRE_MINIGAME then
+        elseif ent.user_data.state == MINIGAME_STATE.PRE_MINIGAME then
             if (
                 test_flag(input, INPUT_FLAG.LEFT)
                 or test_flag(input, INPUT_FLAG.RIGHT)
@@ -177,22 +182,22 @@ local function camel_update_credits(ent)
                 or test_flag(input, INPUT_FLAG.JUMP)
             ) then
                 cannon.flags = clr_flag(cannon.flags, ENT_FLAG.INVISIBLE)
-                ent.user_data.state = CAMEL_STATE.TRANSITION_TO_MINIGAME
+                ent.user_data.state = MINIGAME_STATE.TRANSITION_TO_MINIGAME
                 animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.STARTUP)
             end
-        elseif ent.user_data.state == CAMEL_STATE.TRANSITION_TO_MINIGAME
+        elseif ent.user_data.state == MINIGAME_STATE.TRANSITION_TO_MINIGAME
             and cannon.user_data.animation_timer == 0
         then
-            ent.user_data.state = CAMEL_STATE.MINIGAME
+            ent.user_data.state = MINIGAME_STATE.MINIGAME
             animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.IDLE)
             rider.more_flags = clr_flag(rider.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
-        elseif ent.user_data.state == CAMEL_STATE.MINIGAME
+        elseif ent.user_data.state == MINIGAME_STATE.MINIGAME
         then
             -- # TODO: Cannon firing and angling
             if cannon.user_data.cannon_timer > 0 then
                 cannon.user_data.cannon_timer = cannon.user_data.cannon_timer - 1
             end
-            
+
             -- Angles: (depending on the current angle of the turret, add or subtract degrees)
             -- When input:
             -- left, angle cannon until left
@@ -212,10 +217,27 @@ local function camel_update_credits(ent)
         end
 
         --when not moving, use custom animations to animate it fake walking.
-        -- if ent.standing_on_uid ~= 0 and ent.velocityx == 0 then
-        --     ent.animation_frame = animationlib.get_animation_frame(ent.user_data)
-        --     animationlib.update_timer(ent.user_data)
-        -- end
+        if ent.standing_on_uid ~= 0
+        and ent.velocityx == 0
+        then
+            if ent.user_data.walking_state ~= CAMEL_WALKING_STATE.FAKE_WALKING then
+                ent.user_data.walking_state = CAMEL_WALKING_STATE.FAKE_WALKING
+                animationlib.set_animation(ent.user_data, CAMEL_ANIMATIONS.FAKE_WALKING)
+            end
+        else
+            ent.user_data.walking_state = CAMEL_WALKING_STATE.NOT_FAKE_WALKING
+        end
+
+        if ent.user_data.walking_state ~= CAMEL_WALKING_STATE.NOT_FAKE_WALKING then
+            ent.animation_frame = animationlib.get_animation_frame(ent.user_data)
+            -- message(string.format("timer: %s", ent.user_data.animation_timer))
+            if ent.user_data.animation_timer == 1 then
+                -- message("CLOP")
+                commonlib.play_vanilla_sound(VANILLA_SOUND.MOUNTS_WILDDOG_WALK, ent.uid, 1, false)
+            end
+            animationlib.update_timer(ent.user_data)
+        end
+
         cannon.animation_frame = animationlib.get_animation_frame(cannon.user_data)
         animationlib.update_timer(cannon.user_data)
         -- message(string.format("animation_timer: %s", ent.user_data.animation_timer))
@@ -272,9 +294,10 @@ local function camel_set(ent, cannon_uid)
     if cannon_uid ~= -1 then
         ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
         ent.user_data = {
-            state = CAMEL_STATE.PRE_MINIGAME,
+            state = MINIGAME_STATE.PRE_MINIGAME,
+            walking_state = CAMEL_WALKING_STATE.NOT_FAKE_WALKING,
             cannon_uid = cannon_uid,
-            animation_state = CAMEL_ANIMATIONS.NOT_FAKE_WALKING,
+            -- animation_state = CAMEL_ANIMATIONS.NOT_FAKE_WALKING,
             animation_timer = 0,
         }
         animationlib.set_animation(get_entity(cannon_uid).user_data, CANNON_ANIMATIONS.IDLE)
