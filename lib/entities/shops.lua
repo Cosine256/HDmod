@@ -351,6 +351,9 @@ end, SPAWN_TYPE.SYSTEMIC, MASK.ITEM, DICESHOP_ITEMS)
 ---@param ry integer
 ---@param layer integer
 local function add_to_shop(uids, rx, ry, layer)
+	if state.shoppie_aggro_next > 0 then
+		return
+	end
 	set_callback(function()
 		local left, top = get_room_pos(rx, ry)
 		local right, bottom = left + CONST.ROOM_WIDTH, top - CONST.ROOM_HEIGHT

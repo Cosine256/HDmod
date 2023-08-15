@@ -1340,13 +1340,14 @@ module.HD_TILENAME = {
 						local shopkeeper_uid = spawn_entity_snapped_to_floor(ENT_TYPE.MONS_SHOPKEEPER, x+1, y-2, l)
 						local shopkeeper = get_entity(shopkeeper_uid)
 						
-						if state.shoppie_aggro_next <= 0 then
-							pick_up(shopkeeper_uid, spawn_entity(ENT_TYPE.ITEM_SHOTGUN, x+1, y-2, l, 0, 0))
-							shopkeeper.flags = set_flag(shopkeeper.flags, ENT_FLAG.CAN_BE_STOMPED)
-							shopkeeper.flags = clr_flag(shopkeeper.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
-						end
-						shopkeeper.is_patrolling = true
-						shopkeeper.move_state = 9
+						-- Setting the room types before lvl gen phase 1 made it not neccesary to do this anymore (since room is now vault before spawning the shopkeeper)
+						-- if state.shoppie_aggro_next <= 0 then
+						-- 	pick_up(shopkeeper_uid, spawn_entity(ENT_TYPE.ITEM_SHOTGUN, x+1, y-2, l, 0, 0))
+						-- 	shopkeeper.flags = set_flag(shopkeeper.flags, ENT_FLAG.CAN_BE_STOMPED)
+						-- 	shopkeeper.flags = clr_flag(shopkeeper.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+						-- end
+						-- shopkeeper.is_patrolling = true
+						-- shopkeeper.move_state = 9
 					end
 				},
 			}
