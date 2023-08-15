@@ -3,6 +3,7 @@ local camellib = require('lib.entities.camel')
 local ladderlib = require('lib.entities.ladder')
 local endingplatformlib = require('lib.entities.endingplatform')
 local endingtreasurelib = require('lib.entities.endingtreasure')
+local endingballoonlib = require('lib.entities.endingballoon')
 
 local chest
 ---@type Rockdog | Mount | Entity | Movable | PowerupCapable
@@ -217,6 +218,26 @@ set_callback(function ()
 
 
     endingtreasurelib.create_credits_treasure(30, 111, LAYER.FRONT)
+
+
+    local x, y = 26, 116.5
+    local ENTER_TIMEOUT = 1500
+    local SPACING_TIMEOUT = 1450
+    local HEIGHT_OFFSET = 0.80
+    if state.win_state == WIN_STATE.HUNDUN_WIN then
+        for frame = 0, 5, 1 do
+            local timeout = ENTER_TIMEOUT + frame*SPACING_TIMEOUT
+            endingballoonlib.create_endingballoon(x, y+math.fmod(frame, 2)*HEIGHT_OFFSET, LAYER.FRONT, frame, timeout)
+        end
+    else
+        for frame = 0, 3, 1 do
+            local timeout = ENTER_TIMEOUT + frame*SPACING_TIMEOUT
+            endingballoonlib.create_endingballoon(x, y+math.fmod(frame, 2)*HEIGHT_OFFSET, LAYER.FRONT, frame, timeout)
+        end
+        endingballoonlib.create_endingballoon(x, y+math.fmod(4, 2)*HEIGHT_OFFSET, LAYER.FRONT, 5, ENTER_TIMEOUT + 4*SPACING_TIMEOUT)
+    end
+
+    -- endingballoonlib.create_endingballoon(x, y, LAYER.FRONT, 0, 100)
 end, ON.CREDITS)
 
 set_callback(function()
