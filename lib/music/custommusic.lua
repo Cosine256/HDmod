@@ -1,6 +1,7 @@
 -- TODO: Custom music can only play if the necessary sound files have been extracted locally.
 
 local custom_music_engine = require "lib.music.custom_music_engine"
+local minesmusic = require "lib.music.mines.minesmusic"
 local hellmusic = require "lib.music.hell.hellmusic"
 local hdmusic = require "lib.music.hdmusic"
 
@@ -12,6 +13,7 @@ optionslib.register_option_bool("hd_debug_custom_level_music_disable", "Custom m
 optionslib.register_option_bool("hd_debug_custom_title_music_disable", "Custom music - Disable for title screen", nil, false, true)
 
 local CUSTOM_LEVEL_MUSICS = {
+    minesmusic.MINES_CUSTOM_MUSIC,
     hellmusic.HELL_CUSTOM_MUSIC
 }
 

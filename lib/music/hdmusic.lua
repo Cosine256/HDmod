@@ -1,5 +1,6 @@
 local module = {}
 
+module.music_debug_print = false
 module.HD_LEVEL_MUSICS = {}
 
 -- Bool, whether the adventure track has played, only plays on the first run or after going back to the menu
@@ -11,6 +12,9 @@ local track_selection = 0
 -- Selects which track we will play a/b/c
 local function new_track_selection()
     track_selection = prng:random(3)
+    if module.music_debug_print then
+        print("[HD Music Debug] track_selection = " .. tostring(track_selection))
+    end
 end
 
 -- Rolls for an egg track (1/100 chance)
@@ -502,7 +506,12 @@ set_callback(function()
 end, ON.RESET)
 
 set_callback(function()
-    adventure_played = false
+    if adventure_played then
+        if module.music_debug_print then
+            print("[HD Music Debug] adventure_played = false")
+        end
+        adventure_played = false
+    end
 end, ON.MENU)
 
 return module
