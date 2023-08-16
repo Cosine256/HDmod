@@ -20,6 +20,7 @@ locatelib = require 'lib.locate'
 custommusiclib = require 'lib.music.custommusic'
 require 'lib.ending'
 require 'lib.intro'
+require 'lib.scores'
 
 validlib = require 'lib.spawning.valid'
 spawndeflib = require 'lib.spawning.spawndef'

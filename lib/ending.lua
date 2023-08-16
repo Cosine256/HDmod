@@ -186,22 +186,6 @@ set_post_entity_spawn(function(ent)
     end
 end, SPAWN_TYPE.ANY, MASK.PLAYER)
 
-
-
-set_callback(function ()
-    surfacelib.decorate_existing_surface()
-
-	state.camera.bounds_top = 109.6640
-	-- state.camera.bounds_bottom = 
-	-- state.camera.bounds_left = 
-	-- state.camera.bounds_right = 
-
-	state.camera.adjusted_focus_x = 17.00
-	state.camera.adjusted_focus_y = 100.050
-end, ON.SCORES)
-
-
-
 set_callback(function ()
     surfacelib.build_credits_surface()
     spawn_player(1, 25, 111)
@@ -269,13 +253,6 @@ end, SPAWN_TYPE.ANY, 0,
     ENT_TYPE.BG_SURFACE_MOVING_STAR,
     ENT_TYPE.ITEM_MINIGAME_ASTEROID_BG
 )
-
-set_post_entity_spawn(function (entity)
-	if state.screen == SCREEN.SCORES then
-        endingtreasurelib.set_ending_treasure(entity)
-    end
-end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_ENDINGTREASURE_TIAMAT, ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN)
-
 
 local theme_win = CustomTheme:new(100, THEME.OLMEC)
 theme_win:override(THEME_OVERRIDE.SPAWN_EFFECTS, THEME.DWELLING)
