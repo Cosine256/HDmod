@@ -34,14 +34,16 @@ do
     sky_hard_texture_id = define_texture(sky_hard_texture_def)
 end
 
-local VOLCANO_DISAPEAR_TIME = 8
+local VOLCANO_DISAPEAR_TIME = 7
 local VOLCANO_DISAPEAR = false
 
 local black = Color:black()
 
--- local character_fall_timer = -100
+local character_fall_timer = -500
 -- local idol_fall_timer = 0
 -- local yang_fall_timer = 0
+
+local falling_player_texture_id
 
 set_post_render_screen(SCREEN.SCORES, function (screen, ctx)
     if not VOLCANO_DISAPEAR then
@@ -52,14 +54,21 @@ set_post_render_screen(SCREEN.SCORES, function (screen, ctx)
 
         ctx:draw_screen_texture(hard and sky_hard_texture_id or TEXTURE.DATA_TEXTURES_BASE_SKYNIGHT_0, 0, 0, AABB:new(-1, 1, 1, -1), Color:white())
         ctx:draw_screen_texture(hard and volcano_hard_texture_id or volcano_texture_id, 0, 0, AABB:new(-0.65, 0.65, 1, -1), Color:white())
+            
+        if character_fall_timer > 0 then
+            local x = character_fall_timer/100
+            local y = (-0.3*(x+1)^2) + 1
+            ctx:draw_screen_texture(falling_player_texture_id, 0, 0, AABB:new(-1, 1, 1, -1), Color:white())
+        end
 
-        -- ctx:draw_text(string.format("Switching in %s seconds...", VOLCANO_DISAPEAR_TIME - screen_ent.render_timer), -0.15, 0.5, 0.0006, 0.0006, black, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.ITALIC)
-        
+        character_fall_timer = character_fall_timer + 1
+        -- idol_fall_timer = idol_fall_timer + 1
+        -- yang_fall_timer = yang_fall_timer + 1
+
         if screen_ent.render_timer >= VOLCANO_DISAPEAR_TIME then
             VOLCANO_DISAPEAR = true
         end
     end
-
 end)
 
 set_callback(function ()
@@ -99,6 +108,14 @@ set_callback(function ()
             end
         end)
     end
+
+    -- create a cropped player texture for the volcano scene
+    local falling_player_texture_def = get_texture_definition(players[1]:get_texture())
+    falling_player_texture_def.sub_image_height = 128
+    falling_player_texture_def.sub_image_width = 128
+    falling_player_texture_def.sub_image_offset_x = 512
+    falling_player_texture_def.sub_image_offset_y = 1408
+    falling_player_texture_id = define_texture(falling_player_texture_def)
 end, ON.SCORES)
 
 
