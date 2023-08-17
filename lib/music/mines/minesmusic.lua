@@ -11,6 +11,36 @@ local function pick_random(table)
     return table[prng:random(#table)]
 end
 
+--[[
+    Selects a random stem from a given pool of stems based on the stems weight
+    -- A two dimensional array containing one or more stems and their associated weight
+    {
+      {
+        -- The stems weight. This value must be positive.
+        weight = number,
+        -- The stems ID
+        id = string
+      },
+      ...
+    },
+    -- Total weight of all stems in table. This value must be positive.
+    total_weight = number
+]]
+local function pick_weighted_random(table, total_weight)
+    -- Select a number between 1 and total_weight
+    local selection = prng:random(1, total_weight)
+
+    for i = 1, #table do
+        -- Subtract weight from selection
+        selection = selection - table[i][1]
+
+        -- If selection is 0 or below, return the value associated with the weight
+        if (selection <= 0) then
+            return table[i][2]
+        end
+    end
+end
+
 local function is_cobra_stem(stem_id)
     if stem_id == "cobra_a" or stem_id == "cobra_a1" then
         return true
@@ -146,7 +176,7 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b", "idle_c" })
                     end
 
-                    return pick_random({ "mattock_b1", "mattock_b2" })
+                    return pick_weighted_random({ {8, "mattock_b1"}, {2, "mattock_b2"} }, 10)
                 end
             },
             {
