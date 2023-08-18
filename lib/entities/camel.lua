@@ -152,9 +152,9 @@ local function shoot_gun(ent)
         angle: -3.14159265359
     ]]
     --[[down
-        angle: -4.712388980385
+        angle: 1.570796326795 or -4.712388980385
     ]]
-    local gap = 1
+    local gap = 0.25--1
     local vel_magnitude = 0.3
 
     local x, y, l = get_position(ent.uid)
@@ -239,14 +239,46 @@ local function camel_update_credits(ent)
             if test_flag(input, INPUT_FLAG.RIGHT)
             and cannon.angle > -math.pi
             then
-                -- message(string.format("angle: %s", cannon.angle))
                 cannon.angle = cannon.angle - TURN_RATE
             end
             if test_flag(input, INPUT_FLAG.LEFT)
             and cannon.angle < 0
             then
-                -- message(string.format("angle: %s", cannon.angle))
                 cannon.angle = cannon.angle + TURN_RATE
+            end
+            --if input up
+            -- and angle ~= -1.570796326795 --(not up)
+                --if angle > -4.712388980385 --(larger than down)
+                -- and angle < -1.570796326795 --(less than up)
+                    -- increment
+                --elseif angle < 1.570796326795 --(less than down)
+                -- and angle > -1.570796326795 --(larger than up)
+                    -- decrement
+            if test_flag(input, INPUT_FLAG.UP)
+            and cannon.angle ~= -1.570796326795 --(not up)
+            then
+                if cannon.angle > -4.712388980385 --(larger than down)
+                and cannon.angle < -1.570796326795 --(less than up)
+                then
+                    cannon.angle = cannon.angle + TURN_RATE
+                elseif cannon.angle < 1.570796326795 --(less than down)
+                and cannon.angle > -1.570796326795 --(larger than up)
+                then
+                    cannon.angle = cannon.angle - TURN_RATE
+                end
+            end
+            if test_flag(input, INPUT_FLAG.DOWN)
+            and cannon.angle ~= 1.570796326795 --(not down)
+            then
+                if cannon.angle > -1.570796326795 --(larger than up)
+                and cannon.angle < 1.570796326795 --(less than down)
+                then
+                    cannon.angle = cannon.angle + TURN_RATE
+                elseif cannon.angle < -1.570796326795 --(less than up)
+                and cannon.angle > -4.712388980385 --(larger than down)
+                then
+                    cannon.angle = cannon.angle - TURN_RATE
+                end
             end
 
             -- When input whip, fire the cannon.
