@@ -61,18 +61,27 @@ module.MINES_CUSTOM_MUSIC = {
     settings = {
         base_volume = 0.5,
         start_sound_id = function(ctx)
-                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.FIRST_RUN) == 1 then
-                    if module.music_debug_print then
-                        print("[Mines Music Debug] FIRST_RUN = 1; playing adventure")
-                    end
+                if state.screen == SCREEN.LEVEL then
+                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.FIRST_RUN) == 1 then
+                        if module.music_debug_print then
+                            print("[Mines Music Debug] FIRST_RUN = 1; playing adventure")
+                        end
 
-                    return "adventure"
+                        return "adventure"
+                    else
+                        if module.music_debug_print then
+                            print("[Mines Music Debug] FIRST_RUN = 0; playing normal intro")
+                        end
+
+                        return pick_random({ "intro_a", "intro_b" })
+                    end
+                -- Assume we are on a level transition, pick a random stem instead of adventure or intro stems
                 else
                     if module.music_debug_print then
-                        print("[Mines Music Debug] FIRST_RUN = 0; playing normal intro")
+                        print("[Mines Music Debug] state.screen ~= SCREEN.LEVEL; starting with random stem")
                     end
 
-                    return pick_random({ "intro_a", "intro_b" })
+                    return pick_random({ "explore_a", "explore_b", "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             end,
         sounds = {
