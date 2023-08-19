@@ -1,5 +1,7 @@
 local animationlib = require('lib.entities.animation')
 local surfacelib = require('lib.surface')
+local minigamelib = require('lib.entities.minigame')
+
 local module = {}
 
 local camel_texture_id
@@ -212,6 +214,7 @@ local function camel_update_credits(ent)
                 cannon.flags = clr_flag(cannon.flags, ENT_FLAG.INVISIBLE)
                 ent.user_data.state = MINIGAME_STATE.TRANSITION_TO_MINIGAME
                 animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.STARTUP)
+                minigamelib.start_minigame()
             end
         elseif ent.user_data.state == MINIGAME_STATE.TRANSITION_TO_MINIGAME
             and cannon.user_data.animation_timer == 0

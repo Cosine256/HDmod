@@ -2,6 +2,7 @@ local endingtreasurelib = require('lib.entities.endingtreasure')
 local creditsballoonlib = require('lib.entities.creditsballoon')
 local surfacelib = require('lib.surface')
 local camellib = require('lib.entities.camel')
+local minigamelib = require('lib.entities.minigame')
 
 set_callback(function ()
     surfacelib.build_credits_surface()
@@ -37,8 +38,9 @@ set_callback(function ()
         end
         creditsballoonlib.create_creditsballoon(x, y+math.fmod(4, 2)*HEIGHT_OFFSET, LAYER.FRONT, 5, ENTER_TIMEOUT + 4*SPACING_TIMEOUT)
     end
+    -- creditsballoonlib.create_creditsballoon(x, y, LAYER.FRONT, 0, 100)
 
-    -- endingballoonlib.create_endingballoon(x, y, LAYER.FRONT, 0, 100)
+    minigamelib.init()
 end, ON.CREDITS)
 
 set_callback(function()
