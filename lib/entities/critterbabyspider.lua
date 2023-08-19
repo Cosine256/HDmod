@@ -37,13 +37,18 @@ local function critterspider_update(ent)
     ent:set_behavior(18) -- stop its default moving behavior
     
     if ent.user_data.state == CRITTERSPIDER_STATE.IDLE then
-        if ent.user_data.action_timer > 0 then
+        if ent.user_data.action_timer > 0
+        and not ent.overlay
+        then
             ent.user_data.action_timer = ent.user_data.action_timer - 1
         end
         local x, y, layer = get_position(ent.uid)
         local target_uid = get_entities_at(0, MASK.PLAYER, x, y, layer, 8.0)[1]
-        
-        if ent.user_data.action_timer == 0 and target_uid then
+
+        if ent.user_data.action_timer == 0
+        and target_uid
+        and not ent.overlay
+        then
             ent.user_data.state = CRITTERSPIDER_STATE.JUMP
             --when jumping, change facing to match chased uid
             face_target(ent.uid, target_uid)
