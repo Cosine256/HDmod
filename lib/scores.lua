@@ -1,5 +1,12 @@
 local surfacelib = require('lib.surface')
 local endingtreasurelib = require('lib.entities.endingtreasure')
+local decorlib = require('lib.gen.decor')
+local animationlib = require('lib.entities.animation')
+local commonlib = require('lib.common')
+
+local CHARACTER_ANIMATIONS = {
+    FALL = {185, 184, 183, 182, 181, 180, loop = true, frames = 6, frame_time = 4}
+}
 
 local volcano_texture_id
 local volcano_hard_texture_id
@@ -34,42 +41,113 @@ do
     sky_hard_texture_id = define_texture(sky_hard_texture_def)
 end
 
-local VOLCANO_DISAPEAR_TIME = 7
-local VOLCANO_DISAPEAR = false
-
-local black = Color:black()
-
-local character_fall_timer = -500
--- local idol_fall_timer = 0
--- local yang_fall_timer = 0
-
-local falling_player_texture_id
+local VOLCANO_DISAPPEAR_TIME = 7
+local VOLCANO_DISAPPEAR
 
 set_post_render_screen(SCREEN.SCORES, function (screen, ctx)
-    if not VOLCANO_DISAPEAR then
-        local hard = state.win_state == WIN_STATE.HUNDUN_WIN
-
+    if not VOLCANO_DISAPPEAR then
         ---@type ScreenScores
         local screen_ent = screen:as_screen_scores()
-
-        ctx:draw_screen_texture(hard and sky_hard_texture_id or TEXTURE.DATA_TEXTURES_BASE_SKYNIGHT_0, 0, 0, AABB:new(-1, 1, 1, -1), Color:white())
-        ctx:draw_screen_texture(hard and volcano_hard_texture_id or volcano_texture_id, 0, 0, AABB:new(-0.65, 0.65, 1, -1), Color:white())
-            
-        if character_fall_timer > 0 then
-            local x = character_fall_timer/100
-            local y = (-0.3*(x+1)^2) + 1
-            ctx:draw_screen_texture(falling_player_texture_id, 0, 0, AABB:new(-1, 1, 1, -1), Color:white())
-        end
-
-        character_fall_timer = character_fall_timer + 1
-        -- idol_fall_timer = idol_fall_timer + 1
-        -- yang_fall_timer = yang_fall_timer + 1
-
-        if screen_ent.render_timer >= VOLCANO_DISAPEAR_TIME then
-            VOLCANO_DISAPEAR = true
+        if screen_ent.render_timer >= VOLCANO_DISAPPEAR_TIME then
+            VOLCANO_DISAPPEAR = true
         end
     end
 end)
+
+set_callback(function (ctx, draw_depth)
+    if state.screen == SCREEN.SCORES
+    and not VOLCANO_DISAPPEAR then
+        local hard = state.win_state == WIN_STATE.HUNDUN_WIN
+
+        if draw_depth == decorlib.CREDITS_VOLCANO_DEPTH.SKY then
+            ctx:draw_world_texture(hard and sky_hard_texture_id or TEXTURE.DATA_TEXTURES_BASE_SKYNIGHT_0, 0, 0, Quad:new(AABB:new(9.24, 110.09, 30.60, 98.08)), Color:white(), WORLD_SHADER.TEXTURE_COLOR)
+        end
+        if draw_depth == decorlib.CREDITS_VOLCANO_DEPTH.VOLCANO then
+            ctx:draw_world_texture(hard and volcano_hard_texture_id or volcano_texture_id, 0, 0, Quad:new(AABB:new(12.24, 107.09, 30.60, 98.08)), Color:white(), WORLD_SHADER.TEXTURE_COLOR)
+        end
+    end
+end, ON.RENDER_PRE_DRAW_DEPTH)
+
+--smoke particles
+-- rock, gradually move up, growing in size, rotating
+-- TEXTURE.DATA_TEXTURES_SHADOWS_0
+-- width, height = 3.5, 3.5
+
+local function create_volcano_effects()
+    local entity = get_entity(spawn_entity(ENT_TYPE.ITEM_ROCK, 25.42, 106.15, LAYER.FRONT, 0, 0))
+    entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
+    entity.flags = set_flag(entity.flags, ENT_FLAG.NO_GRAVITY)
+    -- generate_world_particles(PARTICLEEMITTER.HITEFFECT_STARS_SMALL, v)
+    commonlib.shake_camera(180, 480, 0.5, 1.5, 1.5, false)
+    
+    ---@type CustomSound_play
+    local rumble_sound = commonlib.play_vanilla_sound(VANILLA_SOUND.CUTSCENE_RUMBLE_LOOP, entity.uid, 0.25, true)
+    local timeout = 160
+    entity:set_post_update_state_machine(function (self)
+        if timeout == 0 then -- erupt
+            commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_EXPLOSION, self.uid, 0.003, false)
+            -- local lava_sound = commonlib.play_vanilla_sound(VANILLA_SOUND.LIQUIDS_LAVA_STREAM_LOOP, entity.uid, 0.4, true)
+            -- commonlib.shake_camera(180, 80, 4, 5, 5, false)
+            state.camera.shake_amplitude = 3
+            state.camera.shake_multiplier_x = 3
+            state.camera.shake_multiplier_y = 3
+        elseif timeout == -70 then
+            -- commonlib.shake_camera(130, 230, 2, 2, 2, false)
+            state.camera.shake_amplitude = 2
+            state.camera.shake_multiplier_x = 2
+            state.camera.shake_multiplier_y = 2
+        elseif VOLCANO_DISAPPEAR then
+            -- make camera shake less when switching away from volcano scene
+            -- this is actually very annoying, but still leaving it here uncommented.
+            -- commonlib.shake_camera(230, 230, 1, 1, 1, false)
+            if rumble_sound ~= nil then
+                rumble_sound:stop()
+            end
+        end
+        timeout = timeout - 1
+    end)
+end
+
+local function create_flung_entity(texture_id, animation_frame, timeout, size, animation)
+    local entity = get_entity(spawn_entity(ENT_TYPE.ITEM_ROCK, 25.42, 106.15, LAYER.FRONT, 0, 0))
+    entity:set_draw_depth(decorlib.CREDITS_VOLCANO_DEPTH.FLUNG_ENTS)
+    entity:set_texture(texture_id)
+    entity.animation_frame = animation_frame
+    entity.flags = set_flag(entity.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
+    -- entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
+    entity.flags = set_flag(entity.flags, ENT_FLAG.NO_GRAVITY)
+    entity.flags = set_flag(entity.flags, ENT_FLAG.FACING_LEFT)
+    local gravity = 0.15
+    entity:set_gravity(gravity)
+    entity.width, entity.height = entity.width*size, entity.height*size
+    if animation then
+        entity.user_data = {
+            animation_timer = 0,
+        }
+        animationlib.set_animation(entity.user_data, animation)
+    end
+    local flung = false
+    entity:set_post_update_state_machine(function (self)
+        if timeout > 0 then
+            timeout = timeout - 1
+        elseif not flung then
+            -- self.flags = clr_flag(self.flags, ENT_FLAG.INVISIBLE)
+            self.flags = clr_flag(self.flags, ENT_FLAG.NO_GRAVITY)
+            self.velocityx = -0.033
+            self.velocityy = 0.04
+            flung = true
+        else
+            self.width, self.height = self.width*1.006, self.height*1.006
+            self.angle = self.angle + 0.2
+            gravity = gravity*1.006
+            self:set_gravity(gravity)
+        end
+        if animation then
+            self.animation_frame = animationlib.get_animation_frame(self.user_data)
+            animationlib.update_timer(self.user_data)
+        end
+    end)
+end
 
 set_callback(function ()
     surfacelib.decorate_existing_surface()
@@ -78,6 +156,8 @@ set_callback(function ()
 	state.camera.adjusted_focus_x = 17.00
 	state.camera.adjusted_focus_y = 100.050
 
+    VOLCANO_DISAPPEAR = false
+
     -- hold characters in the air until the volcano screen ends
     local holding_floor = get_entity(spawn_grid_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, 17, 119, LAYER.FRONT))
     holding_floor.flags = set_flag(holding_floor.flags, ENT_FLAG.NO_GRAVITY)
@@ -85,7 +165,7 @@ set_callback(function ()
     holding_floor:set_post_update_state_machine(
     ---@param self Floor
     function (self)
-        if VOLCANO_DISAPEAR then
+        if VOLCANO_DISAPPEAR then
             -- self.flags = clr_flag(self.flags, ENT_FLAG.SOLID)
             self.flags = set_flag(self.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
             clear_callback()
@@ -100,7 +180,7 @@ set_callback(function ()
         pet:set_post_update_state_machine(
         ---@param self Pet
         function (self)
-            if not VOLCANO_DISAPEAR then
+            if not VOLCANO_DISAPPEAR then
                 self.yell_counter = 10
             else
                 self.yell_counter = original_counter
@@ -108,14 +188,9 @@ set_callback(function ()
             end
         end)
     end
-
-    -- create a cropped player texture for the volcano scene
-    local falling_player_texture_def = get_texture_definition(players[1]:get_texture())
-    falling_player_texture_def.sub_image_height = 128
-    falling_player_texture_def.sub_image_width = 128
-    falling_player_texture_def.sub_image_offset_x = 512
-    falling_player_texture_def.sub_image_offset_y = 1408
-    falling_player_texture_id = define_texture(falling_player_texture_def)
+    create_flung_entity(players[1]:get_texture(), 0, 160, 0.15, CHARACTER_ANIMATIONS.FALL)
+    create_flung_entity(TEXTURE.DATA_TEXTURES_ITEMS_0, 31, 180, 0.2)
+    create_volcano_effects()
 end, ON.SCORES)
 
 

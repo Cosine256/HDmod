@@ -31,7 +31,7 @@ function module.set(ent, depth)
         ent.tile_height = 1
         ent:set_texture(TEXTURE.DATA_TEXTURES_BASE_SURFACE_1)
     else
-        ent.width = decorlib.BG_WIDTH
+        ent.width = decorlib.SURFACE_BG_WIDTH
         ent.height = 3.75
         ent.hitboxx = 30
         ent.hitboxy = 1.875
@@ -53,7 +53,7 @@ end
 
 function module.create_surface_layer_looping(y, depth, is_offset, animation_frame)
     local ent = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_LAYER, 0, 0, LAYER.FRONT, 0, 0))
-    ent.relative_x, ent.relative_y = decorlib.BG_CENTER + (is_offset and decorlib.BG_WIDTH or 0), y--seems to be 10 higher than intro
+    ent.relative_x, ent.relative_y = decorlib.SURFACE_BG_CENTER + (is_offset and decorlib.SURFACE_BG_WIDTH or 0), y--seems to be 10 higher than intro
     module.set(ent, depth)
 
     if animation_frame then -- # TODO: Refactor setting animation frame into module.set()
