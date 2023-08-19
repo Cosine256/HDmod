@@ -81,7 +81,7 @@ module.MINES_CUSTOM_MUSIC = {
                         print("[Mines Music Debug] state.screen ~= SCREEN.LEVEL; starting with random stem")
                     end
 
-                    return pick_random({ "explore_a", "explore_b", "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             end,
         sounds = {
@@ -567,8 +567,8 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_b", "idle_c" })
                     end
 
-                    return pick_random({ "explore_a", "explore_b", "mattock_a", "mattock_b1", "mattock_b2",
-                                         "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1",
+                                         "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             },
             {
@@ -584,8 +584,8 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_c" })
                     end
 
-                    return pick_random({ "explore_a", "explore_b", "mattock_a", "mattock_b1", "mattock_b2",
-                                         "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1",
+                                         "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             },
             {
@@ -601,8 +601,8 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b" })
                     end
 
-                    return pick_random({ "explore_a", "explore_b", "mattock_a", "mattock_b1", "mattock_b2",
-                                         "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1",
+                                         "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             },
             {
@@ -618,8 +618,8 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b", "idle_c" })
                     end
 
-                    return pick_random({ "explore_a", "explore_b", "mattock_a", "mattock_b1", "mattock_b2",
-                                         "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1",
+                                         "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             },
             {
@@ -635,8 +635,8 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b", "idle_c" })
                     end
 
-                    return pick_random({ "explore_a", "explore_b", "mattock_a", "mattock_b1", "mattock_b2",
-                                         "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1",
+                                         "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             }
         }
