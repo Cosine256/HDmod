@@ -19,6 +19,7 @@ cooplib = require 'lib.coop'
 locatelib = require 'lib.locate'
 custommusiclib = require 'lib.music.custommusic'
 require 'lib.ending'
+require 'lib.credits'
 require 'lib.intro'
 require 'lib.scores'
 

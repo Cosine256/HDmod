@@ -12,7 +12,7 @@ do
     texture_id = define_texture(texture_def)
 end
 
-function module.create_endingballoon(x, y, l, animation_frame, timeout)
+function module.create_creditsballoon(x, y, l, animation_frame, timeout)
     ---@type Movable | Entity
     local base = get_entity(spawn_entity(ENT_TYPE.ITEM_ROCK, x, y, l, 0, 0))
     base.flags = set_flag(base.flags, ENT_FLAG.INVISIBLE)

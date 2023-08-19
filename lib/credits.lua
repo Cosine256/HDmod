@@ -1,0 +1,72 @@
+local endingtreasurelib = require('lib.entities.endingtreasure')
+local creditsballoonlib = require('lib.entities.creditsballoon')
+local surfacelib = require('lib.surface')
+local camellib = require('lib.entities.camel')
+
+set_callback(function ()
+    surfacelib.build_credits_surface()
+    spawn_player(1, 25, 111)
+
+    local camel = get_entity(camellib.create_camel_credits(25, 111, LAYER.FRONT))
+    spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
+    camellib.set_camel_walk_in(camel)
+
+    local player = get_entity(players[1].uid)
+    player.flags = set_flag(player.flags, ENT_FLAG.TAKE_NO_DAMAGE)
+    player.flags = set_flag(player.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
+    player.more_flags = set_flag(player.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
+    carry(camel.uid, player.uid)
+
+
+    endingtreasurelib.create_credits_treasure(30, 111, LAYER.FRONT)
+
+
+    local x, y = 26, 116.5
+    local ENTER_TIMEOUT = 1500
+    local SPACING_TIMEOUT = 1450
+    local HEIGHT_OFFSET = 0.80
+    if state.win_state == WIN_STATE.HUNDUN_WIN then
+        for frame = 0, 5, 1 do
+            local timeout = ENTER_TIMEOUT + frame*SPACING_TIMEOUT
+            creditsballoonlib.create_creditsballoon(x, y+math.fmod(frame, 2)*HEIGHT_OFFSET, LAYER.FRONT, frame, timeout)
+        end
+    else
+        for frame = 0, 3, 1 do
+            local timeout = ENTER_TIMEOUT + frame*SPACING_TIMEOUT
+            creditsballoonlib.create_creditsballoon(x, y+math.fmod(frame, 2)*HEIGHT_OFFSET, LAYER.FRONT, frame, timeout)
+        end
+        creditsballoonlib.create_creditsballoon(x, y+math.fmod(4, 2)*HEIGHT_OFFSET, LAYER.FRONT, 5, ENTER_TIMEOUT + 4*SPACING_TIMEOUT)
+    end
+
+    -- endingballoonlib.create_endingballoon(x, y, LAYER.FRONT, 0, 100)
+end, ON.CREDITS)
+
+set_callback(function()
+    -- prevent fading out of the credits screen (when pressing jump or credits end)
+    if state.screen == SCREEN.CREDITS
+    and state.loading == 1
+    then
+        local normal_credits_end = true
+        for _, player in pairs(players) do
+            local input = read_input(player.uid)
+            if test_flag(input, INPUT_FLAG.JUMP) then
+                normal_credits_end = false
+            end
+        end
+        if not normal_credits_end then
+            -- stop loading next scene
+            state.loading = 0
+        end
+    end
+end, ON.LOADING)
+
+set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
+	if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, layer, 0, 0) end
+end, SPAWN_TYPE.ANY, 0,
+    ENT_TYPE.ITEM_MINIGAME_SHIP,
+    ENT_TYPE.ITEM_MINIGAME_UFO,
+    ENT_TYPE.ITEM_MINIGAME_BROKEN_ASTEROID,
+    ENT_TYPE.ITEM_MINIGAME_ASTEROID,
+    ENT_TYPE.BG_SURFACE_MOVING_STAR,
+    ENT_TYPE.ITEM_MINIGAME_ASTEROID_BG
+)
