@@ -8,6 +8,10 @@ local CHARACTER_ANIMATIONS = {
     FALL = {185, 184, 183, 182, 181, 180, loop = true, frames = 6, frame_time = 4}
 }
 
+local PARTICLE_ANIMATIONS = {
+    FLAME1 = {51, 52, 53, loop = true, frames = 3, frame_time = 4}
+}
+
 local volcano_texture_id
 local volcano_hard_texture_id
 local sky_hard_texture_id
@@ -73,26 +77,52 @@ end, ON.RENDER_PRE_DRAW_DEPTH)
 -- TEXTURE.DATA_TEXTURES_SHADOWS_0
 -- width, height = 3.5, 3.5
 
+local function create_lava_particle(x, y, animation_frame, size, vx, vy, spin_rate, texture_id, animation)
+    local entity = get_entity(spawn_entity(ENT_TYPE.ITEM_ROCK, x, y, LAYER.FRONT, vx, vy))
+    entity:set_draw_depth(decorlib.CREDITS_VOLCANO_DEPTH.PARTICLES)
+    entity:set_texture(texture_id)
+    entity.animation_frame = animation_frame
+    if animation then
+        entity.user_data = {
+            animation_timer = 0,
+        }
+        animationlib.set_animation(entity.user_data, animation)
+    end
+    entity.flags = set_flag(entity.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
+    entity:set_gravity(0.5)
+    entity.width, entity.height = entity.width*size, entity.height*size
+    entity:set_post_update_state_machine(function (self)
+        self.width, self.height = self.width*0.95, self.height*0.95
+        self.angle = self.angle + spin_rate
+        if animation then
+            self.animation_frame = animationlib.get_animation_frame(self.user_data)
+            animationlib.update_timer(self.user_data)
+        end
+        if VOLCANO_DISAPPEAR
+        or self.height < 0.05 then
+            self:destroy()
+        end
+    end)
+end
+
 local function create_volcano_effects()
-    local entity = get_entity(spawn_entity(ENT_TYPE.ITEM_ROCK, 25.42, 106.15, LAYER.FRONT, 0, 0))
+    local entity = get_entity(spawn_entity(ENT_TYPE.ITEM_ROCK, 26.02, 106.46, LAYER.FRONT, 0, 0))
     entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
     entity.flags = set_flag(entity.flags, ENT_FLAG.NO_GRAVITY)
-    -- generate_world_particles(PARTICLEEMITTER.HITEFFECT_STARS_SMALL, v)
     commonlib.shake_camera(180, 480, 0.5, 1.5, 1.5, false)
     
     ---@type CustomSound_play
     local rumble_sound = commonlib.play_vanilla_sound(VANILLA_SOUND.CUTSCENE_RUMBLE_LOOP, entity.uid, 0.25, true)
     local timeout = 160
+    local particles_timeout = 0
     entity:set_post_update_state_machine(function (self)
         if timeout == 0 then -- erupt
             commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_EXPLOSION, self.uid, 0.003, false)
             -- local lava_sound = commonlib.play_vanilla_sound(VANILLA_SOUND.LIQUIDS_LAVA_STREAM_LOOP, entity.uid, 0.4, true)
-            -- commonlib.shake_camera(180, 80, 4, 5, 5, false)
             state.camera.shake_amplitude = 3
             state.camera.shake_multiplier_x = 3
             state.camera.shake_multiplier_y = 3
         elseif timeout == -70 then
-            -- commonlib.shake_camera(130, 230, 2, 2, 2, false)
             state.camera.shake_amplitude = 2
             state.camera.shake_multiplier_x = 2
             state.camera.shake_multiplier_y = 2
@@ -104,6 +134,26 @@ local function create_volcano_effects()
                 rumble_sound:stop()
             end
         end
+
+        if not VOLCANO_DISAPPEAR then
+            --randomly spawn enemies, but pad them out so it isn't too spammy or empty
+            if particles_timeout <= 0 then
+                local y = entity.y + prng:random_float(PRNG_CLASS.PARTICLES)*1.5
+                local x = entity.x + prng:random_float(PRNG_CLASS.PARTICLES)*2.5
+                create_lava_particle(x, y, 51,
+                    prng:random_float(PRNG_CLASS.PARTICLES)*1.2,
+                    prng:random_float(PRNG_CLASS.PARTICLES)*0.2-0.1,
+                    prng:random_float(PRNG_CLASS.PARTICLES)*0.1+0.1,
+                    0.01,
+                    TEXTURE.DATA_TEXTURES_FX_SMALL3_0,
+                    PARTICLE_ANIMATIONS.FLAME1
+                )
+                particles_timeout = prng:random_int(3, 7, PRNG_CLASS.PARTICLES)
+            else
+                particles_timeout = particles_timeout - 1
+            end
+        end
+
         timeout = timeout - 1
     end)
 end
