@@ -1,6 +1,7 @@
 local ladderlib = require('lib.entities.ladder')
 local endingplatformlib = require('lib.entities.endingplatform')
 local endingtreasurelib = require('lib.entities.endingtreasure')
+local unlockslib = require('lib.unlocks')
 
 local chest
 ---@type Rockdog | Mount | Entity | Movable | PowerupCapable
@@ -73,6 +74,13 @@ set_callback(function ()
 
     for x = 34, 39, 1 do
         endingplatformlib.create_endingplatform(x, 103, LAYER.FRONT)
+    end
+
+    local character = 193 + unlockslib.HD_UNLOCKS[hard_win and unlockslib.HD_UNLOCK_ID.YAMA or unlockslib.HD_UNLOCK_ID.OLMEC_WIN].unlock_id
+    set_ending_unlock(character)
+    if hard_win then
+        local yang = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.CHAR_CLASSIC_GUY, 40, 104, LAYER.FRONT))
+        flip_entity(yang.uid)
     end
 
 end, ON.WIN)
@@ -152,7 +160,7 @@ set_post_entity_spawn(function(ent)
                     end
                 end
             )
-        elseif ent.y > 90 then
+        elseif ent.y > 105 then
             --otherwise this is the ship character.
             --spawns typically around 32.4, 111
             -- message(string.format("ship character %s at: %s %s", ent.uid, ent.x, ent.y))
