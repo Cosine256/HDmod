@@ -247,8 +247,11 @@ set_callback(function ()
     surfacelib.decorate_existing_surface()
 
 	state.camera.bounds_top = 109.6640
-	state.camera.adjusted_focus_x = 17.00
-	state.camera.adjusted_focus_y = 100.050
+	-- state.camera.adjusted_focus_x = 17.00
+	-- state.camera.adjusted_focus_y = 100.050
+    state.camera.adjusted_focus_x = 19.926
+    state.camera.adjusted_focus_y = 104.091
+    state.camera.focused_entity_uid = players[1].uid
 
     VOLCANO_DISAPPEAR = false
 

@@ -190,6 +190,20 @@ set_post_entity_spawn(function(ent)
     end
 end, SPAWN_TYPE.ANY, MASK.PLAYER)
 
+set_callback(function ()
+    if state.loading == 2 then
+        if state.screen == SCREEN.WIN then
+            state.screen_next = SCREEN.SCORES
+        end
+        -- if state.screen == SCREEN.RECAP then
+        --     state.screen_next = SCREEN.CREDITS
+        -- end
+        -- if state.screen == SCREEN.CREDITS then
+        --     state.screen_next = SCREEN.CAMP
+        -- end
+    end
+end, ON.PRE_UPDATE)
+
 local theme_win = CustomTheme:new(100, THEME.OLMEC)
 theme_win:override(THEME_OVERRIDE.SPAWN_EFFECTS, THEME.DWELLING)
 theme_win:override(THEME_OVERRIDE.SPAWN_BACKGROUND, THEME.DWELLING)
