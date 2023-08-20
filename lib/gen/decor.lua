@@ -17,8 +17,15 @@ module.SURFACE_BG_DEPTH = {
     SKY = 53,
 }
 
-module.BG_WIDTH = 60
-module.BG_CENTER = 25
+module.CREDITS_VOLCANO_DEPTH = {
+    FLUNG_ENTS = 1,
+    PARTICLES = 1,
+    VOLCANO = 1,--4,
+    SKY = 1,--4,
+}
+
+module.SURFACE_BG_WIDTH = 60
+module.SURFACE_BG_CENTER = 25
 
 module.CREDITS_SCROLLING = false
 

@@ -108,10 +108,10 @@ local function shoot_laser(ent, xdiff, ydiff)
     local x, y, l = get_position(ent.uid)
     local dist = math.sqrt(xdiff*xdiff + ydiff*ydiff) * 3
     local vx, vy = xdiff / dist, ydiff / dist
-    local laser = get_entity(spawn(ENT_TYPE.ITEM_LASERTRAP_SHOT, x+vx*2, y+vy*2, l, vx, vy))
+    local laser = get_entity(spawn(ENT_TYPE.ITEM_BULLET, x+vx*2, y+vy*2, l, vx, vy))
     laser_set(laser)
     laser.angle = ent.angle
-    commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_LASERTRAP_TRIGGER, ent.uid, 1, false)
+    commonlib.play_vanilla_sound(VANILLA_SOUND.ITEMS_WEBGUN, ent.uid, 1, false)
 end
 
 local function shoot_horizontal_laser(ent)
@@ -176,6 +176,7 @@ local function update_func(ent, c_data)
             else
                 local xdiff, ydiff
                 to_angle, xdiff, ydiff = point_to_target(ent, c_data)
+                -- message(string.format("diff: %s, %s", xdiff, ydiff))
                 if ent.idle_counter >= 240 then
                     if math.abs(to_angle - ent.angle) < 0.1 and ydiff < -0.01 then
                         shoot_laser(ent, xdiff, ydiff)

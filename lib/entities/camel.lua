@@ -1,5 +1,7 @@
 local animationlib = require('lib.entities.animation')
 local surfacelib = require('lib.surface')
+local minigamelib = require('lib.entities.minigame')
+
 local module = {}
 
 local camel_texture_id
@@ -41,6 +43,8 @@ local CANNON_ANIMATIONS <const> = {
   STARTUP = {0, loop = false, frames = 1, frame_time = 60},
   IDLE = {1, loop = true, frames = 1, frame_time = 4}
 }
+
+local TURN_RATE = 0.05
 
 --[[ # TODO: Credits mode:
     Auto walks in one direction until the player presses a button
@@ -128,11 +132,37 @@ local function camel_update(ent)
     end
 end
 
-local function shoot_gun(ent, xdiff, ydiff)
+-- create a bullet with velocity in relation to the angle of the cannon
+local function shoot_gun(ent)
+    --[[left
+        angle: 0
+        velx:-0.35
+        curcos: -1
+        cursin: 0
+    ]]
+    --[[left-up
+        angle: -0.7853981633975
+        curcos: -0.5
+        cursin: 0.5
+    ]]
+    --[[up
+        angle: -1.570796326795
+        curcos: 0
+        cursin: 1
+    ]]
+    --[[right
+        angle: -3.14159265359
+    ]]
+    --[[down
+        angle: 1.570796326795 or -4.712388980385
+    ]]
+    local gap = 0.25--1
+    local vel_magnitude = 0.3
+
     local x, y, l = get_position(ent.uid)
-    local dist = math.sqrt(xdiff*xdiff + ydiff*ydiff) * 3
-    local vx, vy = xdiff / dist, ydiff / dist
-    local projectile = get_entity(spawn(ENT_TYPE.ITEM_BULLET, x+vx*2, y+vy*2, l, vx, vy))
+    local x_i, y_i = -1*math.cos(ent.angle), -1*math.sin(ent.angle)
+    message(string.format("cos: %s, sin: %s, ang: %s", x_i, y_i, ent.angle))
+    local projectile = get_entity(spawn(ENT_TYPE.ITEM_BULLET, x+(gap*x_i), y+(gap*y_i), l, vel_magnitude*x_i, vel_magnitude*y_i))
     -- projectile.angle = ent.angle
     commonlib.play_vanilla_sound(VANILLA_SOUND.ITEMS_WEBGUN, ent.uid, 1, false)
 end
@@ -184,6 +214,7 @@ local function camel_update_credits(ent)
                 cannon.flags = clr_flag(cannon.flags, ENT_FLAG.INVISIBLE)
                 ent.user_data.state = MINIGAME_STATE.TRANSITION_TO_MINIGAME
                 animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.STARTUP)
+                minigamelib.start_minigame()
             end
         elseif ent.user_data.state == MINIGAME_STATE.TRANSITION_TO_MINIGAME
             and cannon.user_data.animation_timer == 0
@@ -208,10 +239,54 @@ local function camel_update_credits(ent)
             -- down, angle cannon down
             -- down and left, angle cannon down left
 
+            if test_flag(input, INPUT_FLAG.RIGHT)
+            and cannon.angle > -math.pi
+            then
+                cannon.angle = cannon.angle - TURN_RATE
+            end
+            if test_flag(input, INPUT_FLAG.LEFT)
+            and cannon.angle < 0
+            then
+                cannon.angle = cannon.angle + TURN_RATE
+            end
+            --if input up
+            -- and angle ~= -1.570796326795 --(not up)
+                --if angle > -4.712388980385 --(larger than down)
+                -- and angle < -1.570796326795 --(less than up)
+                    -- increment
+                --elseif angle < 1.570796326795 --(less than down)
+                -- and angle > -1.570796326795 --(larger than up)
+                    -- decrement
+            if test_flag(input, INPUT_FLAG.UP)
+            and cannon.angle ~= -1.570796326795 --(not up)
+            then
+                if cannon.angle > -4.712388980385 --(larger than down)
+                and cannon.angle < -1.570796326795 --(less than up)
+                then
+                    cannon.angle = cannon.angle + TURN_RATE
+                elseif cannon.angle < 1.570796326795 --(less than down)
+                and cannon.angle > -1.570796326795 --(larger than up)
+                then
+                    cannon.angle = cannon.angle - TURN_RATE
+                end
+            end
+            if test_flag(input, INPUT_FLAG.DOWN)
+            and cannon.angle ~= 1.570796326795 --(not down)
+            then
+                if cannon.angle > -1.570796326795 --(larger than up)
+                and cannon.angle < 1.570796326795 --(less than down)
+                then
+                    cannon.angle = cannon.angle + TURN_RATE
+                elseif cannon.angle < -1.570796326795 --(less than up)
+                and cannon.angle > -4.712388980385 --(larger than down)
+                then
+                    cannon.angle = cannon.angle - TURN_RATE
+                end
+            end
+
             -- When input whip, fire the cannon.
             if test_flag(input, INPUT_FLAG.WHIP) and cannon.user_data.cannon_timer == 0 then
-                shoot_gun(cannon, 0, 0)
-                message("BLAM")
+                shoot_gun(cannon)
                 cannon.user_data.cannon_timer = 10
             end
         end
