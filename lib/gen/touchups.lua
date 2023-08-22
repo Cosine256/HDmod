@@ -244,6 +244,13 @@ end,
 	ENT_TYPE.MONS_CRITTERSNAIL
 )
 
+-- remove hide decorations
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
+    if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+        return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
+    end
+end, SPAWN_TYPE.ANY, MASK.DECORATION, ENT_TYPE.DECORATION_HANGING_HIDE)
+
 function module.postlevelgen_remove_items()
 	remove_door_items()
 end

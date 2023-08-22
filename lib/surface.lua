@@ -1,6 +1,7 @@
 local module = {}
 
 local palmtreelib = require('lib.entities.palmtree')
+local minesdecolib = require('lib.entities.mines_deco')
 
 function module.decorate_surface()
     local TO_REMOVE = {ENT_TYPE.ITEM_EGGSHIP, ENT_TYPE.FX_EGGSHIP_DOOR, ENT_TYPE.FX_EGGSHIP_SHELL, ENT_TYPE.BG_SURFACE_STAR}
@@ -26,6 +27,12 @@ function module.decorate_surface()
     sun.height = 4.5
 
     spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, 53, 99, LAYER.FRONT)
+
+    minesdecolib.create_cutscene_support_bg(42, 100, true)
+    minesdecolib.create_support_at_floor_uid(get_grid_entity_at(43, 99, LAYER.FRONT))
+    minesdecolib.create_cutscene_support_bg(44, 100, true)
+    minesdecolib.create_cutscene_support_bg(49, 100)
+    minesdecolib.create_support_at_floor_uid(get_grid_entity_at(51, 99, LAYER.FRONT))
 
     palmtreelib.create_palmtree_day(18, 103, 2, palmtreelib.SURFACE_BG_DEPTH.BACKGROUND)
     palmtreelib.create_palmtree_day(23, 103, 0, palmtreelib.SURFACE_BG_DEPTH.BACKGROUND)
