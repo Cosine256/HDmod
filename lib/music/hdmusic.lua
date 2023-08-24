@@ -483,6 +483,15 @@ table.insert(module.HD_LEVEL_MUSICS, {
     end
 })
 
+local EGGPLANT_LOOP_SOUND = create_sound("res/music/hd/ultraegg.ogg")
+module.EGGPLANT_CUSTOM_MUSIC = EGGPLANT_LOOP_SOUND and {
+    base_volume = 0.5,
+    start_sound_id = "ultraegg",
+    sounds = {
+        { id = "ultraegg", next_sound_id = "ultraegg", sound = EGGPLANT_LOOP_SOUND, length = 14401 }
+    }
+}
+
 local OLMEC_BOSS_LOOP_SOUND = create_sound("res/music/hd/A04_boss.ogg")
 module.OLMEC_BOSS_CUSTOM_MUSIC = OLMEC_BOSS_LOOP_SOUND and {
     base_volume = 0.5,
@@ -498,6 +507,46 @@ module.YAMA_BOSS_CUSTOM_MUSIC = YAMA_BOSS_LOOP_SOUND and {
     start_sound_id = "A05_boss",
     sounds = {
         { id = "A05_boss", next_sound_id = "A05_boss", sound = YAMA_BOSS_LOOP_SOUND, length = 49200 }
+    }
+}
+
+-- TODO, currently unused until support for credits music replacement is added
+module.HD_CREDITS_CUSTOM_MUSIC = {
+    base_volume = 0.5,
+    start_sound_id = "credits",
+    sounds = {
+        {
+            id = "credits",
+            sound = create_sound("res/music/hd/Credits.ogg"),
+            length = 81014,
+            next_sound_id = function(ctx)
+                if state.win_state == WIN_STATE.HUNDUN_WIN then
+                    if module.music_debug_print then
+                        print("[HD Music Debug] Hard win, playing credits_2")
+                    end
+
+                    return "credits_2"
+                end
+
+                if module.music_debug_print then
+                    print("[HD Music Debug] Normal win, playing credits_2b")
+                end
+
+                return "credits_2b"
+            end
+        },
+        {
+            id = "credits_2",
+            sound = create_sound("res/music/hd/Credits_2.ogg"),
+            length = 31957,
+            next_sound_id = "credits_2"
+        },
+        {
+            id = "credits_2b",
+            sound = create_sound("res/music/hd/Credits_2b.ogg"),
+            length = 32000,
+            next_sound_id = "credits_2b"
+        }
     }
 }
 
