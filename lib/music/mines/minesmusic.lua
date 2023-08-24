@@ -349,9 +349,9 @@ module.MINES_CUSTOM_MUSIC = {
                         local next_stem
 
                         if has_seen_cobra_this_cycle then
-                            return pick_random({ "cobweb_a", "cobweb_a_nude", "mystery_a1" })
+                            next_stem = pick_random({ "cobweb_a", "cobweb_a_nude", "mystery_a1" })
                         else
-                            return pick_random({ "cobweb_a", "cobweb_a_nude", "cobra_a", "cobra_a1", "mystery_a1" })
+                            next_stem = pick_random({ "cobweb_a", "cobweb_a_nude", "cobra_a", "cobra_a1", "mystery_a1" })
                         end
 
                         if is_mystery_stem(next_stem) then
@@ -400,9 +400,9 @@ module.MINES_CUSTOM_MUSIC = {
                         local next_stem
                         
                         if has_seen_cobra_this_cycle then
-                            return pick_random({ "cobweb_a", "cobweb_a_nude", "mystery_a" })
+                            next_stem = pick_random({ "cobweb_a", "cobweb_a_nude", "mystery_a" })
                         else
-                            return pick_random({ "cobweb_a", "cobweb_a_nude", "cobra_a", "cobra_a1", "mystery_a" })
+                            next_stem = pick_random({ "cobweb_a", "cobweb_a_nude", "cobra_a", "cobra_a1", "mystery_a" })
                         end
 
                         if is_mystery_stem(next_stem) then
