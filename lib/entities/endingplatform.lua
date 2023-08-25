@@ -27,4 +27,19 @@ function module.create_endingplatform(x, y, l)
     blocks[#blocks+1] = block.uid
 end
 
+function module.raise_platform()
+    for _, uid in pairs(blocks) do
+        ---@type PushBlock
+        local block = get_entity(uid)
+        block.velocityy = 0.075
+        block:light_on_fire(600)
+        block:set_post_update_state_machine(function (self)
+            if block.y > 111 then
+                block.velocityy = 0
+                clear_callback()
+            end
+        end)
+    end
+end
+
 return module
