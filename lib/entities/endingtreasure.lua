@@ -17,6 +17,8 @@ do
     idol_texture_id = define_texture(idol_texture_def)
 end
 
+---treasure
+---@param ent Treasure | HundunChest
 function module.set_ending_treasure(ent)
     ent:set_texture(
         -- state.win_state == WIN_STATE.HUNDUN_WIN and yama_treasure_id or
@@ -24,6 +26,13 @@ function module.set_ending_treasure(ent)
     ent.hitboxx = 1.150
     if state.screen == SCREEN.CREDITS then
         ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
+    end
+    if state.screen == SCREEN.SCORES then
+        ent:set_post_update_state_machine(
+        ---@param self HundunChest | Treasure    
+        function (self)
+            self.move_state = 0
+        end)
     end
 end
 
