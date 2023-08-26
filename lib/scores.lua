@@ -1,4 +1,5 @@
 local surfacelib = require('lib.surface')
+local camellib = require('lib.entities.camel')
 local endingtreasurelib = require('lib.entities.endingtreasure')
 local decorlib = require('lib.gen.decor')
 local animationlib = require('lib.entities.animation')
@@ -269,26 +270,32 @@ set_callback(function ()
         end
     end)
 
-    -- prevent pets from making noise during the volcano cutscene
-    for _, pet_uid in ipairs(get_entities_by_type({ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_HAMSTER})) do
-        ---@type Pet
-        local pet = get_entity(pet_uid)
-        local original_counter = pet.yell_counter
-        pet:set_post_update_state_machine(
-        ---@param self Pet
-        function (self)
-            if not VOLCANO_DISAPPEAR then
-                self.yell_counter = 10
-            else
-                self.yell_counter = original_counter
-                clear_callback()
-            end
-        end)
-    end
+    local camel = get_entity(camellib.create_camel(25, 100, LAYER.FRONT))
+    spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
+    flip_entity(camel.uid)
+
     create_flung_entity(players[1]:get_texture(), 0, 160, 0.15, CHARACTER_ANIMATIONS.FALL)
     create_flung_entity(TEXTURE.DATA_TEXTURES_ITEMS_0, 31, 180, 0.2)
     create_volcano_effects()
 end, ON.SCORES)
+
+-- remove pets and NPCs
+
+set_post_entity_spawn(function(ent)
+    if state.screen == SCREEN.SCORES then
+        -- message(string.format("character: %s", ent.uid))
+        -- if state.win_state == WIN_STATE.HUNDUN_WIN and ent.y > 110 then
+        --     return false
+        -- end
+        ent:destroy()
+    end
+end, SPAWN_TYPE.SYSTEMIC, MASK.PLAYER)
+
+set_post_entity_spawn(function(ent)
+    if state.screen == SCREEN.SCORES then
+        ent:destroy()
+    end
+end, SPAWN_TYPE.SYSTEMIC, MASK.MONSTER, ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_HAMSTER)
 
 
 set_post_entity_spawn(function (entity)
