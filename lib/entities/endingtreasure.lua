@@ -21,6 +21,7 @@ function module.set_ending_treasure(ent)
     ent:set_texture(
         -- state.win_state == WIN_STATE.HUNDUN_WIN and yama_treasure_id or
     idol_texture_id)
+    ent.hitboxx = 1.150
     if state.screen == SCREEN.CREDITS then
         ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
     end

@@ -5,6 +5,15 @@ local unlockslib = require('lib.unlocks')
 
 local chest
 ---@type Rockdog | Mount | Entity | Movable | PowerupCapable
+local lake
+
+local TIMEOUT_EJECT_TIME = 70
+local TIMEOUT_FLOW_START = 165
+local TIMEOUT_PLATFORM_BUFFER = 35
+--# TODO: Fix ending scene crashing when using ending sooner
+local TIMEOUT_END_TIME = 600--200
+
+local TIMEOUT_WIN
 
 local hell_transition_texture_id
 do
@@ -19,6 +28,12 @@ end
 
 set_callback(function ()
     local hard_win = state.win_state == WIN_STATE.HUNDUN_WIN
+
+    -- spawn imposter lava
+    lake = spawn_impostor_lake(
+        AABB:new(34.5,98.5,40.5,85.5),
+        LAYER.FRONT, ENT_TYPE.LIQUID_IMPOSTOR_LAVA, 1.0
+    )
 
     chest = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 42.5, 105.4, LAYER.FRONT))
     chest:set_draw_depth(31)
@@ -94,10 +109,10 @@ end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_PARENTSSHIP, ENT_TYPE.ITEM_OLMECSH
 
 
 local function end_winscene()
-    -- message("ENDING WINSCENE!")
-    ---@type TreasureHook | Entity | Movable
-    local hook = get_entity(spawn_entity(ENT_TYPE.ITEM_EGGSHIP_HOOK, 42.5, 117, LAYER.FRONT, 0, 0))
-    spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 42.5, 117, LAYER.FRONT)
+    message("ENDING WINSCENE!")
+    spawn_entity(ENT_TYPE.ITEM_EGGSHIP_HOOK, 12.5, 117, LAYER.FRONT, 0, 0)
+    spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 12.5, 117, LAYER.FRONT)
+    -- spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_PARENTSSHIP, 12.5, 119, LAYER.FRONT)
 end
 
 -- burst open treasure chest
@@ -105,48 +120,16 @@ local function eject_ending_treasure()
     -- set the ending treasure chest to the open texture
     chest.animation_frame = 8
     -- particle effects
-    -- create_ending_treasure
     endingtreasurelib.create_ending_treasure(42.5, 105.75, LAYER.FRONT, -0.0735, 0.2)
-    -- if hard ending, spawn coins as well
+    -- if hard ending, spawn coins with velocity as it bounces
 end
 
-
-local lavafield_velocity = AABB:new(
-    35.0,--34.5,
-    110.5,
-    40.0,--40.5,
-    98.5
-)
--- move and spawn lava in a convincing way to have it 'push' the platform up
+-- move lava in a convincing way to have it 'push' the platform up
 local function flow_lava()
-    -- move lava in the middle two(?) columns
-    -- for every lava particle within an AABB
-    for _, lava_uid in pairs(get_entities_overlapping_hitbox(ENT_TYPE.LIQUID_LAVA, MASK.LIQUID, lavafield_velocity, LAYER.FRONT)) do
-        local x, y, _ = get_position(lava_uid)
-        local vx, _ = get_velocity(lava_uid)
-        move_entity(lava_uid, x, y, vx, 8)
-        -- message(string.format("uid: %s", lava_uid))
+    if lake.y < 103.5 then
+        lake.y = lake.y + 0.1045
     end
 end
-
--- spawn a steady pool of lava entities at the base of the pit
-local function create_extra_lava()
-    for x = 35, 40, 1 do
-        spawn_liquid(ENT_TYPE.LIQUID_LAVA, x, 99)
-    end
-end
-
-
-local DEBUG_RGB_GREEN = rgba(153, 196, 19, 170)
-
-set_callback(function(draw_ctx)
-	if
-    state.pause == 0
-    and state.screen == SCREEN.WIN
-    then
-        draw_ctx:draw_rect_filled(screen_aabb(lavafield_velocity), 0, DEBUG_RGB_GREEN)
-	end
-end, ON.GUIFRAME)
 
 -- In the vanilla game, a win is triggered by the player's state machine when the player finishes entering a win door. Emulate this behavior in the Olmec and Yama levels.
 set_post_entity_spawn(function(ent)
@@ -175,15 +158,14 @@ set_post_entity_spawn(function(ent)
             -- message("YOU WINNED")
             ent.flags = clr_flag(ent.flags, ENT_FLAG.STUNNABLE)
             local reached_center = false
-            local triggered_end_winscene = false
-            local timeout_win = 550
+            TIMEOUT_WIN = 0
             ent:set_post_update_state_machine(
                 ---@param self Movable | Entity | Player
                 function (self)
                     local x, _, _ = get_position(ent.uid)
                     -- continue walking until you get to the center of the platform
                     if x > 34.5 and x < 37.4 then
-                        -- don't trip
+                        -- don't trip (Don't even trip, dog)
                         if self.velocityy >= 0.090 then
                             self.velocityy = 0
                         end
@@ -193,27 +175,20 @@ set_post_entity_spawn(function(ent)
                         reached_center = true
                     end
                     if reached_center then
-                        if timeout_win > 0 then
-                            timeout_win = timeout_win - 1
+                        -- vibrate chest
+                        if TIMEOUT_WIN >= 0 then
+                            TIMEOUT_WIN = TIMEOUT_WIN + 1
                         end
-                        if timeout_win == 400 then
+                        if TIMEOUT_WIN == TIMEOUT_EJECT_TIME then
                             eject_ending_treasure()
                         end
-                        if timeout_win <= 330 then
-                            -- move lava every other tick, otherwise the x and y values get locked in-place
-                            if timeout_win % 2 == 1 then
-                                flow_lava()
-                            end
-                            if timeout_win <= 320 and timeout_win % 20 == 1 then
-                                create_extra_lava()
-                            end
+                        if TIMEOUT_WIN >= TIMEOUT_FLOW_START then
+                            flow_lava()
                         end
-                        if timeout_win == 300 then
+                        if TIMEOUT_WIN == TIMEOUT_FLOW_START + TIMEOUT_PLATFORM_BUFFER then
                             endingplatformlib.raise_platform()
                         end
-                        --trigger ending the scene (otherwise ending it sooner crashes the scores screen)
-                        if timeout_win <= 0 and not triggered_end_winscene then
-                            triggered_end_winscene = true
+                        if TIMEOUT_WIN == TIMEOUT_END_TIME then
                             end_winscene()
                         end
                     end
