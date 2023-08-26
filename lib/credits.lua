@@ -6,6 +6,10 @@ local minigamelib = require('lib.entities.minigame')
 
 set_callback(function ()
     surfacelib.build_credits_surface()
+
+    state.camera.adjusted_focus_x = 14.0
+    state.camera.adjusted_focus_y = 115.5
+
     spawn_player(1, 25, 111)
 
     local camel = get_entity(camellib.create_camel_credits(25, 111, LAYER.FRONT))
@@ -44,7 +48,9 @@ set_callback(function ()
 end, ON.CREDITS)
 
 set_callback(function()
-    -- prevent fading out of the credits screen (when pressing jump or credits end)
+    --[[
+        prevent fading out of the credits screen (when pressing jump or credits end)
+    ]]
     if state.screen == SCREEN.CREDITS
     and state.loading == 1
     then
@@ -59,6 +65,15 @@ set_callback(function()
             -- stop loading next scene
             state.loading = 0
         end
+    end
+
+    if state.screen == SCREEN.SCORES
+    and state.loading == 3
+    then
+        state.fadevalue = 1.0
+        state.fadeout = 20--40
+        state.fadein = 20--40
+        state.loading_black_screen_timer = 0
     end
 end, ON.LOADING)
 

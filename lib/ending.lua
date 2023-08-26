@@ -15,8 +15,7 @@ local TIMEOUT_EJECT_TIME = 55
 local TIMEOUT_SHAKE_TIME = 100
 local TIMEOUT_FLOW_START = 165
 local TIMEOUT_PLATFORM_BUFFER = 35
---# TODO: Fix ending scene crashing when using ending sooner
-local TIMEOUT_END_TIME = 600--200
+local TIMEOUT_END_TIME = 300
 
 local TIMEOUT_WIN
 
@@ -131,6 +130,7 @@ set_callback(function ()
 
     local character = 193 + unlockslib.HD_UNLOCKS[hard_win and unlockslib.HD_UNLOCK_ID.YAMA or unlockslib.HD_UNLOCK_ID.OLMEC_WIN].unlock_id
     set_ending_unlock(character)
+    state.end_spaceship_character = character -- Setting this allows ending SCREEN.WIN early without a crash!
     if hard_win then
         local yang = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.CHAR_CLASSIC_GUY, 40, 104, LAYER.FRONT))
         flip_entity(yang.uid)
@@ -148,9 +148,11 @@ end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_PARENTSSHIP, ENT_TYPE.ITEM_OLMECSH
 
 local function end_winscene()
     -- message("ENDING WINSCENE!")
-    spawn_entity(ENT_TYPE.ITEM_EGGSHIP_HOOK, 12.5, 117, LAYER.FRONT, 0, 0)
-    spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 12.5, 117, LAYER.FRONT)
-    -- spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_PARENTSSHIP, 12.5, 119, LAYER.FRONT)
+    state.loading = 1
+    state.fadevalue = 0
+    state.fadeout = 20--40
+    state.fadein = 20--40
+    state.loading_black_screen_timer = 20--40
 end
 
 -- burst open treasure chest
@@ -237,6 +239,7 @@ set_post_entity_spawn(function(ent)
                             -- message("SHAKE")
                         end
                         if TIMEOUT_WIN == TIMEOUT_FLOW_START then
+                            commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_EXPLOSION, lavastream_sndsrc.uid, 0.5, false)
                             state.camera.shake_multiplier_x = 0.35
                             state.camera.shake_multiplier_y = 0.35
                             -- message("SHAKIER")
@@ -246,7 +249,6 @@ set_post_entity_spawn(function(ent)
                             flow_lava()
                         end
                         if TIMEOUT_WIN == TIMEOUT_FLOW_START + TIMEOUT_PLATFORM_BUFFER then
-                            commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_EXPLOSION, lavastream_sndsrc.uid, 0.5, false)
                             endingplatformlib.raise_platform()
                         end
                         if TIMEOUT_WIN == TIMEOUT_END_TIME then
