@@ -5,9 +5,14 @@ local unlockslib = require('lib.unlocks')
 
 local chest
 ---@type Rockdog | Mount | Entity | Movable | PowerupCapable
-local lake
+local lavastream
+local lavastream_sndsrc
+local snd_fireloop
+local snd_rumbleloop
+local snd_fireloop_vol
 
-local TIMEOUT_EJECT_TIME = 70
+local TIMEOUT_EJECT_TIME = 55
+local TIMEOUT_SHAKE_TIME = 100
 local TIMEOUT_FLOW_START = 165
 local TIMEOUT_PLATFORM_BUFFER = 35
 --# TODO: Fix ending scene crashing when using ending sooner
@@ -30,10 +35,43 @@ set_callback(function ()
     local hard_win = state.win_state == WIN_STATE.HUNDUN_WIN
 
     -- spawn imposter lava
-    lake = spawn_impostor_lake(
+    lavastream = spawn_impostor_lake(
         AABB:new(34.5,98.5,40.5,85.5),
         LAYER.FRONT, ENT_TYPE.LIQUID_IMPOSTOR_LAVA, 1.0
     )
+    lavastream_sndsrc = get_entity(spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, 37.5, 98, LAYER.FRONT, 0, 0))
+    lavastream_sndsrc.flags = set_flag(lavastream_sndsrc.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
+    lavastream_sndsrc.flags = set_flag(lavastream_sndsrc.flags, ENT_FLAG.INVISIBLE)
+    lavastream_sndsrc.flags = set_flag(lavastream_sndsrc.flags, ENT_FLAG.NO_GRAVITY)
+    --Move y of soundsrc from 100 -> 105
+    lavastream_sndsrc:set_post_update_state_machine(function (self)
+        if TIMEOUT_WIN >= TIMEOUT_FLOW_START then
+            lavastream_sndsrc.y = lavastream_sndsrc.y + 0.1
+        end
+        if lavastream_sndsrc.y > 105 then
+            clear_callback()
+        end
+    end)
+
+    -- fire sound effects for the stream
+    snd_fireloop = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_FIREBUG_ATK_LOOP, lavastream_sndsrc.uid, 1, true)
+    snd_rumbleloop = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, lavastream_sndsrc.uid, 1, true)
+    lavastream_sndsrc:set_post_update_state_machine(function()
+        if snd_fireloop then
+            commonlib.update_sound_volume(snd_fireloop, lavastream_sndsrc.uid, snd_fireloop_vol)
+        end
+        if snd_rumbleloop then
+            commonlib.update_sound_volume(snd_rumbleloop, lavastream_sndsrc.uid, snd_fireloop_vol)
+        end
+    end)
+    set_callback(function()
+        if snd_fireloop then
+            snd_fireloop:stop()
+        end
+        if snd_rumbleloop then
+            snd_rumbleloop:stop()
+        end
+    end, ON.SCORES)
 
     chest = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 42.5, 105.4, LAYER.FRONT))
     chest:set_draw_depth(31)
@@ -109,25 +147,35 @@ end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_PARENTSSHIP, ENT_TYPE.ITEM_OLMECSH
 
 
 local function end_winscene()
-    message("ENDING WINSCENE!")
+    -- message("ENDING WINSCENE!")
     spawn_entity(ENT_TYPE.ITEM_EGGSHIP_HOOK, 12.5, 117, LAYER.FRONT, 0, 0)
     spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 12.5, 117, LAYER.FRONT)
     -- spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_PARENTSSHIP, 12.5, 119, LAYER.FRONT)
 end
 
 -- burst open treasure chest
-local function eject_ending_treasure()
+local function eject_treasure()
+    commonlib.play_vanilla_sound(VANILLA_SOUND.CUTSCENE_BIG_TREASURE_OPEN, chest.uid, 1, false)
     -- set the ending treasure chest to the open texture
     chest.animation_frame = 8
     -- particle effects
+    for i = 1, 10 do
+        local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE, 42+prng:random_float(PRNG_CLASS.PARTICLES)*2, 105.75+prng:random_float(PRNG_CLASS.PARTICLES)*3, LAYER.FRONT, 0.06-prng:random_float(PRNG_CLASS.PARTICLES)*0.12, 0.3+prng:random_float(PRNG_CLASS.PARTICLES)*.1))
+        rubble.animation_frame = i >= 5 and 20 or 67
+    end
     endingtreasurelib.create_ending_treasure(42.5, 105.75, LAYER.FRONT, -0.0735, 0.2)
     -- if hard ending, spawn coins with velocity as it bounces
 end
 
+local function vibrate_chest()
+    chest.x = chest.x + math.cos(TIMEOUT_WIN)/50
+    chest.y = chest.y + math.cos(TIMEOUT_WIN)/50
+end
+
 -- move lava in a convincing way to have it 'push' the platform up
 local function flow_lava()
-    if lake.y < 103.5 then
-        lake.y = lake.y + 0.1045
+    if lavastream.y < 103.5 then
+        lavastream.y = lavastream.y + 0.1045
     end
 end
 
@@ -175,12 +223,25 @@ set_post_entity_spawn(function(ent)
                         reached_center = true
                     end
                     if reached_center then
-                        -- vibrate chest
                         if TIMEOUT_WIN >= 0 then
                             TIMEOUT_WIN = TIMEOUT_WIN + 1
                         end
+                        if TIMEOUT_WIN < TIMEOUT_EJECT_TIME then
+                            vibrate_chest()
+                        end
                         if TIMEOUT_WIN == TIMEOUT_EJECT_TIME then
-                            eject_ending_treasure()
+                            eject_treasure()
+                        end
+                        if TIMEOUT_WIN == TIMEOUT_SHAKE_TIME then
+                            commonlib.shake_camera(230, 230, 0.1, 0.25, 0.25, false)
+                            -- message("SHAKE")
+                        end
+                        if TIMEOUT_WIN == TIMEOUT_FLOW_START then
+                            state.camera.shake_multiplier_x = 0.35
+                            state.camera.shake_multiplier_y = 0.35
+                            -- message("SHAKIER")
+                            snd_fireloop_vol = 1
+                            commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_EXPLOSION, lavastream_sndsrc.uid, 0.5, false)
                         end
                         if TIMEOUT_WIN >= TIMEOUT_FLOW_START then
                             flow_lava()
