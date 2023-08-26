@@ -233,7 +233,7 @@ set_post_entity_spawn(function(ent)
                             eject_treasure()
                         end
                         if TIMEOUT_WIN == TIMEOUT_SHAKE_TIME then
-                            commonlib.shake_camera(230, 230, 0.1, 0.25, 0.25, false)
+                            commonlib.shake_camera(200, 480, 1, 1, 1, false)
                             -- message("SHAKE")
                         end
                         if TIMEOUT_WIN == TIMEOUT_FLOW_START then
@@ -241,12 +241,12 @@ set_post_entity_spawn(function(ent)
                             state.camera.shake_multiplier_y = 0.35
                             -- message("SHAKIER")
                             snd_fireloop_vol = 1
-                            commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_EXPLOSION, lavastream_sndsrc.uid, 0.5, false)
                         end
                         if TIMEOUT_WIN >= TIMEOUT_FLOW_START then
                             flow_lava()
                         end
                         if TIMEOUT_WIN == TIMEOUT_FLOW_START + TIMEOUT_PLATFORM_BUFFER then
+                            commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_EXPLOSION, lavastream_sndsrc.uid, 0.5, false)
                             endingplatformlib.raise_platform()
                         end
                         if TIMEOUT_WIN == TIMEOUT_END_TIME then
