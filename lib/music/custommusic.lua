@@ -139,6 +139,18 @@ local function update_custom_title_music()
     end
 end
 
+function module.play_eggplant_music()
+    if not options.hd_debug_custom_level_music_disable then
+        if hd_og_music_enabled then
+            -- Make sure we don't restart the music if it's already playing
+            if current_custom_level_music ~= hdmusic.EGGPLANT_CUSTOM_MUSIC then
+                custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, hdmusic.EGGPLANT_CUSTOM_MUSIC)
+                current_custom_level_music = hdmusic.EGGPLANT_CUSTOM_MUSIC
+            end
+        end
+    end
+end
+
 function module.play_boss_music()
     if not options.hd_debug_custom_level_music_disable then
         if hd_og_music_enabled then
@@ -164,5 +176,16 @@ set_callback(function()
         update_custom_title_music()
     end
 end, ON.LOADING)
+
+-- TODO this is almost identical to a callback used for the crystal monkey, both could potentially be combined or moved to a separate file
+set_post_entity_spawn(function(altar, spawn_flags)
+    set_pre_collision2(altar.uid, function(self, collision_ent)
+        if collision_ent.type.id == ENT_TYPE.ITEM_PRESENT and collision_ent.standing_on_uid == altar.uid and altar.timer == 20 then
+            if hd_og_music_enabled then
+                module.play_eggplant_music()
+            end
+        end
+    end)
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_ALTAR)
 
 return module

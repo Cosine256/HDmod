@@ -11,6 +11,36 @@ local function pick_random(table)
     return table[prng:random(#table)]
 end
 
+--[[
+    Selects a random stem from a given pool of stems based on the stems weight
+    -- A two dimensional array containing one or more stems and their associated weight
+    {
+      {
+        -- The stems weight. This value must be positive.
+        weight = number,
+        -- The stems ID
+        id = string
+      },
+      ...
+    },
+    -- Total weight of all stems in table. This value must be positive.
+    total_weight = number
+]]
+local function pick_weighted_random(table, total_weight)
+    -- Select a number between 1 and total_weight
+    local selection = prng:random(1, total_weight)
+
+    for i = 1, #table do
+        -- Subtract weight from selection
+        selection = selection - table[i][1]
+
+        -- If selection is 0 or below, return the value associated with the weight
+        if (selection <= 0) then
+            return table[i][2]
+        end
+    end
+end
+
 local function is_cobra_stem(stem_id)
     if stem_id == "cobra_a" or stem_id == "cobra_a1" then
         return true
@@ -31,18 +61,27 @@ module.MINES_CUSTOM_MUSIC = {
     settings = {
         base_volume = 0.5,
         start_sound_id = function(ctx)
-                if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.FIRST_RUN) == 1 then
-                    if module.music_debug_print then
-                        print("[Mines Music Debug] FIRST_RUN = 1; playing adventure")
-                    end
+                if state.screen == SCREEN.LEVEL then
+                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.FIRST_RUN) == 1 then
+                        if module.music_debug_print then
+                            print("[Mines Music Debug] FIRST_RUN = 1; playing adventure")
+                        end
 
-                    return "adventure"
+                        return "adventure"
+                    else
+                        if module.music_debug_print then
+                            print("[Mines Music Debug] FIRST_RUN = 0; playing normal intro")
+                        end
+
+                        return pick_random({ "intro_a", "intro_b" })
+                    end
+                -- Assume we are on a level transition, pick a random stem instead of adventure or intro stems
                 else
                     if module.music_debug_print then
-                        print("[Mines Music Debug] FIRST_RUN = 0; playing normal intro")
+                        print("[Mines Music Debug] state.screen ~= SCREEN.LEVEL; starting with random stem")
                     end
 
-                    return pick_random({ "intro_a", "intro_b" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             end,
         sounds = {
@@ -146,7 +185,7 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b", "idle_c" })
                     end
 
-                    return pick_random({ "mattock_b1", "mattock_b2" })
+                    return pick_weighted_random({ {8, "mattock_b1"}, {2, "mattock_b2"} }, 10)
                 end
             },
             {
@@ -310,9 +349,9 @@ module.MINES_CUSTOM_MUSIC = {
                         local next_stem
 
                         if has_seen_cobra_this_cycle then
-                            return pick_random({ "cobweb_a", "cobweb_a_nude", "mystery_a1" })
+                            next_stem = pick_random({ "cobweb_a", "cobweb_a_nude", "mystery_a1" })
                         else
-                            return pick_random({ "cobweb_a", "cobweb_a_nude", "cobra_a", "cobra_a1", "mystery_a1" })
+                            next_stem = pick_random({ "cobweb_a", "cobweb_a_nude", "cobra_a", "cobra_a1", "mystery_a1" })
                         end
 
                         if is_mystery_stem(next_stem) then
@@ -361,9 +400,9 @@ module.MINES_CUSTOM_MUSIC = {
                         local next_stem
                         
                         if has_seen_cobra_this_cycle then
-                            return pick_random({ "cobweb_a", "cobweb_a_nude", "mystery_a" })
+                            next_stem = pick_random({ "cobweb_a", "cobweb_a_nude", "mystery_a" })
                         else
-                            return pick_random({ "cobweb_a", "cobweb_a_nude", "cobra_a", "cobra_a1", "mystery_a" })
+                            next_stem = pick_random({ "cobweb_a", "cobweb_a_nude", "cobra_a", "cobra_a1", "mystery_a" })
                         end
 
                         if is_mystery_stem(next_stem) then
@@ -528,8 +567,8 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_b", "idle_c" })
                     end
 
-                    return pick_random({ "explore_a", "explore_b", "mattock_a", "mattock_b1", "mattock_b2",
-                                         "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1",
+                                         "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             },
             {
@@ -545,8 +584,8 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_c" })
                     end
 
-                    return pick_random({ "explore_a", "explore_b", "mattock_a", "mattock_b1", "mattock_b2",
-                                         "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1",
+                                         "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             },
             {
@@ -562,8 +601,8 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b" })
                     end
 
-                    return pick_random({ "explore_a", "explore_b", "mattock_a", "mattock_b1", "mattock_b2",
-                                         "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1",
+                                         "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             },
             {
@@ -579,8 +618,8 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b", "idle_c" })
                     end
 
-                    return pick_random({ "explore_a", "explore_b", "mattock_a", "mattock_b1", "mattock_b2",
-                                         "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1",
+                                         "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             },
             {
@@ -596,8 +635,8 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b", "idle_c" })
                     end
 
-                    return pick_random({ "explore_a", "explore_b", "mattock_a", "mattock_b1", "mattock_b2",
-                                         "cobra_a", "cobra_a1", "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
+                    return pick_random({ "explore_a", "explore_b", "mattock_a", "cobra_a", "cobra_a1",
+                                         "mystery_a", "mystery_a1", "cobweb_a", "cobweb_a_nude" })
                 end
             }
         }

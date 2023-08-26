@@ -44,7 +44,7 @@ local CANNON_ANIMATIONS <const> = {
 ]]
 
 local function set_dimensions(ent)
-    ent.offsety = -0.335
+    ent.offsety = -0.435
     ent.width, ent.height = 2, 2
     ent.hitboxx, ent.hitboxy = 0.65, 0.585
 end
