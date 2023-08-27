@@ -61,14 +61,6 @@ local function is_mystery_stem(stem_id)
     end
 end
 
-local function is_cobweb_c_stem(stem_id)
-    if stem_id == "cobweb_c" or stem_id == "cobweb_c_nude" then
-        return true
-    else
-        return false
-    end
-end
-
 --[[
 The type of Fill we will use
 - One Fill
@@ -547,21 +539,7 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b", "idle_c" })
                     end
 
-                    local next_stem = pick_random({ "cobweb_c", "cobweb_c_nude", "explore_a", "mattock_a", "cobra_a",
-                                         "cobra_a1", "mystery_a", "mystery_a1" })
-
-                    if is_cobweb_c_stem(next_stem) then
-                        return next_stem
-                    else
-                        stem_after_fill = next_stem
-                        fill_type[prng:random(4)]()
-
-                        if num_fills > 0 then
-                            return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                        else
-                            return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                        end
-                    end
+                    return pick_random({ "cobweb_c", "cobweb_c_nude" })
                 end
             },
             {
@@ -577,21 +555,7 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b", "idle_c" })
                     end
 
-                    local next_stem = pick_random({ "cobweb_c", "cobweb_c_nude", "explore_a", "mattock_a", "cobra_a",
-                                         "cobra_a1", "mystery_a", "mystery_a1" })
-
-                    if is_cobweb_c_stem(next_stem) then
-                        return next_stem
-                    else
-                        stem_after_fill = next_stem
-                        fill_type[prng:random(4)]()
-
-                        if num_fills > 0 then
-                            return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                        else
-                            return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                        end
-                    end
+                    return pick_random({ "cobweb_c", "cobweb_c_nude" })
                 end
             },
             {
