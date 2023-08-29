@@ -281,12 +281,13 @@ set_callback(function ()
         if state.screen == SCREEN.WIN then
             state.screen_next = SCREEN.SCORES
         end
-        -- if state.screen == SCREEN.RECAP then
-        --     state.screen_next = SCREEN.CREDITS
-        -- end
-        -- if state.screen == SCREEN.CREDITS then
-        --     state.screen_next = SCREEN.CAMP
-        -- end
+        if state.screen == SCREEN.RECAP then
+            state.screen_next = SCREEN.CREDITS
+            state:force_current_theme(state.win_state == WIN_STATE.HUNDUN_WIN and THEME.HUNDUN or THEME.TIAMAT)
+        end
+        if state.screen == SCREEN.CREDITS then
+            state.screen_next = SCREEN.CAMP
+        end
     end
 end, ON.PRE_UPDATE)
 
