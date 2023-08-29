@@ -7,8 +7,10 @@ local minigamelib = require('lib.entities.minigame')
 set_callback(function ()
     surfacelib.build_credits_surface()
 
-    state.camera.adjusted_focus_x = 14.0
-    state.camera.adjusted_focus_y = 115.5
+    state.camera.adjusted_focus_x = 13.971
+    state.camera.adjusted_focus_y = 115.460
+    state.camera.bounds_top = 121.464
+    state.camera.bounds_left = 1.8
 
     spawn_player(1, 25, 111)
 
