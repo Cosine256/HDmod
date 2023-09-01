@@ -75,6 +75,136 @@ local fill_type = {
     [4] = function() num_fills = 2 end
 }
 
+module.MINES_DARK_CUSTOM_MUSIC = {
+    settings = {
+        base_volume = 0.5,
+        start_sound_id = "dim_intro",
+        sounds = {
+            {
+                id = "dim_intro",
+                sound = create_sound("res/music/BGM_Mines_dim_Intro.ogg"),
+                length = 19024,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_a", "dim_ambush_b", "dim_ambush_nude", "dim_call", "dim_chill_a",
+                                         "dim_chill_b", "dim_echo", "dim_pit", "dim_shadow", "dim_shiver", "dim_whisper" })
+                end
+            },
+            {
+                id = "dim_ambush_a",
+                sound = create_sound("res/music/BGM_Mines_dim_Ambush_A.ogg"),
+                length = 15365,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_b", "dim_ambush_nude", "dim_call", "dim_chill_a", "dim_chill_b",
+                                         "dim_echo", "dim_pit", "dim_shadow", "dim_shiver", "dim_whisper" })
+                end
+            },
+            {
+                id = "dim_ambush_b",
+                sound = create_sound("res/music/BGM_Mines_dim_Ambush_B.ogg"),
+                length = 15365,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_a", "dim_ambush_nude", "dim_call", "dim_chill_a", "dim_chill_b",
+                                         "dim_echo", "dim_pit", "dim_shadow", "dim_shiver", "dim_whisper" })
+                end
+            },
+            {
+                id = "dim_ambush_nude",
+                sound = create_sound("res/music/BGM_Mines_dim_Ambush_nude.ogg"),
+                length = 15365,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_a", "dim_ambush_b", "dim_call", "dim_chill_a", "dim_chill_b",
+                                         "dim_echo", "dim_pit", "dim_shadow", "dim_shiver", "dim_whisper" })
+                end
+            },
+            {
+                id = "dim_call",
+                sound = create_sound("res/music/BGM_Mines_dim_Call.ogg"),
+                length = 11707,
+                next_sound_id = function(ctx)
+                    return pick_weighted_random({ {1, "dim_ambush_a"}, {1, "dim_ambush_b"}, {1, "dim_ambush_nude"}, {1, "dim_chill_a"},
+                                                  {1, "dim_chill_b"}, {1, "dim_echo"}, {1, "dim_pit"}, {10, "dim_response"},
+                                                  {1, "dim_shadow"}, {1, "dim_shiver"}, {1, "dim_whisper"} }, 20)
+                end
+            },
+            {
+                id = "dim_chill_a",
+                sound = create_sound("res/music/BGM_Mines_dim_Chill_A.ogg"),
+                length = 14634,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_a", "dim_ambush_b", "dim_ambush_nude", "dim_call", "dim_chill_b",
+                                         "dim_echo", "dim_pit", "dim_shadow", "dim_shiver", "dim_whisper" })
+                end
+            },
+            {
+                id = "dim_chill_b",
+                sound = create_sound("res/music/BGM_Mines_dim_Chill_B.ogg"),
+                length = 14634,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_a", "dim_ambush_b", "dim_ambush_nude", "dim_call", "dim_chill_a",
+                                         "dim_echo", "dim_pit", "dim_shadow", "dim_shiver", "dim_whisper" })
+                end
+            },
+            {
+                id = "dim_echo",
+                sound = create_sound("res/music/BGM_Mines_dim_Echo.ogg"),
+                length = 14634,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_a", "dim_ambush_b", "dim_ambush_nude", "dim_call", "dim_chill_a",
+                                         "dim_chill_b", "dim_pit", "dim_shadow", "dim_shiver", "dim_whisper" })
+                end
+            },
+            {
+                id = "dim_pit",
+                sound = create_sound("res/music/BGM_Mines_dim_Pit.ogg"),
+                length = 24146,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_a", "dim_ambush_b", "dim_ambush_nude", "dim_call", "dim_chill_a",
+                                         "dim_chill_b", "dim_echo", "dim_shadow", "dim_shiver", "dim_whisper" })
+                end
+            },
+            {
+                id = "dim_response",
+                sound = create_sound("res/music/BGM_Mines_dim_Response.ogg"),
+                length = 9512,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_a", "dim_ambush_b", "dim_ambush_nude", "dim_call", "dim_chill_a",
+                                         "dim_chill_b", "dim_echo", "dim_pit", "dim_shadow", "dim_shiver", "dim_whisper" })
+                end
+            },
+            {
+                id = "dim_shadow",
+                sound = create_sound("res/music/BGM_Mines_dim_Shadow.ogg"),
+                length = 16097,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_a", "dim_ambush_b", "dim_ambush_nude", "dim_call", "dim_chill_a",
+                                         "dim_chill_b", "dim_echo", "dim_pit", "dim_shiver", "dim_whisper" })
+                end
+            },
+            {
+                id = "dim_shiver",
+                sound = create_sound("res/music/BGM_Mines_dim_Shiver.ogg"),
+                length = 20487,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_a", "dim_ambush_b", "dim_ambush_nude", "dim_call", "dim_chill_a",
+                                         "dim_chill_b", "dim_echo", "dim_pit", "dim_shadow", "dim_whisper" })
+                end
+            },
+            {
+                id = "dim_whisper",
+                sound = create_sound("res/music/BGM_Mines_dim_Whisper.ogg"),
+                length = 16097,
+                next_sound_id = function(ctx)
+                    return pick_random({ "dim_ambush_a", "dim_ambush_b", "dim_ambush_nude", "dim_call", "dim_chill_a",
+                                         "dim_chill_b", "dim_echo", "dim_pit", "dim_shadow", "dim_shiver" })
+                end
+            }
+        }
+    },
+    should_play = function()
+        return state.screen == SCREEN.LEVEL and state.theme == THEME.DWELLING and test_flag(get_level_flags(), 18)
+    end
+}
+
 module.MINES_CUSTOM_MUSIC = {
     settings = {
         base_volume = 0.5,

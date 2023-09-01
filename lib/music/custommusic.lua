@@ -13,6 +13,7 @@ optionslib.register_option_bool("hd_debug_custom_level_music_disable", "Custom m
 optionslib.register_option_bool("hd_debug_custom_title_music_disable", "Custom music - Disable for title screen", nil, false, true)
 
 local CUSTOM_LEVEL_MUSICS = {
+    minesmusic.MINES_DARK_CUSTOM_MUSIC,
     minesmusic.MINES_CUSTOM_MUSIC,
     hellmusic.HELL_CUSTOM_MUSIC
 }
