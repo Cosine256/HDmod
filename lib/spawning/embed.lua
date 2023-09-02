@@ -14,8 +14,9 @@ function module.embed_item(embed_uid, floor_uid)
 end
 
 function module.remove_and_embed_item(embed_type, floortype_to_spawn, x, y, l)
+	local floor_uid = spawn_grid_entity(floortype_to_spawn, x, y, l)
 	removelib.remove_embedded_at(x, y, l)
-	return module.embed_item(spawn_entity(embed_type, x, y, l, 0, 0), spawn_grid_entity(floortype_to_spawn, x, y, l))
+	return module.embed_item(spawn_entity(embed_type, x, y, l, 0, 0), floor_uid)
 end
 
 return module
