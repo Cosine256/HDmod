@@ -752,13 +752,13 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {
 					function(x, y, l)
-						embedlib.embed_item(ENT_TYPE.ITEM_MATTOCK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l), 128)
+						embedlib.remove_and_embed_item(ENT_TYPE.ITEM_MATTOCK, ENT_TYPE.FLOOR_GENERIC, x, y, l)
 					end,
 				},
 				alternate = {
 					[THEME.ICE_CAVES] = {
 						function(x, y, l)
-							embedlib.embed_item(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l), 41)
+							embedlib.remove_and_embed_item(ENT_TYPE.ITEM_JETPACK, ENT_TYPE.FLOOR_GENERIC, x, y, l)
 						end
 					},
 				}
@@ -1279,18 +1279,18 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {
 					function(x, y, l)
-						embedlib.embed_item(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l))
+						embedlib.remove_and_embed_item(ENT_TYPE.ITEM_RUBY, ENT_TYPE.FLOOR_GENERIC, x, y, l)
 					end
 				},
 				alternate = {
 					[THEME.TEMPLE] = {
 						function(x, y, l)
-							embedlib.embed_item(ENT_TYPE.ITEM_RUBY, spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l))
+							embedlib.remove_and_embed_item(ENT_TYPE.ITEM_RUBY, (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l)
 						end
 					},
 					[THEME.VOLCANA] = {
 						function(x, y, l)
-							embedlib.embed_item(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l))
+							embedlib.remove_and_embed_item(ENT_TYPE.ITEM_RUBY, ENT_TYPE.FLOORSTYLED_VLAD, x, y, l)
 						end
 					}
 				}
