@@ -1,17 +1,24 @@
 local surfacelib = require('lib.surface')
 local camellib = require('lib.entities.camel')
+local animationlib = require('lib.entities.animation')
 local module = {}
 
+local intro_timeout
 local TIMEOUT_GENERAL = 65
 local TIMEOUT_PRE_ENTRANCE = 120
 
-local GUY_WALKING_STATE
-local GUY_WALKING <const> = {
-    PRE_LAND = 0,
-    LAND_STANDING = 1,
-    WALKING_POST_LAND = 2,
-    PETTING = 3,
-    WALKING_POST_PET = 4
+local GUY_WALKS_STATE
+local GUY_WALKS <const> = {--Haha. Guy Fawkes.
+    PRE_DISMOUNT = 0,
+    DISMOUNT = 1,
+    LAND_STANDING = 2,
+    WALKING_POST_LAND = 3,
+    PETTING = 4,
+    WALKING_POST_PET = 5
+}
+
+local GUY_ANIMATIONS = {
+    -- PET = {90, 89, 88, 87, 86, 85, 84, 83, 82, 81, loop = true, frames = 10, frame_time = 4}
 }
 
 ---@type Entity | Movable | Player
@@ -32,7 +39,7 @@ set_callback(function()
     state.camera.focused_entity_uid = guy.uid
 
     local pre_entrance_timeout = TIMEOUT_PRE_ENTRANCE
-    local dismount_timeout = TIMEOUT_GENERAL
+    intro_timeout = TIMEOUT_GENERAL
     -- Traditional inputs don't seem to be working in the intro
     set_post_statemachine(camel.uid, function (ent)
         if pre_entrance_timeout > 0 then
@@ -40,62 +47,97 @@ set_callback(function()
         elseif ent.x < 25 then
             -- This appears to animate guy as well.
             ent.velocityx = 0.072--0.105 is ana's intro walking speed
-        elseif dismount_timeout > 0 then
-            dismount_timeout = dismount_timeout - 1
-            -- message(string.format('dismount_timeout: %s', dismount_timeout))
-        else
-            ent:remove_rider()
+        elseif intro_timeout > 0 then
+            intro_timeout = intro_timeout - 1
+            -- message(string.format('post_dismount_timeout: %s', post_dismount_timeout))
+        elseif GUY_WALKS_STATE == GUY_WALKS.PRE_DISMOUNT then
+            GUY_WALKS_STATE = GUY_WALKS.DISMOUNT
+            intro_timeout = 65--TIMEOUT_GENERAL
+            -- guy.last_state = guy.state
+            -- guy.state = 5
+            -- guy:set_behavior(5)
+            ent.last_state = 1--ent.state
+            ent.state = 5
+            ent:set_behavior(5)
+            message("DISMOUNT")
         end
     end)
 
-    local post_dismount_timeout = TIMEOUT_GENERAL
-    GUY_WALKING_STATE = GUY_WALKING.PRE_LAND
+    GUY_WALKS_STATE = GUY_WALKS.PRE_DISMOUNT
     set_post_statemachine(guy.uid, function (ent)
-        if GUY_WALKING_STATE == GUY_WALKING.PRE_LAND
-        and ent.standing_on_uid ~= -1 then
-            GUY_WALKING_STATE = GUY_WALKING.LAND_STANDING
-            post_dismount_timeout = TIMEOUT_GENERAL
+        if GUY_WALKS_STATE == GUY_WALKS.DISMOUNT then
+            if intro_timeout > 0 then
+                intro_timeout = intro_timeout - 1
+                -- message(string.format('intro_timeout: %s', intro_timeout))
+            end
+            -- if intro_timeout == 20 then
+            --     camel:remove_rider()
+            --     message("REMOVE RIDER")
+            -- end
+            if intro_timeout <= 20 then
+                -- ent.last_state = ent.state
+                -- ent.state = 1
+                -- ent:set_behavior(1)
+                -- message("GUY CROUCHING")
+            end
+
+            if ent.standing_on_uid ~= -1 then
+                -- This Works
+                GUY_WALKS_STATE = GUY_WALKS.LAND_STANDING
+                intro_timeout = TIMEOUT_GENERAL
+                camel.last_state = camel.state
+                camel.state = 1
+                camel:set_behavior(1)
+                message("LANDED")
+            else
+                -- ent.last_state = 2
+                -- ent.state = 5
+                -- ent:set_behavior(5)
+                camel.last_state = 1
+                camel.state = 5
+                camel:set_behavior(5)
+                message("CAMEL CROUCHING")
+            end
+            
         end
-        if GUY_WALKING_STATE == GUY_WALKING.LAND_STANDING then
-            if post_dismount_timeout > 0 then
-                post_dismount_timeout = post_dismount_timeout - 1
+        if GUY_WALKS_STATE == GUY_WALKS.LAND_STANDING then
+            if intro_timeout > 0 then
+                intro_timeout = intro_timeout - 1
                 -- message(string.format('post_dismount_timeout: %s', post_dismount_timeout))
             else
-                GUY_WALKING_STATE = GUY_WALKING.WALKING_POST_LAND
-                post_dismount_timeout = TIMEOUT_GENERAL
+                GUY_WALKS_STATE = GUY_WALKS.WALKING_POST_LAND
+                intro_timeout = TIMEOUT_GENERAL
             end
         end
-        if GUY_WALKING_STATE == GUY_WALKING.WALKING_POST_LAND then
+        if GUY_WALKS_STATE == GUY_WALKS.WALKING_POST_LAND then
             --until position is less than a tile over from the camel, walk right
             local cx, _, _ = get_position(camel.uid)
             if ent.x < cx+1.1 then
                 ent.velocityx = 0.072
             else
                 --turn, set petting state
-                GUY_WALKING_STATE = GUY_WALKING.PETTING
+                GUY_WALKS_STATE = GUY_WALKS.PETTING
                 guy.flags = set_flag(guy.flags, ENT_FLAG.FACING_LEFT)
                 -- ---@type Movable
                 -- local guy
-                guy:set_behavior(25)
-                post_dismount_timeout = TIMEOUT_GENERAL
+                intro_timeout = 100
             end
         end
-        if GUY_WALKING_STATE == GUY_WALKING.PETTING then
+        if GUY_WALKS_STATE == GUY_WALKS.PETTING then
             --pet camel and timeout
-            if post_dismount_timeout > 0 then
-                post_dismount_timeout = post_dismount_timeout - 1
+            if intro_timeout > 0 then
+                intro_timeout = intro_timeout - 1
                 -- message(string.format('post_dismount_timeout: %s', post_dismount_timeout))
             else
                 --pet camel, set petting state
-                GUY_WALKING_STATE = GUY_WALKING.WALKING_POST_PET
+                GUY_WALKS_STATE = GUY_WALKS.WALKING_POST_PET
                 guy.flags = clr_flag(guy.flags, ENT_FLAG.FACING_LEFT)
-                guy:set_behavior(1)
-                post_dismount_timeout = TIMEOUT_GENERAL
+                intro_timeout = TIMEOUT_GENERAL
             end
         end
-        if GUY_WALKING_STATE == GUY_WALKING.WALKING_POST_PET then
-            if post_dismount_timeout > 0 then
-                post_dismount_timeout = post_dismount_timeout - 1
+        if GUY_WALKS_STATE == GUY_WALKS.WALKING_POST_PET then
+            if intro_timeout > 0 then
+                intro_timeout = intro_timeout - 1
                 -- message(string.format('post_dismount_timeout: %s', post_dismount_timeout))
             elseif ent.x < 54 then
                 -- This appears to animate guy as well.
