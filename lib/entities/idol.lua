@@ -129,7 +129,9 @@ local function create_ghost_at_border()
 		local gy = p_y
 		if p_x > bx_mid then gx = xmax+5 else gx = xmin-5 end
 		spawn(ENT_TYPE.MONS_GHOST, gx, gy, p_l, 0, 0)
-		toast_override("A terrible chill runs up your spine!")
+        if get_setting(GAME_SETTING.GHOST_TEXT) == 1 then
+            toast_override("A terrible chill runs up your spine!")
+        end
 	-- else
 		-- toast("A terrible chill r- ...wait, where are the players?!?")
 	end
