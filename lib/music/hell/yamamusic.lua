@@ -39,17 +39,17 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_Intro.ogg"),
             length = 631,
             next_sound_id = function(ctx)
+                if isYamaPhaseTwo() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] Yama phase2 = true.")
+                    end
+
+                    return "1_p3"
+                end
+
                 if isHellMinibossDead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Hell miniboss is dead.")
-                    end
-
-                    if isYamaPhaseTwo() then
-                        if module.music_debug_print then
-                            print("[Yama Music Debug] Yama phase2 = true.")
-                        end
-
-                        return "1_p3"
                     end
 
                     return "1_p2"
@@ -63,17 +63,17 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_1_P1.ogg"),
             length = 8210,
             next_sound_id = function(ctx)
+                if isYamaPhaseTwo() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] Yama phase2 = true.")
+                    end
+
+                    return "2_p3"
+                end
+
                 if isHellMinibossDead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Hell miniboss is dead.")
-                    end
-
-                    if isYamaPhaseTwo() then
-                        if module.music_debug_print then
-                            print("[Yama Music Debug] Yama phase2 = true.")
-                        end
-
-                        return "2_p3"
                     end
 
                     return "2_p2"
@@ -117,18 +117,18 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_2_P1.ogg"),
             length = 5684,
             next_sound_id = function(ctx)
+                if isYamaPhaseTwo() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] Yama phase2 = true.")
+                    end
+
+                    stem_after_tran = "3_p3"
+                    return "p1_tran"
+                end
+
                 if isHellMinibossDead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Hell miniboss is dead.")
-                    end
-
-                    if isYamaPhaseTwo() then
-                        if module.music_debug_print then
-                            print("[Yama Music Debug] Yama phase2 = true.")
-                        end
-
-                        stem_after_tran = "3_p3"
-                        return "p1_tran"
                     end
 
                     stem_after_tran = "3_p2"
@@ -171,18 +171,18 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_3_P1.ogg"),
             length = 5684,
             next_sound_id = function(ctx)
+                if isYamaPhaseTwo() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] Yama phase2 = true.")
+                    end
+
+                    stem_after_tran = "4_p3"
+                    return "p1_tran"
+                end
+
                 if isHellMinibossDead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Hell miniboss is dead.")
-                    end
-
-                    if isYamaPhaseTwo() then
-                        if module.music_debug_print then
-                            print("[Yama Music Debug] Yama phase2 = true.")
-                        end
-
-                        stem_after_tran = "4_p3"
-                        return "p1_tran"
                     end
 
                     stem_after_tran = "4_p2"
@@ -225,17 +225,17 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_4_P1.ogg"),
             length = 6631,
             next_sound_id = function(ctx)
+                if isYamaPhaseTwo() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] Yama phase2 = true.")
+                    end
+
+                    return "5_p3"
+                end
+
                 if isHellMinibossDead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Hell miniboss is dead.")
-                    end
-
-                    if isYamaPhaseTwo() then
-                        if module.music_debug_print then
-                            print("[Yama Music Debug] Yama phase2 = true.")
-                        end
-
-                        return "5_p3"
                     end
 
                     return "5_p2"
@@ -271,17 +271,17 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_5_P1.ogg"),
             length = 6947,
             next_sound_id = function(ctx)
+                if isYamaPhaseTwo() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] Yama phase2 = true.")
+                    end
+
+                    return "6_p3"
+                end
+
                 if isHellMinibossDead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Hell miniboss is dead.")
-                    end
-
-                    if isYamaPhaseTwo() then
-                        if module.music_debug_print then
-                            print("[Yama Music Debug] Yama phase2 = true.")
-                        end
-
-                        return "6_p3"
                     end
 
                     return "6_p2"
@@ -317,17 +317,17 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_6_P1.ogg"),
             length = 6631,
             next_sound_id = function(ctx)
+                if isYamaPhaseTwo() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] Yama phase2 = true.")
+                    end
+
+                    return "1_p3"
+                end
+
                 if isHellMinibossDead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Hell miniboss is dead.")
-                    end
-
-                    if isYamaPhaseTwo() then
-                        if module.music_debug_print then
-                            print("[Yama Music Debug] Yama phase2 = true.")
-                        end
-
-                        return "1_p3"
                     end
 
                     return "1_p2"
