@@ -129,7 +129,9 @@ local function create_ghost_at_border()
 		local gy = p_y
 		if p_x > bx_mid then gx = xmax+5 else gx = xmin-5 end
 		spawn(ENT_TYPE.MONS_GHOST, gx, gy, p_l, 0, 0)
-		toast_override("A terrible chill runs up your spine!")
+        if get_setting(GAME_SETTING.GHOST_TEXT) == 1 then
+            toast_override("A terrible chill runs up your spine!")
+        end
 	-- else
 		-- toast("A terrible chill r- ...wait, where are the players?!?")
 	end
@@ -152,6 +154,30 @@ local function break_idoltrap_floor(block_id)
     end
 end
 
+--- Code provided by Dregu
+---@param block_id integer
+local function activate_idoltrap_ceiling(block_id)
+    local floor = get_entity(idoltrap_blocks[block_id])
+    if floor then
+        commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, floor.uid, 0.35, false)
+
+        local x, y, l = get_position(floor.uid)
+        kill_entity(floor.uid)
+        for _ = 1, 5, 1 do
+            local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE,
+                x+prng:random_int(-15, 15, PRNG_CLASS.PARTICLES)/10, (y-0.2)+prng:random_int(-7, 7, PRNG_CLASS.PARTICLES)/10, l,
+                prng:random_int(-10, 10, PRNG_CLASS.PARTICLES)/100, 0.11+prng:random_int(0, 3, PRNG_CLASS.PARTICLES)/10))
+            rubble.animation_frame = options.hd_og_floorstyle_temple and 3 or 32
+        end
+        local block = get_entity(spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0))
+        block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
+        block.more_flags = set_flag(block.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
+        block.velocityy = -0.065
+
+        block:set_texture(options.hd_og_floorstyle_temple and ceiling_spikes_stone_texture_id or ceiling_spikes_texture_id)
+    end
+end
+
 -- Idol trap activation
 set_callback(function()
     if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
@@ -163,7 +189,6 @@ set_callback(function()
         elseif state.theme == THEME.JUNGLE then
             -- Break the 6 blocks under it in a row, starting with the outside 2 going in
             if #idoltrap_blocks > 0 then
-                
                 commonlib.shake_camera(20, 60, 2, 2, 3, false)
                 break_idoltrap_floor(1)
                 break_idoltrap_floor(6)
@@ -183,6 +208,7 @@ set_callback(function()
                     kill_entity(idoltrap_blocks[i])
                 end
             else -- Normal temple trap
+                commonlib.shake_camera(20, 100, 2, 2, 3, false)
                 -- sliding doors
                 for _, sliding_wall_ceiling in ipairs(sliding_wall_ceilings) do
                     local ent = get_entity(sliding_wall_ceiling)
@@ -190,18 +216,7 @@ set_callback(function()
                 end
                 
                 for i = 1, #idoltrap_blocks, 1 do
-                    local floor = get_entity(idoltrap_blocks[i])
-                    -- Code provided by Dregu
-                    if floor then
-                        local cx, cy, cl = get_position(floor.uid)
-                        kill_entity(floor.uid)
-                        local block = get_entity(spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, cx, cy, cl, 0, 0))
-                        block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
-                        block.more_flags = set_flag(block.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
-                        block.velocityy = -0.01
-                        
-                        block:set_texture(options.hd_og_floorstyle_temple and ceiling_spikes_stone_texture_id or ceiling_spikes_texture_id)
-                    end
+                    activate_idoltrap_ceiling(i)
                 end
             end
         end

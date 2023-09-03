@@ -50,8 +50,13 @@ function module.spawn_slidingwall(x, y, layer, up)
         if not options.hd_og_floorstyle_temple then
             ceiling:set_texture(temple_chain_texture_id)
             chain:set_texture(temple_chain_texture_id)
+            for _, uid in pairs(entity_get_items_by(wall.uid, ENT_TYPE.DECORATION_SLIDINGWALL_CHAINDECORATION, MASK.ANY)) do
+                get_entity(uid):set_texture(temple_chain_texture_id)
+            end
         end
         wall:set_texture(options.hd_og_floorstyle_temple and temple_slidingdoor_stone_texture_id or temple_slidingdoor_texture_id)
+
+        spawn_entity(ENT_TYPE.ITEM_SLIDINGWALL_SWITCH, x, y-1, layer, 0, 0)
     end
 
     if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
