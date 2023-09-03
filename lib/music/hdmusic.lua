@@ -501,12 +501,12 @@ module.OLMEC_BOSS_CUSTOM_MUSIC = OLMEC_BOSS_LOOP_SOUND and {
     }
 }
 
-local YAMA_BOSS_LOOP_SOUND = create_sound("res/music/hd/A05_boss.ogg")
-module.YAMA_BOSS_CUSTOM_MUSIC = YAMA_BOSS_LOOP_SOUND and {
+local YAMA_HD_BOSS_LOOP_SOUND = create_sound("res/music/hd/A05_boss.ogg")
+module.YAMA_HD_BOSS_CUSTOM_MUSIC = YAMA_HD_BOSS_LOOP_SOUND and {
     base_volume = 0.5,
     start_sound_id = "A05_boss",
     sounds = {
-        { id = "A05_boss", next_sound_id = "A05_boss", sound = YAMA_BOSS_LOOP_SOUND, length = 49200 }
+        { id = "A05_boss", next_sound_id = "A05_boss", sound = YAMA_HD_BOSS_LOOP_SOUND, length = 49200 }
     }
 }
 
