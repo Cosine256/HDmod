@@ -238,12 +238,13 @@ function module.create_anubis2(x, y, l)
     set_post_statemachine(anubis2.uid, anubis2_update)
     return anubis2
 end
-set_callback(function()
-    -- Whenever a new run is started, clear this so anubis doesnt follow you between runs
-    module.anubis2_killed = true
-end, ON.START)
+
 -- If Anubis2 wasn't killed, make him follow between levels
 set_callback(function()
+    if state.level_count == 0 then
+        -- Whenever a new run is started, clear this so anubis doesnt follow you between runs
+        module.anubis2_killed = true
+    end
     if module.anubis2_killed == false then
         -- Find the first alive player
         local alivep = nil
