@@ -65,7 +65,7 @@ local function set_dimensions(ent)
 end
 
 ---@param ent Rockdog | Mount | Entity | Movable | PowerupCapable
-local function camel_update(ent)
+local function camel_post_update(ent)
     set_dimensions(ent)
     -- prevent vanilla behaviors
     ent.attack_cooldown = 10
@@ -180,8 +180,8 @@ function module.set_camel_walk_in(camel)
 end
 
 ---@param ent Rockdog | Mount | Entity | Movable | PowerupCapable
-local function camel_update_credits(ent)
-    camel_update(ent)
+local function camel_post_update_credits(ent)
+    camel_post_update(ent)
     -- Force facing one direction
     ent.flags = set_flag(ent.flags, ENT_FLAG.FACING_LEFT)
 
@@ -193,101 +193,12 @@ local function camel_update_credits(ent)
         rider.flags = set_flag(rider.flags, ENT_FLAG.FACING_LEFT)
         rider.x = math.abs(rider.x)
 
-
-        -- upon any input from the rider, set to transition to minigame
-        local input = read_input(rider.uid)
         if ent.user_data.state == MINIGAME_STATE.WALK_IN then
             local x, _, _ = get_position(ent.uid)
             if x < 14.5 then
                 ent.user_data.state = MINIGAME_STATE.PRE_MINIGAME
             else
                 ent.velocityx = -0.072
-            end
-        elseif ent.user_data.state == MINIGAME_STATE.PRE_MINIGAME then
-            if (
-                test_flag(input, INPUT_FLAG.LEFT)
-                or test_flag(input, INPUT_FLAG.RIGHT)
-                or test_flag(input, INPUT_FLAG.UP)
-                or test_flag(input, INPUT_FLAG.DOWN)
-                or test_flag(input, INPUT_FLAG.JUMP)
-            ) then
-                cannon.flags = clr_flag(cannon.flags, ENT_FLAG.INVISIBLE)
-                ent.user_data.state = MINIGAME_STATE.TRANSITION_TO_MINIGAME
-                animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.STARTUP)
-                minigamelib.start_minigame()
-            end
-        elseif ent.user_data.state == MINIGAME_STATE.TRANSITION_TO_MINIGAME
-            and cannon.user_data.animation_timer == 0
-        then
-            ent.user_data.state = MINIGAME_STATE.MINIGAME
-            animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.IDLE)
-            rider.more_flags = clr_flag(rider.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
-        elseif ent.user_data.state == MINIGAME_STATE.MINIGAME
-        then
-            -- # TODO: Cannon firing and angling
-            if cannon.user_data.cannon_timer > 0 then
-                cannon.user_data.cannon_timer = cannon.user_data.cannon_timer - 1
-            end
-
-            -- Angles: (depending on the current angle of the turret, add or subtract degrees)
-            -- When input:
-            -- left, angle cannon until left
-            -- left and up, angle cannon until left up
-            -- up, angle cannon until up
-            -- right, angle cannon until right
-            -- right and down, angle cannon right
-            -- down, angle cannon down
-            -- down and left, angle cannon down left
-
-            if test_flag(input, INPUT_FLAG.RIGHT)
-            and cannon.angle > -math.pi
-            then
-                cannon.angle = cannon.angle - TURN_RATE
-            end
-            if test_flag(input, INPUT_FLAG.LEFT)
-            and cannon.angle < 0
-            then
-                cannon.angle = cannon.angle + TURN_RATE
-            end
-            --if input up
-            -- and angle ~= -1.570796326795 --(not up)
-                --if angle > -4.712388980385 --(larger than down)
-                -- and angle < -1.570796326795 --(less than up)
-                    -- increment
-                --elseif angle < 1.570796326795 --(less than down)
-                -- and angle > -1.570796326795 --(larger than up)
-                    -- decrement
-            if test_flag(input, INPUT_FLAG.UP)
-            and cannon.angle ~= -1.570796326795 --(not up)
-            then
-                if cannon.angle > -4.712388980385 --(larger than down)
-                and cannon.angle < -1.570796326795 --(less than up)
-                then
-                    cannon.angle = cannon.angle + TURN_RATE
-                elseif cannon.angle < 1.570796326795 --(less than down)
-                and cannon.angle > -1.570796326795 --(larger than up)
-                then
-                    cannon.angle = cannon.angle - TURN_RATE
-                end
-            end
-            if test_flag(input, INPUT_FLAG.DOWN)
-            and cannon.angle ~= 1.570796326795 --(not down)
-            then
-                if cannon.angle > -1.570796326795 --(larger than up)
-                and cannon.angle < 1.570796326795 --(less than down)
-                then
-                    cannon.angle = cannon.angle + TURN_RATE
-                elseif cannon.angle < -1.570796326795 --(less than up)
-                and cannon.angle > -4.712388980385 --(larger than down)
-                then
-                    cannon.angle = cannon.angle - TURN_RATE
-                end
-            end
-
-            -- When input whip, fire the cannon.
-            if test_flag(input, INPUT_FLAG.WHIP) and cannon.user_data.cannon_timer == 0 then
-                shoot_gun(cannon)
-                cannon.user_data.cannon_timer = 10
             end
         end
 
@@ -376,8 +287,121 @@ local function camel_set(ent, cannon_uid)
             animation_timer = 0,
         }
         animationlib.set_animation(get_entity(cannon_uid).user_data, CANNON_ANIMATIONS.IDLE)
+
+        local cannon = get_entity(cannon_uid)
+        local cb = set_callback(function ()
+            if ent and ent.rider_uid ~= -1 then
+                ---@type Player
+                local player = get_entity(ent.rider_uid):as_player()
+
+                -- grab input for the cannon prior to canceling inputs for the camel
+                local input = player.input.buttons_gameplay
+                -- Prevent crouching
+                player.input.buttons_gameplay = clr_mask(player.input.buttons_gameplay, INPUTS.DOWN)
+                -- Prevent dismounting
+                -- if holding up, clear jump input
+                if test_mask(player.input.buttons_gameplay, INPUTS.UP) then
+                    player.input.buttons_gameplay = clr_mask(player.input.buttons_gameplay, INPUTS.JUMP)
+                end
+
+                if ent.user_data.state == MINIGAME_STATE.PRE_MINIGAME then
+                    if (
+                        test_flag(input, INPUT_FLAG.LEFT)
+                        or test_flag(input, INPUT_FLAG.RIGHT)
+                        or test_flag(input, INPUT_FLAG.UP)
+                        or test_flag(input, INPUT_FLAG.DOWN)
+                        or test_flag(input, INPUT_FLAG.JUMP)
+                        or test_flag(input, INPUT_FLAG.WHIP)
+                    ) then
+                        cannon.flags = clr_flag(cannon.flags, ENT_FLAG.INVISIBLE)
+                        ent.user_data.state = MINIGAME_STATE.TRANSITION_TO_MINIGAME
+                        animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.STARTUP)
+                        minigamelib.start_minigame()
+                    end
+                elseif ent.user_data.state == MINIGAME_STATE.TRANSITION_TO_MINIGAME
+                    and cannon.user_data.animation_timer == 0
+                then
+                    ent.user_data.state = MINIGAME_STATE.MINIGAME
+                    animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.IDLE)
+                    player.more_flags = clr_flag(player.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
+                elseif ent.user_data.state == MINIGAME_STATE.MINIGAME then
+                    -- # TODO: Cannon firing and angling
+                    if cannon.user_data.cannon_timer > 0 then
+                        cannon.user_data.cannon_timer = cannon.user_data.cannon_timer - 1
+                    end
+
+                    -- Angles: (depending on the current angle of the turret, add or subtract degrees)
+                    -- When input:
+                    -- left, angle cannon until left
+                    -- left and up, angle cannon until left up
+                    -- up, angle cannon until up
+                    -- right, angle cannon until right
+                    -- right and down, angle cannon right
+                    -- down, angle cannon down
+                    -- down and left, angle cannon down left
+
+                    if test_flag(input, INPUT_FLAG.RIGHT)
+                    and cannon.angle > -math.pi
+                    then
+                        cannon.angle = cannon.angle - TURN_RATE
+                    end
+                    if test_flag(input, INPUT_FLAG.LEFT)
+                    and cannon.angle < 0
+                    then
+                        cannon.angle = cannon.angle + TURN_RATE
+                    end
+                    --if input up
+                    -- and angle ~= -1.570796326795 --(not up)
+                        --if angle > -4.712388980385 --(larger than down)
+                        -- and angle < -1.570796326795 --(less than up)
+                            -- increment
+                        --elseif angle < 1.570796326795 --(less than down)
+                        -- and angle > -1.570796326795 --(larger than up)
+                            -- decrement
+                    if test_flag(input, INPUT_FLAG.UP)
+                    and cannon.angle ~= -1.570796326795 --(not up)
+                    then
+                        if cannon.angle > -4.712388980385 --(larger than down)
+                        and cannon.angle < -1.570796326795 --(less than up)
+                        then
+                            cannon.angle = cannon.angle + TURN_RATE
+                        elseif cannon.angle < 1.570796326795 --(less than down)
+                        and cannon.angle > -1.570796326795 --(larger than up)
+                        then
+                            cannon.angle = cannon.angle - TURN_RATE
+                        end
+                    end
+                    if test_flag(input, INPUT_FLAG.DOWN)
+                    and cannon.angle ~= 1.570796326795 --(not down)
+                    then
+                        if cannon.angle > -1.570796326795 --(larger than up)
+                        and cannon.angle < 1.570796326795 --(less than down)
+                        then
+                            cannon.angle = cannon.angle + TURN_RATE
+                        elseif cannon.angle < -1.570796326795 --(less than up)
+                        and cannon.angle > -4.712388980385 --(larger than down)
+                        then
+                            cannon.angle = cannon.angle - TURN_RATE
+                        end
+                    end
+
+                    -- When input whip, fire the cannon.
+                    if test_flag(input, INPUT_FLAG.WHIP) and cannon.user_data.cannon_timer == 0 then
+                        shoot_gun(cannon)
+                        cannon.user_data.cannon_timer = 10
+                    end
+                end
+            end
+        end, ON.PRE_UPDATE)
+        ent:set_pre_destroy(function (self)
+            clear_callback(cb)
+        end)
+        set_callback(function()
+            clear_callback(cb)
+            clear_callback()
+        end, ON.POST_ROOM_GENERATION)
     end
-    set_post_statemachine(ent.uid, cannon_uid ~= -1 and camel_update_credits or camel_update)
+    set_post_statemachine(ent.uid, cannon_uid ~= -1 and camel_post_update_credits or camel_post_update)
 end
 
 function module.create_camel(x, y, layer)
