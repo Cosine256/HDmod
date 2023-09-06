@@ -172,12 +172,6 @@ end
 ---@param camel Rockdog | Mount | Entity | Movable | PowerupCapable
 function module.set_camel_walk_in(camel)
     camel.user_data.state = MINIGAME_STATE.WALK_IN
-    camel:set_pre_update_state_machine(function (self)
-        if camel.user_data.state == MINIGAME_STATE.PRE_MINIGAME then
-            decorlib.CREDITS_SCROLLING = true
-            clear_callback()
-        end
-    end)
     camel.user_data.bounds_min = 5
     camel.user_data.bounds_max = 23
 end
@@ -200,6 +194,7 @@ local function camel_post_update_credits(ent)
         if ent.user_data.state == MINIGAME_STATE.WALK_IN then
             if x < 14.5 then
                 ent.user_data.state = MINIGAME_STATE.PRE_MINIGAME
+                decorlib.CREDITS_SCROLLING = true
             else
                 ent.velocityx = -0.072
             end
@@ -306,7 +301,8 @@ local function camel_set(ent, cannon_uid)
 
         local cannon = get_entity(cannon_uid)
         local cb = set_callback(function ()
-            if ent and ent.rider_uid ~= -1 then
+            if state.pause == 0
+            and ent and ent.rider_uid ~= -1 then
                 ---@type Player
                 local player = get_entity(ent.rider_uid):as_player()
 
@@ -341,11 +337,11 @@ local function camel_set(ent, cannon_uid)
                     animationlib.set_animation(cannon.user_data, CANNON_ANIMATIONS.IDLE)
                     player.more_flags = clr_flag(player.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
                 elseif ent.user_data.state == MINIGAME_STATE.MINIGAME then
-                    -- # TODO: Cannon firing and angling
                     if cannon.user_data.cannon_timer > 0 then
                         cannon.user_data.cannon_timer = cannon.user_data.cannon_timer - 1
                     end
 
+                    -- # TODO: Improve Cannon firing and angling.
                     -- Angles: (depending on the current angle of the turret, add or subtract degrees)
                     -- When input:
                     -- left, angle cannon until left

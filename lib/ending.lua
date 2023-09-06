@@ -70,6 +70,7 @@ set_callback(function ()
         if snd_rumbleloop then
             snd_rumbleloop:stop()
         end
+        clear_callback()
     end, ON.SCORES)
 
     chest = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 42.5, 105.4, LAYER.FRONT))
