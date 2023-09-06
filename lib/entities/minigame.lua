@@ -125,6 +125,54 @@ function module.init(_target_uid)
     init_minigame_ents()
 end
 
+set_callback(
+    ---@param render_ctx VanillaRenderContext
+function(render_ctx)
+    if state.screen == SCREEN.CREDITS
+    and minigame_state == GAME_STATE.IN_GAME then
+        --shadow
+        local x, y = get_hud_position(1):center()
+        local src = Quad:new()
+        src.top_left_x = 0
+        src.top_left_y = 1/8
+        src.top_right_x = 1/4
+        src.top_right_y = 1/8
+        src.bottom_left_x = 0
+        src.bottom_left_y = 2/8
+        src.bottom_right_x = 1/4
+        src.bottom_right_y = 2/8
+        local dest = Quad:new(get_hud_position(1))
+        render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_HUD_2, src, dest, Color:white())
+
+        --hit icon
+        src.top_left_x = 17/20
+        src.top_left_y = 3/20
+        src.top_right_x = 18/20
+        src.top_right_y = 3/20
+        src.bottom_left_x = 17/20
+        src.bottom_left_y = 4/20
+        src.bottom_right_x = 18/20
+        src.bottom_right_y = 4/20
+        local w = 1/16
+        local h = w/0.5625
+        dest = Quad:new()
+        dest.top_left_x = -w/2
+        dest.top_left_y = h/2
+        dest.top_right_x = w/2
+        dest.top_right_y = h/2
+        dest.bottom_left_x = -w/2
+        dest.bottom_left_y = -h/2
+        dest.bottom_right_x = w/2
+        dest.bottom_right_y = -h/2
+        dest:offset(x-0.02, y)
+        render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_MENU_DEATHMATCH2_0, src, dest, Color:white())
+
+        local hit_text = TextRenderingInfo:new(string.format("x%s", 0), 0.00122, 0.00122, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.BOLD)
+        hit_text.x, hit_text.y = x, y
+        render_ctx:draw_text(hit_text, Color:white())
+    end
+end, ON.RENDER_PRE_HUD)
+
 function module.start_minigame()
     minigame_state = GAME_STATE.IN_GAME
 end
