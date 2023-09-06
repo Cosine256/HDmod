@@ -79,6 +79,19 @@ set_callback(function()
     end
 end, ON.LOADING)
 
+
+set_callback(function(render_ctx)
+    if state.screen == SCREEN.CREDITS then
+        ---@type TextRenderingInfo
+        local skip_text = TextRenderingInfo:new("Press     +     to skip", 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.RIGHT, VANILLA_FONT_STYLE.ITALIC)
+        skip_text.x, skip_text.y = 0.95, 0.86
+        render_ctx:draw_text(skip_text, Color:black())
+        skip_text:set_text("Press \u{8D}+\u{83} to skip", 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.RIGHT, VANILLA_FONT_STYLE.ITALIC)
+        skip_text.x, skip_text.y = skip_text.x-0.0035, skip_text.y+0.0035
+        render_ctx:draw_text(skip_text, Color:yellow())
+    end
+end, ON.RENDER_PRE_HUD)
+
 set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
 	if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, layer, 0, 0) end
 end, SPAWN_TYPE.ANY, 0,
