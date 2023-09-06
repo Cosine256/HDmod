@@ -103,7 +103,8 @@ end
 local function add_top_branches(treetop_uid)
 	local branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop_uid, -1, 0, 0.1, false)
 	local branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop_uid, 1, 0, 0.1, false)
-	if is_haunted() then
+	if is_haunted()
+	or state.theme == THEME.TEMPLE and not options.hd_og_floorstyle_temple then
 		decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid_left, 0.03, 0.47, 0.5, false)
 		decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid_right, -0.03, 0.47, 0.5, true)
 	else
@@ -170,6 +171,9 @@ function module.postlevelgen_decorate_trees()
 			if
 				is_top
 				and not is_haunted()
+				and not (
+					state.theme == THEME.TEMPLE and not options.hd_og_floorstyle_temple
+				)
 			then
 				apply_properties_to_topbranch_and_deco(get_entity(branch_uid), deco)
 			end
