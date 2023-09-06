@@ -1,6 +1,7 @@
 local animationlib = require('lib.entities.animation')
 local surfacelib = require('lib.surface')
 local minigamelib = require('lib.entities.minigame')
+local decorlib = require('lib.gen.decor')
 
 local module = {}
 
@@ -173,10 +174,12 @@ function module.set_camel_walk_in(camel)
     camel.user_data.state = MINIGAME_STATE.WALK_IN
     camel:set_pre_update_state_machine(function (self)
         if camel.user_data.state == MINIGAME_STATE.PRE_MINIGAME then
-            surfacelib.start_scrolling()
+            decorlib.CREDITS_SCROLLING = true
             clear_callback()
         end
     end)
+    camel.user_data.bounds_min = 5
+    camel.user_data.bounds_max = 23
 end
 
 ---@param ent Rockdog | Mount | Entity | Movable | PowerupCapable
@@ -193,12 +196,25 @@ local function camel_post_update_credits(ent)
         rider.flags = set_flag(rider.flags, ENT_FLAG.FACING_LEFT)
         rider.x = math.abs(rider.x)
 
+        local x, _, _ = get_position(ent.uid)
         if ent.user_data.state == MINIGAME_STATE.WALK_IN then
-            local x, _, _ = get_position(ent.uid)
             if x < 14.5 then
                 ent.user_data.state = MINIGAME_STATE.PRE_MINIGAME
             else
                 ent.velocityx = -0.072
+            end
+        elseif ent.user_data.state == MINIGAME_STATE.MINIGAME
+        and ent.user_data.bounds_min
+        and ent.user_data.bounds_max then
+            -- Prevent moving beyond set bounds
+            if x <= ent.user_data.bounds_min
+            and ent.velocityx < 0 then
+                ent.velocityx = 0
+                ent.x = ent.user_data.bounds_min
+            elseif x >= ent.user_data.bounds_max
+            and ent.velocityx > 0 then
+                ent.velocityx = 0
+                ent.x = ent.user_data.bounds_max
             end
         end
 

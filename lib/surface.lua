@@ -15,15 +15,6 @@ do
     sky_hard_texture_id = define_texture(sky_hard_texture_def)
 end
 
-
-function module.start_scrolling()
-    for y = 111, 113, 1 do
-        spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, 4, y, LAYER.FRONT)
-        spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, 24, y, LAYER.FRONT)
-    end
-    decorlib.CREDITS_SCROLLING = true
-end
-
 function module.build_credits_surface()
     for x = 3, 38, 1 do
         spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, x, 110, LAYER.FRONT)
