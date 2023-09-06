@@ -25,8 +25,9 @@ set_callback(function ()
     carry(camel.uid, player.uid)
 
 
-    endingtreasurelib.create_credits_treasure(30, 111, LAYER.FRONT)
+    local treasure_uid = endingtreasurelib.create_credits_treasure(30, 111, LAYER.FRONT)
 
+    minigamelib.init(treasure_uid)
 
     local x, y = 26, 116.5
     local ENTER_TIMEOUT = 1500
@@ -46,7 +47,6 @@ set_callback(function ()
     end
     -- creditsballoonlib.create_creditsballoon(x, y, LAYER.FRONT, 0, 100)
 
-    minigamelib.init()
 end, ON.CREDITS)
 
 set_callback(function()
