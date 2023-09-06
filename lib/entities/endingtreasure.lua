@@ -92,7 +92,7 @@ function module.create_credits_treasure(x, y, l)
             self.velocityx = -0.095
         end
     end)
-    return treasure.uid
+    return base.uid
 end
 
 return module

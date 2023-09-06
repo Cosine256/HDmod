@@ -15,14 +15,14 @@ local target_uid
 local X_SPAWN = 3
 local X_LIMIT = 27
 
-local function update_minigame_enemy(self)
+local function update_offscreen_ent(self)
     if self.x > X_LIMIT then
         self:destroy()
     end
 end
 
 local function update_ufo(self)
-    update_minigame_enemy(self)
+    update_offscreen_ent(self)
 end
 
 -- Force velocity of ufo to go to the right slowly
@@ -46,7 +46,7 @@ end
 local function create_minigame_imp(y)
     local entity = get_entity(spawn_entity(ENT_TYPE.MONS_IMP, X_SPAWN, y, LAYER.FRONT, 0, 0))
     entity.velocityx = 0.04
-    entity:set_post_update_state_machine(update_minigame_enemy)
+    entity:set_post_update_state_machine(update_offscreen_ent)
 end
 
 local function update_minigame(_)
@@ -67,7 +67,49 @@ local function update_minigame(_)
         else
             spawn_timeout = spawn_timeout - 1
         end
+        if state.screen_credits.render_timer >= 240 then
+            minigame_state = GAME_STATE.POST_GAME
+        end
+    -- elseif minigame_state == GAME_STATE.POST_GAME then
+        -- # TODO: Program recap
     end
+end
+
+local alien_credits_type = EntityDB:new(get_type(ENT_TYPE.MONS_ALIEN))
+alien_credits_type.max_speed = 0.06
+
+local function init_minigame_ents()
+    local alien_cb = set_post_entity_spawn(function(alien)
+        alien.type = alien_credits_type
+        alien:set_post_update_state_machine(function(self)
+            if self.standing_on_uid ~= -1 then
+                self.velocityx = 0.06
+            end
+            if test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
+                self.flags = clr_flag(self.flags, ENT_FLAG.FACING_LEFT)
+            end
+            update_offscreen_ent(self)
+        end)
+    end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_ALIEN)
+    local parachute_cb = set_post_entity_spawn(function(parachute)
+        parachute:set_post_update_state_machine(function(self)
+            if self.standing_on_uid ~= -1 then
+                self.velocityx = 0.08
+            end
+            update_offscreen_ent(self)
+        end)
+    end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_DEPLOYED_PARACHUTE)
+    local fx_cb = set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
+        if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+            return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
+        end
+    end, SPAWN_TYPE.ANY, MASK.BG, ENT_TYPE.BG_LEVEL_BOMB_SOOT)
+    set_callback(function ()
+        clear_callback(alien_cb)
+        clear_callback(parachute_cb)
+        clear_callback(fx_cb)
+        clear_callback()
+    end, ON.CAMP)
 end
 
 function module.init(_target_uid)
@@ -80,6 +122,7 @@ function module.init(_target_uid)
     entity.flags = set_flag(entity.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
     entity:set_post_update_state_machine(update_minigame)
     target_uid = _target_uid
+    init_minigame_ents()
 end
 
 function module.start_minigame()

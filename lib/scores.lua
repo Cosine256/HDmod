@@ -142,6 +142,16 @@ local function create_volcano_effects()
     local timeout = 160
     local lava_timeout = 0
     local smoke_timeout = 0
+
+    local wind_sound = get_sound(VANILLA_SOUND.CUTSCENE_EGGSHIP_AMB_LOOP):play()
+
+    set_callback(function()
+        if wind_sound then
+            wind_sound:stop()
+        end
+        clear_callback()
+    end, ON.RECAP)
+
     entity:set_post_update_state_machine(function (self)
         if timeout == 0 then -- erupt
             commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_EXPLOSION, self.uid, 0.003, false)
