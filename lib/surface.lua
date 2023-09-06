@@ -16,7 +16,7 @@ do
 end
 
 function module.build_credits_surface()
-    for x = 3, 38, 1 do
+    for x = -3, 45, 1 do
         spawn_grid_entity(ENT_TYPE.FLOOR_SURFACE_HIDDEN, x, 110, LAYER.FRONT)
     end
 
