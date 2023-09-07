@@ -1,5 +1,16 @@
 local module = {}
 
+local hud_texture_id
+do
+    local hud_texture_def = TextureDefinition:new()
+    hud_texture_def.width = 128
+    hud_texture_def.height = 64
+    hud_texture_def.tile_width = 128
+    hud_texture_def.tile_height = 64
+    hud_texture_def.texture_path = "res/cannon_hud.png"
+    hud_texture_id = define_texture(hud_texture_def)
+end
+
 local GAME_STATE <const> = {
     PRE_GAME = 0,
     IN_GAME = 1,
@@ -11,6 +22,7 @@ local TIMEOUT_MAX = 160
 local minigame_state
 local spawn_timeout
 local target_uid
+local camels
 
 local X_SPAWN = 3
 local X_LIMIT = 27
@@ -91,14 +103,16 @@ local function init_minigame_ents()
             update_offscreen_ent(self)
         end)
     end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_ALIEN)
-    local parachute_cb = set_post_entity_spawn(function(parachute)
-        parachute:set_post_update_state_machine(function(self)
-            if self.standing_on_uid ~= -1 then
-                self.velocityx = 0.08
-            end
-            update_offscreen_ent(self)
-        end)
-    end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_DEPLOYED_PARACHUTE)
+    local item_cb = set_post_entity_spawn(function(item, spawn_flags)
+        if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+            item:set_post_update_state_machine(function(self)
+                if self.standing_on_uid ~= -1 then
+                    self.velocityx = 0.08
+                end
+                update_offscreen_ent(self)
+            end)
+        end
+    end, SPAWN_TYPE.ANY, MASK.ITEM)
     local fx_cb = set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
         if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
             return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
@@ -106,13 +120,13 @@ local function init_minigame_ents()
     end, SPAWN_TYPE.ANY, MASK.BG, ENT_TYPE.BG_LEVEL_BOMB_SOOT)
     set_callback(function ()
         clear_callback(alien_cb)
-        clear_callback(parachute_cb)
+        clear_callback(item_cb)
         clear_callback(fx_cb)
         clear_callback()
     end, ON.CAMP)
 end
 
-function module.init(_target_uid)
+function module.init(_target_uid, _camels)
     minigame_state = GAME_STATE.PRE_GAME
     spawn_timeout = TIMEOUT_MIN
     --have to create a physical entity to be able to use a state machine
@@ -123,6 +137,7 @@ function module.init(_target_uid)
     entity:set_post_update_state_machine(update_minigame)
     target_uid = _target_uid
     init_minigame_ents()
+    camels = _camels
 end
 
 set_callback(
@@ -130,46 +145,88 @@ set_callback(
 function(render_ctx)
     if state.screen == SCREEN.CREDITS
     and minigame_state == GAME_STATE.IN_GAME then
-        --shadow
-        local x, y = get_hud_position(1):center()
-        local src = Quad:new()
-        src.top_left_x = 0
-        src.top_left_y = 1/8
-        src.top_right_x = 1/4
-        src.top_right_y = 1/8
-        src.bottom_left_x = 0
-        src.bottom_left_y = 2/8
-        src.bottom_right_x = 1/4
-        src.bottom_right_y = 2/8
-        local dest = Quad:new(get_hud_position(1))
-        render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_HUD_2, src, dest, Color:white())
-
-        --hit icon
-        src.top_left_x = 17/20
-        src.top_left_y = 3/20
-        src.top_right_x = 18/20
-        src.top_right_y = 3/20
-        src.bottom_left_x = 17/20
-        src.bottom_left_y = 4/20
-        src.bottom_right_x = 18/20
-        src.bottom_right_y = 4/20
-        local w = 1/16
-        local h = w/0.5625
-        dest = Quad:new()
-        dest.top_left_x = -w/2
-        dest.top_left_y = h/2
-        dest.top_right_x = w/2
-        dest.top_right_y = h/2
-        dest.bottom_left_x = -w/2
-        dest.bottom_left_y = -h/2
-        dest.bottom_right_x = w/2
-        dest.bottom_right_y = -h/2
-        dest:offset(x-0.02, y)
-        render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_MENU_DEATHMATCH2_0, src, dest, Color:white())
-
-        local hit_text = TextRenderingInfo:new(string.format("x%s", 0), 0.00122, 0.00122, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.BOLD)
-        hit_text.x, hit_text.y = x, y
-        render_ctx:draw_text(hit_text, Color:white())
+        for c_i, camel_uid in ipairs(camels) do
+            local camel = get_entity(camel_uid)
+            if camel.user_data.state == 3 then -- MINIGAME_STATE.MINIGAME
+                --loop over the camels spawned, check their status
+                --shadow
+                local icon_offset_y = 0.045
+                local x, y = get_hud_position(c_i):center()
+                local src = Quad:new()
+                src.top_left_x = 0
+                src.top_left_y = 0
+                src.top_right_x = 1/2
+                src.top_right_y = 0
+                src.bottom_left_x = 0
+                src.bottom_left_y = 1/8
+                src.bottom_right_x = 1/2
+                src.bottom_right_y = 1/8
+                local w = (1/16)*4
+                local h = (1/16)/0.5625
+                local dest = Quad:new()
+                dest.top_left_x = -w/2
+                dest.top_left_y = h/2
+                dest.top_right_x = w/2
+                dest.top_right_y = h/2
+                dest.bottom_left_x = -w/2
+                dest.bottom_left_y = -h/2
+                dest.bottom_right_x = w/2
+                dest.bottom_right_y = -h/2
+                dest:offset(x, y-icon_offset_y)
+                render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_HUD_2, src, dest, Color:white())
+        
+        
+                --cannon icon
+                src.top_left_x = 0
+                src.top_left_y = 0
+                src.top_right_x = 1/2
+                src.top_right_y = 0
+                src.bottom_left_x = 0
+                src.bottom_left_y = 1
+                src.bottom_right_x = 1/2
+                src.bottom_right_y = 1
+                w = 1/16
+                h = w/0.5625
+                dest = Quad:new()
+                dest.top_left_x = -w/2
+                dest.top_left_y = h/2
+                dest.top_right_x = w/2
+                dest.top_right_y = h/2
+                dest.bottom_left_x = -w/2
+                dest.bottom_left_y = -h/2
+                dest.bottom_right_x = w/2
+                dest.bottom_right_y = -h/2
+                dest:offset(x-0.055, y)
+                render_ctx:draw_screen_texture(hud_texture_id, src, dest, Color:white())
+        
+                --hit icon
+                src.top_left_x = 1/2
+                src.top_left_y = 0
+                src.top_right_x = 1
+                src.top_right_y = 0
+                src.bottom_left_x = 1/2
+                src.bottom_left_y = 1
+                src.bottom_right_x = 1
+                src.bottom_right_y = 1
+                local w = 1/16
+                local h = w/0.5625
+                dest = Quad:new()
+                dest.top_left_x = -w/2
+                dest.top_left_y = h/2
+                dest.top_right_x = w/2
+                dest.top_right_y = h/2
+                dest.bottom_left_x = -w/2
+                dest.bottom_left_y = -h/2
+                dest.bottom_right_x = w/2
+                dest.bottom_right_y = -h/2
+                dest:offset(x+0.02, y)
+                render_ctx:draw_screen_texture(hud_texture_id, src, dest, Color:white())
+        
+                local hit_text = TextRenderingInfo:new(string.format("x%s", 0), 0.0012, 0.0012, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.BOLD)
+                hit_text.x, hit_text.y = x+0.04, y
+                render_ctx:draw_text(hit_text, Color:white())
+            end
+        end
     end
 end, ON.RENDER_PRE_HUD)
 

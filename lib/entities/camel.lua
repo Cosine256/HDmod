@@ -1,5 +1,4 @@
 local animationlib = require('lib.entities.animation')
-local surfacelib = require('lib.surface')
 local minigamelib = require('lib.entities.minigame')
 local decorlib = require('lib.gen.decor')
 

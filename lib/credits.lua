@@ -14,6 +14,7 @@ set_callback(function ()
 
     local x = 25
     local p_i = 1
+    local camels = {}
     -- # TODO: Loop over participating players, spawn players, initialize minigame logic with spawned players.
     -- loop over player slots
     for s_i, slot in ipairs(state.player_inputs.player_slots) do
@@ -25,6 +26,7 @@ set_callback(function ()
             local camel = get_entity(camellib.create_camel_credits(x, 111, LAYER.FRONT))
             spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
             camellib.set_camel_walk_in(camel, x)
+            camels[#camels+1] = camel.uid
 
             local player = get_entity(players[p_i].uid)
             player.flags = set_flag(player.flags, ENT_FLAG.TAKE_NO_DAMAGE)
@@ -41,7 +43,7 @@ set_callback(function ()
 
     local treasure_uid = endingtreasurelib.create_credits_treasure(30, 111, LAYER.FRONT)
 
-    minigamelib.init(treasure_uid)
+    minigamelib.init(treasure_uid, camels)
 
     local x, y = 26, 116.5
     local ENTER_TIMEOUT = 1500
