@@ -12,17 +12,31 @@ set_callback(function ()
     state.camera.bounds_top = 121.464
     state.camera.bounds_left = 1.8
 
-    spawn_player(1, 25, 111)
+    local x = 25
+    local p_i = 1
+    -- # TODO: Loop over participating players, spawn players, initialize minigame logic with spawned players.
+    -- loop over player slots
+    for s_i, slot in ipairs(state.player_inputs.player_slots) do
+        -- if participating, spawn player.
+        -- # TODO: if they were dead, spawn a ghost. Implement ghost minigame logic.
+        if slot.is_participating then
+            spawn_player(s_i, x, 111)
 
-    local camel = get_entity(camellib.create_camel_credits(25, 111, LAYER.FRONT))
-    spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
-    camellib.set_camel_walk_in(camel)
+            local camel = get_entity(camellib.create_camel_credits(x, 111, LAYER.FRONT))
+            spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
+            camellib.set_camel_walk_in(camel, x)
 
-    local player = get_entity(players[1].uid)
-    player.flags = set_flag(player.flags, ENT_FLAG.TAKE_NO_DAMAGE)
-    player.flags = set_flag(player.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
-    player.more_flags = set_flag(player.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
-    carry(camel.uid, player.uid)
+            local player = get_entity(players[p_i].uid)
+            player.flags = set_flag(player.flags, ENT_FLAG.TAKE_NO_DAMAGE)
+            player.flags = set_flag(player.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
+            player.more_flags = set_flag(player.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
+            carry(camel.uid, player.uid)
+
+            x = x + 1.25
+            p_i = p_i + 1
+        end
+    end
+
 
 
     local treasure_uid = endingtreasurelib.create_credits_treasure(30, 111, LAYER.FRONT)

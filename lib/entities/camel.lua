@@ -170,10 +170,11 @@ end
 
 ---camel
 ---@param camel Rockdog | Mount | Entity | Movable | PowerupCapable
-function module.set_camel_walk_in(camel)
+function module.set_camel_walk_in(camel, spawn_x)
     camel.user_data.state = MINIGAME_STATE.WALK_IN
     camel.user_data.bounds_min = 5
     camel.user_data.bounds_max = 23
+    camel.user_data.spawn_x = spawn_x
 end
 
 ---@param ent Rockdog | Mount | Entity | Movable | PowerupCapable
@@ -192,7 +193,7 @@ local function camel_post_update_credits(ent)
 
         local x, _, _ = get_position(ent.uid)
         if ent.user_data.state == MINIGAME_STATE.WALK_IN then
-            if x < 14.5 then
+            if x < (ent.user_data.spawn_x - 10.5) then
                 ent.user_data.state = MINIGAME_STATE.PRE_MINIGAME
                 decorlib.CREDITS_SCROLLING = true
             else

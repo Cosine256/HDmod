@@ -174,7 +174,9 @@ function(render_ctx)
 end, ON.RENDER_PRE_HUD)
 
 function module.start_minigame()
-    minigame_state = GAME_STATE.IN_GAME
+    if minigame_state ~= GAME_STATE.POST_GAME then
+        minigame_state = GAME_STATE.IN_GAME
+    end
 end
 
 return module
