@@ -80,7 +80,7 @@ local fill_type = {
     I have not confirmed this, but strongly suspect that the game uses VANILLA_SOUND_PARAM.TORCH_PROXIMITY to
     check whether it should play one of the in-the-dark variants of certain stems. Some quick tests indicate
     that the player must be less than 8.0 tiles away from any ITEM_TORCHFLAME, ITEM_WALLTORCHFLAME,
-    ITEM_LITWALLTORCH, ITEM_AUTOWALLTORCH, or FX_SMALLFLAME (I may have missed a few.)
+    or FX_SMALLFLAME
 
     In theory this means that you can fake the in-the-dark stem variations that play with something along the lines of
     if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.TORCH_PROXIMITY) < 8.0 then
