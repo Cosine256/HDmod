@@ -229,6 +229,11 @@ local function anubis2_set(uid)
         -- Stops Anubis2 from spawning at the start of every level if he's killed
         module.anubis2_killed = true
     end)
+    ent:set_pre_damage(function (_, damage_dealer)
+        if damage_dealer.type.search_flags & MASK.LAVA ~= 0 then
+            return false
+        end
+    end)
 end
 
 function module.create_anubis2(x, y, l)
