@@ -3,6 +3,8 @@ local endingplatformlib = require('lib.entities.endingplatform')
 local endingtreasurelib = require('lib.entities.endingtreasure')
 local unlockslib = require('lib.unlocks')
 
+---@type integer[]
+local player_items = {}
 local chest
 ---@type Rockdog | Mount | Entity | Movable | PowerupCapable
 local lavastream
@@ -31,6 +33,16 @@ do
 end
 
 set_callback(function ()
+    player_items = {}
+    for _, p in pairs(players) do
+        local holding = get_entity(p.holding_uid)
+        if holding then
+            -- Prevent item from getting dropped
+            holding.flags = set_flag(holding.flags, ENT_FLAG.NO_GRAVITY)
+            player_items[p.inventory.player_slot] = holding.type.id
+        end
+    end
+
     local hard_win = state.win_state == WIN_STATE.HUNDUN_WIN
 
     -- spawn imposter lava
@@ -291,6 +303,14 @@ set_callback(function ()
         end
     end
 end, ON.PRE_UPDATE)
+
+set_callback(function()
+    if state.screen == SCREEN.SCORES then
+        for slot, item_type in pairs(player_items) do
+            state.items.player_inventory[slot].held_item = item_type
+        end
+    end
+end, ON.PRE_LEVEL_GENERATION)
 
 local theme_win = CustomTheme:new(100, THEME.OLMEC)
 theme_win:override(THEME_OVERRIDE.SPAWN_EFFECTS, THEME.DWELLING)

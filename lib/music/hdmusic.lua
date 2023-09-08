@@ -1,5 +1,6 @@
 local module = {}
 
+module.music_debug_print = false
 module.HD_LEVEL_MUSICS = {}
 
 -- Bool, whether the adventure track has played, only plays on the first run or after going back to the menu
@@ -11,6 +12,9 @@ local track_selection = 0
 -- Selects which track we will play a/b/c
 local function new_track_selection()
     track_selection = prng:random(3)
+    if module.music_debug_print then
+        print("[HD Music Debug] track_selection = " .. tostring(track_selection))
+    end
 end
 
 -- Rolls for an egg track (1/100 chance)
@@ -479,6 +483,15 @@ table.insert(module.HD_LEVEL_MUSICS, {
     end
 })
 
+local EGGPLANT_LOOP_SOUND = create_sound("res/music/hd/ultraegg.ogg")
+module.EGGPLANT_CUSTOM_MUSIC = EGGPLANT_LOOP_SOUND and {
+    base_volume = 0.5,
+    start_sound_id = "ultraegg",
+    sounds = {
+        { id = "ultraegg", next_sound_id = "ultraegg", sound = EGGPLANT_LOOP_SOUND, length = 14401 }
+    }
+}
+
 local OLMEC_BOSS_LOOP_SOUND = create_sound("res/music/hd/A04_boss.ogg")
 module.OLMEC_BOSS_CUSTOM_MUSIC = OLMEC_BOSS_LOOP_SOUND and {
     base_volume = 0.5,
@@ -497,12 +510,57 @@ module.YAMA_BOSS_CUSTOM_MUSIC = YAMA_BOSS_LOOP_SOUND and {
     }
 }
 
+-- TODO, currently unused until support for credits music replacement is added
+module.HD_CREDITS_CUSTOM_MUSIC = {
+    base_volume = 0.5,
+    start_sound_id = "credits",
+    sounds = {
+        {
+            id = "credits",
+            sound = create_sound("res/music/hd/Credits.ogg"),
+            length = 81014,
+            next_sound_id = function(ctx)
+                if state.win_state == WIN_STATE.HUNDUN_WIN then
+                    if module.music_debug_print then
+                        print("[HD Music Debug] Hard win, playing credits_2")
+                    end
+
+                    return "credits_2"
+                end
+
+                if module.music_debug_print then
+                    print("[HD Music Debug] Normal win, playing credits_2b")
+                end
+
+                return "credits_2b"
+            end
+        },
+        {
+            id = "credits_2",
+            sound = create_sound("res/music/hd/Credits_2.ogg"),
+            length = 31957,
+            next_sound_id = "credits_2"
+        },
+        {
+            id = "credits_2b",
+            sound = create_sound("res/music/hd/Credits_2b.ogg"),
+            length = 32000,
+            next_sound_id = "credits_2b"
+        }
+    }
+}
+
 set_callback(function()
     new_track_selection()
 end, ON.RESET)
 
 set_callback(function()
-    adventure_played = false
+    if adventure_played then
+        if module.music_debug_print then
+            print("[HD Music Debug] adventure_played = false")
+        end
+        adventure_played = false
+    end
 end, ON.MENU)
 
 return module
