@@ -72,8 +72,9 @@ local function anubis2_redskeleton_attack(ent)
                 ry = math.random(-4, 4)
                 tile = get_entity(get_grid_entity_at(tx+rx, ty+ry, tl))
                 -- Found a tile, now see if the space above it is free
-                if tile ~= nil then
-                    if get_entity(get_grid_entity_at(tx+rx, ty+ry+1, tl)) == nil then
+                if tile ~= nil and test_flag(tile.flags, ENT_FLAG.SOLID) then
+                    local floor_at = get_entity(get_grid_entity_at(tx+rx, ty+ry+1, tl))
+                    if floor_at == nil or not test_flag(floor_at.flags, ENT_FLAG.SOLID) then
                         tile = true
                         -- Check if there's maybe an activefloor or something grid entity won't find
                         local pf = get_entities_at(0, MASK.FLOOR | MASK.ACTIVEFLOOR, tx+rx, ty+ry+1, tl, 0.5)[1]
@@ -110,7 +111,7 @@ local function anubis2_redskeleton_attack(ent)
                     tile = true
                 end
             end
-            if failsafe <= 300 then
+            if failsafe < 300 then
                 -- Spawn a skelly right above the now located tile
                 local source = get_entity(spawn(ENT_TYPE.FX_ANUBIS_SPECIAL_SHOT_RETICULE, tx+rx, ty+ry+1, tl, 0, 0))
                 source:set_texture(TEXTURE.DATA_TEXTURES_FX_SMALL3_0)
