@@ -21,9 +21,9 @@ end
 local function is_player_in_vlads(player)
     if feelingslib.feeling_check(feelingslib.FEELING_ID.VLAD) then
         if player ~= nil then
-            local x, y, layer = get_position(player)
+            local px, py, layer = get_position(player)
 
-            local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+            local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(px, py)
             local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
             if (
                     _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP

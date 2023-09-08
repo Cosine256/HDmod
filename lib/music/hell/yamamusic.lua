@@ -4,17 +4,27 @@ module.music_debug_print = false
 
 local stem_after_tran
 
-local function isHellMinibossDead()
-    for _, v in ipairs(get_entities_by({ENT_TYPE.MONS_CAVEMAN_BOSS}, MASK.MONSTER, LAYER.PLAYER)) do
-        local mons = get_entity(v)
-        if type(mons.user_data) == "table" then
-            if mons.user_data.ent_type == HD_ENT_TYPE.MONS_HELL_MINIBOSS then
-                return false
+local function playerInRange(player)
+    if player ~= nil then
+        local px, py, layer = get_position(player)
+
+        for _, v in ipairs(get_entities_by({ENT_TYPE.MONS_AMMIT}, MASK.MONSTER, LAYER.PLAYER)) do
+            local mons = get_entity(v)
+            if type(mons.user_data) == "table" then
+                if mons.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HEAD then
+                    --[[
+                        Yama's hands decide if a player is in range by checking if the players y position is greater than
+                        their own - 6. We're checking from Yama's heads y position so subtract an additional 1.15.
+                    ]]
+                    if py > mons.y - 7.15 then
+                        return true
+                    end
+                end
             end
         end
     end
 
-    return true
+    return false
 end
 
 local function isYamaPhaseTwo()
@@ -47,9 +57,9 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "1_p3"
                 end
 
-                if isHellMinibossDead() then
+                if playerInRange(players[1].uid) then
                     if module.music_debug_print then
-                        print("[Yama Music Debug] Hell miniboss is dead.")
+                        print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
 
                     return "1_p2"
@@ -71,9 +81,9 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "2_p3"
                 end
 
-                if isHellMinibossDead() then
+                if playerInRange(players[1].uid) then
                     if module.music_debug_print then
-                        print("[Yama Music Debug] Hell miniboss is dead.")
+                        print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
 
                     return "2_p2"
@@ -126,9 +136,9 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "p1_tran"
                 end
 
-                if isHellMinibossDead() then
+                if playerInRange(players[1].uid) then
                     if module.music_debug_print then
-                        print("[Yama Music Debug] Hell miniboss is dead.")
+                        print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
 
                     stem_after_tran = "3_p2"
@@ -180,9 +190,9 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "p1_tran"
                 end
 
-                if isHellMinibossDead() then
+                if playerInRange(players[1].uid) then
                     if module.music_debug_print then
-                        print("[Yama Music Debug] Hell miniboss is dead.")
+                        print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
 
                     stem_after_tran = "4_p2"
@@ -233,9 +243,9 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "5_p3"
                 end
 
-                if isHellMinibossDead() then
+                if playerInRange(players[1].uid) then
                     if module.music_debug_print then
-                        print("[Yama Music Debug] Hell miniboss is dead.")
+                        print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
 
                     return "5_p2"
@@ -279,9 +289,9 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "6_p3"
                 end
 
-                if isHellMinibossDead() then
+                if playerInRange(players[1].uid) then
                     if module.music_debug_print then
-                        print("[Yama Music Debug] Hell miniboss is dead.")
+                        print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
 
                     return "6_p2"
@@ -325,9 +335,9 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "1_p3"
                 end
 
-                if isHellMinibossDead() then
+                if playerInRange(players[1].uid) then
                     if module.music_debug_print then
-                        print("[Yama Music Debug] Hell miniboss is dead.")
+                        print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
 
                     return "1_p2"
