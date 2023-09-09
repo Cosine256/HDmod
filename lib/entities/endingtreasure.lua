@@ -3,10 +3,11 @@ local decorlib = require('lib.gen.decor')
 local animationlib = require('lib.entities.animation')
 
 local CAVEMAN_ANIMATIONS = {
-    WALK = {90, 89, 88, 87, 86, 85, 84, 83, 82, 81, loop = true, frames = 10, frame_time = 4}
+    WALK = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0, loop = true, frames = 10, frame_time = 6}
 }
 
 local idol_texture_id
+local caveman_texture_id
 do
     local idol_texture_def = TextureDefinition.new()
     idol_texture_def.width = 512
@@ -15,6 +16,14 @@ do
     idol_texture_def.tile_height = 512
     idol_texture_def.texture_path = "res/ending_giantidol.png"
     idol_texture_id = define_texture(idol_texture_def)
+
+    local caveman_texture_def = TextureDefinition.new()
+    caveman_texture_def.width = 640
+    caveman_texture_def.height = 256
+    caveman_texture_def.tile_width = 128
+    caveman_texture_def.tile_height = 128
+    caveman_texture_def.texture_path = "res/ending_caveman.png"
+    caveman_texture_id = define_texture(caveman_texture_def)
 end
 
 ---treasure
@@ -52,6 +61,8 @@ local function create_credits_caveman(base_uid, x, y, l)
     -- spawn cavemen as corpses so we don't have to worry about state
     local caveman = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.MONS_CAVEMAN, x, y, l))
     attach_entity(base_uid, caveman.uid)
+    caveman:set_texture(caveman_texture_id)
+    caveman.animation_frame = 0
     caveman.health = 0
     caveman.last_state = caveman.state
     caveman.state = 22
