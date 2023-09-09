@@ -59,7 +59,7 @@ local TURN_RATE = 0.05
 ]]
 
 local function set_dimensions(ent)
-    ent.offsety = -0.435
+    ent.offsety = -0.335
     ent.width, ent.height = 2, 2
     ent.hitboxx, ent.hitboxy = 0.65, 0.585
 end
