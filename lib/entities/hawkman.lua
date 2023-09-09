@@ -12,7 +12,8 @@ local ANIMATION_FRAMES_ENUM = {
     FLUNG2 = 6,
     FLUNG3 = 7,
     FLUNG4 = 8,
-    TALK = 9
+    TALK = 9,
+    WORSHIP = 10,
 }
 
 local ANIMATION_FRAMES_BASE = {
@@ -24,6 +25,7 @@ local ANIMATION_FRAMES_BASE = {
     { 155 },
     { 156 },
     { 157 },
+    { 10, 11, 12, 13, 14 },
     { 10, 11, 12, 13, 14 },
 }
 
@@ -37,6 +39,7 @@ local ANIMATION_FRAMES_RES = {
     { 17 },
     { 18 },
     { 19, 20, 21, 22, 23 },
+    { 24, 25, 26, 27, 28 },
 }
 
 local ANIMATION_INFO = {
@@ -51,7 +54,7 @@ local hawkman_texture_id
 do
     local hawkman_texture_def = TextureDefinition.new();
     hawkman_texture_def.width = 640;
-    hawkman_texture_def.height = 800;
+    hawkman_texture_def.height = 768;
     hawkman_texture_def.tile_width = 128;
     hawkman_texture_def.tile_height = 128;
     hawkman_texture_def.texture_path = 'res/hawkman.png';
