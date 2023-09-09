@@ -138,7 +138,14 @@ local ANIMATION_INFO = {
         speed = 5;
     };
 }
+---@param ent Monster
 local function anubis2_update(ent)
+    if ent.frozen_timer > 0 then
+        ent.flags = set_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS)
+        return
+    else
+        ent.flags = clr_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS)
+    end
     --- ANIMATION
     -- Increase animation timer
     ent.user_data.animation_timer = ent.user_data.animation_timer + 1
@@ -168,6 +175,7 @@ local function anubis2_update(ent)
     -- Contact damage after fully spawning in
     if ent.user_data.fadein_timer == 60 then
         ent.flags = clr_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+        ent.flags = clr_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
     end
     -- State
     if ent.user_data.state == 0 then
@@ -196,6 +204,21 @@ local function anubis2_update(ent)
             anubis2_redskeleton_attack(ent)
         end
     end
+    local colliding_olmec = get_entity(
+      get_entities_overlapping_hitbox(
+        ENT_TYPE.ACTIVEFLOOR_OLMEC,
+        MASK.ACTIVEFLOOR,
+        get_hitbox(ent.uid),
+        ent.layer
+      )[1]
+    )
+    if colliding_olmec and ent.exit_invincibility_timer == 0 and (
+        math.abs(colliding_olmec.velocityx) >= 0.175 or
+        math.abs(colliding_olmec.velocityy) >= 0.175
+    ) then
+        ent:damage(colliding_olmec.uid, 1, 0, 0, 0, 10)
+        ent.exit_invincibility_timer = 11
+    end
 end
 
 local function anubis2_set(uid)
@@ -223,6 +246,7 @@ local function anubis2_set(uid)
     ent:set_draw_depth(7)
     ent.flags = clr_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS)
     ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+    ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
     ent:set_behavior(3)
     module.anubis2_killed = false
     ent:set_pre_kill(function()
@@ -262,13 +286,7 @@ set_callback(function()
         end
         if alivep ~= nil then
             local x, y, l = get_position(alivep.uid)
-            set_timeout(function()
-                -- warning
-                if alivep ~= nil then
-                    x, y, l = get_position(alivep.uid)
-                    module.create_anubis2(x, y, l)
-                end
-            end, 30)
+            module.create_anubis2(x, y+2, l)
         end
     end
 end, ON.LEVEL)

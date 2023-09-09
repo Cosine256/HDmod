@@ -67,18 +67,6 @@ set_callback(function()
   -- UI_BOTD_PLACEMENT_Y = options.hd_ui_botd_d_y
 end, ON.START)
 
--- removes all types of an entity from any player that has it.
-local function remove_player_item(powerup, player)
-  local powerup_uids = get_entities_by_type(powerup)
-  for i = 1, #powerup_uids, 1 do
-    for j = 1, #players, 1 do
-      if entity_has_item_uid(players[j].uid, powerup_uids[i]) then
-        entity_remove_item(players[j].uid, powerup_uids[i])
-      end
-    end
-  end
-end
-
 function module.set_hell_x()
     module.hell_x = prng:random_int(4, 41, PRNG_CLASS.LEVEL_GEN)
 end
@@ -108,11 +96,11 @@ set_callback(function(draw_ctx)
     local uvy1 = 0
     local uvx2 = BOOKOFDEAD_SQUASH
     local uvy2 = 1
-    
+
     if state.theme == THEME.OLMEC then
       local hellx_min = module.hell_x - math.floor(BOOKOFDEAD_RANGE/2)
       local hellx_max = module.hell_x + math.floor(BOOKOFDEAD_RANGE/2)
-      local p_x, p_y, p_l = get_position(players[1].uid)
+      local p_x = get_position(players[1].uid)
       if (p_x >= hellx_min) and (p_x <= hellx_max) then
         animate_bookofdead(0.6*((p_x - module.hell_x)^2) + BOOKOFDEAD_TIC_LIMIT)
       else
@@ -130,10 +118,10 @@ set_callback(function(draw_ctx)
         animate_bookofdead(2)
       end
     end
-    
+
     uvx1 = -BOOKOFDEAD_SQUASH*(bookofdead_frames_index-1)
     uvx2 = BOOKOFDEAD_SQUASH - BOOKOFDEAD_SQUASH*(bookofdead_frames_index-1)
-    
+
     -- draw_text(x-0.1, y, 0, tostring(bookofdead_tick), rgba(234, 234, 234, 255))
     -- draw_text(x-0.1, y-0.1, 0, tostring(bookofdead_frames_index), rgba(234, 234, 234, 255))
     draw_ctx:draw_image(UI_BOTD_IMG_ID, x, y, x+w, y-h, uvx1, uvy1, uvx2, uvy2, 0xffffffff)
@@ -142,7 +130,7 @@ end, ON.GUIFRAME)
 
 ---@param player Player
 local function botd_powerup_set(player)
-  player:set_post_kill(function (self, destroy_corpse, responsible)
+  player:set_post_kill(function ()
     botd_players[player.inventory.player_slot] = nil
     if not next(botd_players) then
       module.HAS_BOOKOFDEAD = false
@@ -150,7 +138,7 @@ local function botd_powerup_set(player)
   end)
 end
 
-local function botd_powerup_update(player)
+local function botd_powerup_update(_)
 end
 
 ---@param book Movable
@@ -158,12 +146,11 @@ local function botd_pickup_set(book)
   book:set_texture(texture_id)
 end
 
-local function botd_pickup_update(book)
+local function botd_pickup_update(_)
 end
 
----@param book Movable
 ---@param player Player
-local function botd_pickup_get(book, player)
+local function botd_pickup_get(_, player)
   if not OBTAINED_BOOKOFDEAD then
     local x, y, layer = get_position(player.uid)
     anubis2lib.create_anubis2(x, y+3, layer)
@@ -175,7 +162,7 @@ local function botd_pickup_get(book, player)
   module.HAS_BOOKOFDEAD = true
 end
 
-botd_powerup_id = celib.new_custom_powerup(botd_powerup_set, botd_pickup_update)
+botd_powerup_id = celib.new_custom_powerup(botd_powerup_set, botd_powerup_update)
 botd_pickup_id = celib.new_custom_pickup(botd_pickup_set, botd_pickup_update, botd_pickup_get, botd_powerup_id, ENT_TYPE.ITEM_PICKUP_COMPASS)
 celib.set_powerup_drop(botd_powerup_id, botd_pickup_id)
 
