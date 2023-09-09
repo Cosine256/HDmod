@@ -56,12 +56,26 @@ local TURN_RATE = 0.05
         - Inputting whip fires the laser cannon
         - Cannot use bombs or ropes
         - Cannot dismount
+        -- Player offset needs to be:
+        -- -0.45, 0.80
 ]]
 
 local function set_dimensions(ent)
+    local facing_left = test_flag(ent.flags, ENT_FLAG.FACING_LEFT)
     ent.offsety = -0.335
+    ent.offsetx = 0.1*(facing_left and 1 or -1)
     ent.width, ent.height = 2, 2
     ent.hitboxx, ent.hitboxy = 0.65, 0.585
+
+    if ent.rider_uid ~= -1 then
+        local rider = get_entity(ent.rider_uid)
+        rider.y = 0.80
+        rider.x = -0.45
+        -- message(string.format("rider: %s, %s", rider.x, rider.y))
+        if facing_left then
+            rider.x = math.abs(rider.x)
+        end
+    end
 end
 
 ---@param ent Rockdog | Mount | Entity | Movable | PowerupCapable
