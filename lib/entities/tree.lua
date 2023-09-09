@@ -8,6 +8,15 @@ local ANIMATION_FRAMES_ENUM = {
 	TREETOP_FRONT_CENTER = 3,
 	TREETOP_FRONT_SIDE = 4,
 	TREETOP_BACK = 5,
+	DEAD_BRANCH_DECO = 6,
+	DEAD_DAMAGE_DECO = 7,
+	DEAD_BRANCH = 8,
+	DEAD_TRUNK = 9,
+	DEAD_BASE = 10,
+	DEAD_TRUNK_DECO = 11,
+	DEAD_TREETOP_BACK = 12,
+	DEAD_TREETOP_FRONT = 13,
+	DEAD_TRUNK_SIDE_DECO = 14,
 }
 
 local ANIMATION_FRAMES_RES = {
@@ -16,11 +25,21 @@ local ANIMATION_FRAMES_RES = {
     { 0 },
     { 2 },
     { 3, 4 },
+    { 0, 3, 6 },
+    { 1 },
+    { 4 },
+    { 9 },
+    { 12 },
+    { 7, 10, 13 },
+    { 8 },
+    { 11 },
+    { 14 },
 }
 
 local top_center_texture_id
 local top_texture_id
 local restless_texture_id
+local dead_texture_id
 do
 	local top_center_texture_def = TextureDefinition.new()
 	top_center_texture_def.width = 384
@@ -45,6 +64,14 @@ do
 	restless_texture_def.tile_height = 128
 	restless_texture_def.texture_path = "res/restless_deco.png"
 	restless_texture_id = define_texture(restless_texture_def)
+
+	local dead_texture_def = TextureDefinition.new()
+	dead_texture_def.width = 384
+	dead_texture_def.height = 640
+	dead_texture_def.tile_width = 128
+	dead_texture_def.tile_height = 128
+	dead_texture_def.texture_path = "res/templedeadtree.png"
+	dead_texture_id = define_texture(dead_texture_def)
 end
 
 local function is_haunted()
@@ -52,6 +79,15 @@ local function is_haunted()
 		feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == true
 		or feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) == true
 	)
+end
+
+local function is_s2_temple_style()
+	return state.theme == THEME.TEMPLE and not options.hd_og_floorstyle_temple
+end
+
+local function is_nontreetopleaf_area()
+	return is_haunted()
+	or is_s2_temple_style()
 end
 
 local function apply_properties_to_topbranch_and_deco(branch, front_deco)
@@ -76,12 +112,18 @@ local function decorate_tree(type, uid_to_spawn_over, x_off, y_off, radius, righ
 	local entities = get_entities_at(type, 0, p_x+x_off, p_y, p_l, radius)
 	local no_previous_entity_found = #entities == 0
 
-	local entity =  get_entity(not no_previous_entity_found and entities[1] or spawn_entity_over(type, uid_to_spawn_over, x_off, y_off))
+	local entity = get_entity(not no_previous_entity_found and entities[1] or spawn_entity_over(type, uid_to_spawn_over, x_off, y_off))
 
+	-- apply textures
 	if type == ENT_TYPE.DECORATION_TREE then
-		entity.animation_frame = 87+12*prng:random_index(2, PRNG_CLASS.LEVEL_GEN)
+		local index = prng:random_index(3, PRNG_CLASS.LEVEL_DECO)
+		if is_s2_temple_style() then
+			entity:set_texture(dead_texture_id)
+			entity.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_BRANCH_DECO][index]
+		else
+			entity.animation_frame = 75+12*index
+		end
 	elseif type == ENT_TYPE.DECORATION_TREE_VINE_TOP then
-		-- apply top branch texture
 		apply_properties_to_topbranch_and_deco(get_entity(uid_to_spawn_over), entity)
 	end
 
@@ -100,29 +142,78 @@ local function decorate_tree(type, uid_to_spawn_over, x_off, y_off, radius, righ
 	return entity.uid
 end
 
-local function add_top_branches(treetop_uid)
-	local branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop_uid, -1, 0, 0.1, false)
-	local branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop_uid, 1, 0, 0.1, false)
-	if is_haunted() then
-		decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid_left, 0.03, 0.47, 0.5, false)
-		decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid_right, -0.03, 0.47, 0.5, true)
-	else
-		decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
-		decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
-		for _, deco_uid in pairs(entity_get_items_by(treetop_uid, {ENT_TYPE.DECORATION_TREETRUNK_TOPFRONT, ENT_TYPE.DECORATION_TREETRUNK_TOPBACK}, MASK.DECORATION)) do
-			local deco = get_entity(deco_uid)
-			if deco.type.id == ENT_TYPE.DECORATION_TREETRUNK_TOPFRONT then
+local function apply_trunk_textures(trunk)
+	if is_s2_temple_style() then
+		trunk:set_texture(dead_texture_id)
+		trunk.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_TRUNK][1]
+	end
+	for _, deco_uid in pairs(entity_get_items_by(trunk.uid, {ENT_TYPE.DECORATION_TREETRUNK_CLIMBINGHINT, ENT_TYPE.DECORATION_TREE, ENT_TYPE.DECORATION_TREETRUNK_TOPFRONT, ENT_TYPE.DECORATION_TREETRUNK_TOPBACK}, MASK.DECORATION)) do
+		local deco = get_entity(deco_uid)
+		if deco.type.id == ENT_TYPE.DECORATION_TREETRUNK_CLIMBINGHINT
+		and is_s2_temple_style() then
+			deco:set_texture(dead_texture_id)
+			deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_TRUNK_SIDE_DECO][1]
+		elseif deco.type.id == ENT_TYPE.DECORATION_TREE then
+			if is_haunted()
+			and prng:random_chance(12, PRNG_CLASS.LEVEL_DECO) then
+				deco:set_texture(restless_texture_id)
+				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.FACE][1]
+			elseif is_s2_temple_style() then
+				if deco.animation_frame == 100 then
+					deco:destroy()--remove since the texture has no replacement
+				elseif deco.animation_frame == 112 then
+					deco:set_texture(dead_texture_id)
+					deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_TRUNK_DECO][1]
+				elseif deco.animation_frame == 124 then
+					deco:set_texture(dead_texture_id)
+					deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_TRUNK_DECO][2]
+				elseif deco.animation_frame == 136 then
+					deco:set_texture(dead_texture_id)
+					deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_TRUNK_DECO][3]
+				end
+			end
+		elseif deco.type.id == ENT_TYPE.DECORATION_TREETRUNK_TOPFRONT then
+			if is_s2_temple_style() then
+				deco:set_texture(dead_texture_id)
+				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_TREETOP_FRONT][1]
+			elseif not is_haunted() then
 				deco:set_texture(top_center_texture_id)
 				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_FRONT_CENTER][1]
 				deco.width = 2
 				deco:set_draw_depth(10)
 				deco.y = 0.15
-			else
+			end
+		elseif deco.type.id == ENT_TYPE.DECORATION_TREETRUNK_TOPBACK then
+			if is_s2_temple_style() then
+				deco:set_texture(dead_texture_id)
+				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_TREETOP_BACK][1]
+			elseif not is_haunted() then
 				deco:set_texture(top_texture_id)
 				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.TREETOP_BACK][1]
 			end
 		end
 	end
+end
+
+local function add_top_branches(treetop_uid)
+	local branch_uid_left = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop_uid, -1, 0, 0.1, false)
+	local branch_uid_right = decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, treetop_uid, 1, 0, 0.1, false)
+	if is_nontreetopleaf_area() then
+		local branch_left = get_entity(branch_uid_left)
+		branch_left:set_texture(dead_texture_id)
+		branch_left.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_BRANCH][1]
+		local branch_right = get_entity(branch_uid_right)
+		branch_right:set_texture(dead_texture_id)
+		branch_right.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_BRANCH][1]
+
+		decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid_left, 0.03, 0.47, 0.5, false)
+		decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid_right, -0.03, 0.47, 0.5, true)
+	else
+		decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_left, 0.03, 0.47, 0.5, false)
+		decorate_tree(ENT_TYPE.DECORATION_TREE_VINE_TOP, branch_uid_right, -0.03, 0.47, 0.5, true)
+	end
+	-- apply textures to treetop
+	apply_trunk_textures(get_entity(treetop_uid))
 end
 
 local vine_top_positions = {}
@@ -155,8 +246,8 @@ function module.postlevelgen_decorate_trees()
 				is_right
 				or is_left
 			)
-			local branch_uid = get_grid_entity_at(x, top_y-1, LAYER.FRONT)
-			local deco = get_entity(entity_get_items_by(branch_uid, ENT_TYPE.DECORATION_TREE_VINE_TOP, 0)[1])
+			local branch = get_entity(get_grid_entity_at(x, top_y-1, LAYER.FRONT))
+			local deco = get_entity(entity_get_items_by(branch.uid, ENT_TYPE.DECORATION_TREE_VINE_TOP, 0)[1])
 			local x_offset = is_left and 0.03 or -0.03
 			-- decorate normal branches
 			if
@@ -164,14 +255,18 @@ function module.postlevelgen_decorate_trees()
 				and is_haunted()
 			then
 				deco:destroy()
-				decorate_tree(ENT_TYPE.DECORATION_TREE, branch_uid, x_offset, 0.47, 0.5, false)
+				decorate_tree(ENT_TYPE.DECORATION_TREE, branch.uid, x_offset, 0.47, 0.5, false)
 			end
 			-- apply top branch texture
 			if
 				is_top
-				and not is_haunted()
 			then
-				apply_properties_to_topbranch_and_deco(get_entity(branch_uid), deco)
+				if is_nontreetopleaf_area() then
+					branch:set_texture(dead_texture_id)
+					branch.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_BRANCH][1]
+				else
+					apply_properties_to_topbranch_and_deco(branch, deco)
+				end
 			end
 
 			local y = top_y
@@ -193,7 +288,11 @@ end
 
 function module.create_hd_tree(x, y, l)
 	-- create base
-	local cur_trunk = spawn_grid_entity(ENT_TYPE.FLOOR_TREE_BASE, x, y, l)
+	local cur_trunk = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_TREE_BASE, x, y, l))
+	if is_s2_temple_style() then
+		cur_trunk:set_texture(dead_texture_id)
+		cur_trunk.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DEAD_BASE][1]
+	end
 
 	local max_height = 6
 	-- if 1/3 chance passes, set maximum to 5
@@ -208,50 +307,32 @@ function module.create_hd_tree(x, y, l)
 			(topleft2 ~= -1 or topmid2 ~= -1 or topright2 ~= -1)
 			or i == max_height
 		) then
-			add_top_branches(spawn_entity_over(ENT_TYPE.FLOOR_TREE_TOP, cur_trunk, 0, 1))
+			add_top_branches(spawn_entity_over(ENT_TYPE.FLOOR_TREE_TOP, cur_trunk.uid, 0, 1))
 			break
 		end
 		-- spawn trunk at i
-		cur_trunk = spawn_entity_over(ENT_TYPE.FLOOR_TREE_TRUNK, cur_trunk, 0, 1)
-		-- if if 1/3 chance passes, spawn branch on left side
+		cur_trunk = get_entity(spawn_entity_over(ENT_TYPE.FLOOR_TREE_TRUNK, cur_trunk.uid, 0, 1))
+		apply_trunk_textures(cur_trunk)
+
+		-- if 1/3 chance passes, spawn branch on left side
 		if prng:random_chance(3, PRNG_CLASS.LEVEL_GEN) then
-			decorate_tree(ENT_TYPE.DECORATION_TREE, decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, cur_trunk, -1, 0, 0.1, false), 0.03, 0.47, 0.5, false)
+			decorate_tree(ENT_TYPE.DECORATION_TREE, decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, cur_trunk.uid, -1, 0, 0.1, false), 0.03, 0.47, 0.5, false)
 		end
-		-- if if 1/3 chance passes, spawn branch on right side
+		-- if 1/3 chance passes, spawn branch on right side
 		if prng:random_chance(3, PRNG_CLASS.LEVEL_GEN) then
-			decorate_tree(ENT_TYPE.DECORATION_TREE, decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, cur_trunk, 1, 0, 0.1, false), -0.03, 0.47, 0.5, true)
+			decorate_tree(ENT_TYPE.DECORATION_TREE, decorate_tree(ENT_TYPE.FLOOR_TREE_BRANCH, cur_trunk.uid, 1, 0, 0.1, false), -0.03, 0.47, 0.5, true)
 		end
 	end
 end
 
 function module.onlevel_decorate_haunted()
-	-- decorate tree trunks
-	if (
-		feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE)
-		or feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS)
-	) then
-		for _, uid in pairs(get_entities_by_type(ENT_TYPE.DECORATION_TREE)) do
-			local deco = get_entity(uid)
-			if (
-				(-- ignore branch decorations
-					deco.animation_frame == 112
-					or deco.animation_frame == 124
-					or deco.animation_frame == 136
-				) and prng:random_chance(12, PRNG_CLASS.LEVEL_GEN)
-			) then
-				deco:set_texture(restless_texture_id)
-				deco.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.FACE][1]
-			end
-		end
-	end
-	
 	-- decorate grass
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
 		for _, uid in pairs(get_entities_by_type(ENT_TYPE.DECORATION_JUNGLEBUSH)) do
 			local x, y, _ = get_position(uid)
 			if (
 				not validlib.is_invalid_dar_decor_spawn(x, y)
-				and prng:random_chance(2, PRNG_CLASS.LEVEL_GEN)
+				and prng:random_chance(2, PRNG_CLASS.LEVEL_DECO)
 			) then
 				local deco = get_entity(uid)
 				deco:set_texture(restless_texture_id)
