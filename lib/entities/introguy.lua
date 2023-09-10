@@ -69,7 +69,6 @@ local function update_intro_guy(guy)
     elseif guy.user_data.state == introanimationslib.GUY_WALKS.PETTING then
         if guy.user_data.animation_state == GUY_ANIMATIONS.PET_START
         and guy.user_data.animation_timer == 0 then
-            message("PET")
             animationlib.set_animation(guy.user_data, GUY_ANIMATIONS.PET)
         end
         if guy.user_data.animation_state == GUY_ANIMATIONS.PET then
