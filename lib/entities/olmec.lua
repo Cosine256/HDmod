@@ -47,6 +47,7 @@ local function cutscene_arrange_olmec_pre()
 				hawkman.velocityx = -0.15
 				hawkman.velocityy = 0.20
 				THREW_HAWKMAN = true
+				hawkmanlib.set_state_vanilla(hawkman)
 			end
 		end)
 	end
@@ -57,6 +58,7 @@ local function set_post_cutscene_hawkman()
 	local ent = get_entity(HAWKMAN_UID)
 	ent:stun(300)
 	THREW_HAWKMAN = true
+	hawkmanlib.set_state_vanilla(ent)
 end
 
 local function cutscene_move_hawkman_post()
@@ -95,17 +97,7 @@ local function cutscene_arrange_worshipers()
 	if not test_flag(hawkman.flags, ENT_FLAG.FACING_LEFT) then
 		flip_entity(hawkman.uid)
 	end
-	---@param self WalkingMonster
-	hawkman:set_post_update_state_machine(function (self)
-		self.walk_pause_timer = 0
-		self.cooldown_timer = -1
-		if self.move_state ~= 2 then
-			self.move_state = 2
-		end
-		if THREW_HAWKMAN then
-			clear_callback()
-		end
-	end)
+	hawkmanlib.set_state_worship(hawkman)
 end
 
 function module.onlevel_olmec_init()

@@ -1,5 +1,6 @@
 local celib = require "lib.entities.custom_entities"
 local optionslib = require "lib.options"
+local animationlib = require('lib.entities.animation')
 
 local module = {}
 
@@ -13,7 +14,6 @@ local ANIMATION_FRAMES_ENUM = {
     FLUNG3 = 7,
     FLUNG4 = 8,
     TALK = 9,
-    WORSHIP = 10,
 }
 
 local ANIMATION_FRAMES_BASE = {
@@ -25,7 +25,6 @@ local ANIMATION_FRAMES_BASE = {
     { 155 },
     { 156 },
     { 157 },
-    { 10, 11, 12, 13, 14 },
     { 10, 11, 12, 13, 14 },
 }
 
@@ -39,7 +38,6 @@ local ANIMATION_FRAMES_RES = {
     { 17 },
     { 18 },
     { 19, 20, 21, 22, 23 },
-    { 24, 25, 26, 27, 28 },
 }
 
 local ANIMATION_INFO = {
@@ -48,6 +46,16 @@ local ANIMATION_INFO = {
         finish = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.THROW][#ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.THROW]];
         speed = 3;
     };
+}
+
+local CUSTOM_ANIMATIONS = {
+    WORSHIP = {24, 25, 26, 27, 28, loop = true, frames = 5, frame_time = 6}
+}
+
+local HAWKMAN_STATE = {
+    VANILLA = 0,
+    THROW = 1,
+    WORSHIP = 2
 }
 
 local hawkman_texture_id
@@ -61,6 +69,15 @@ do
     hawkman_texture_id = define_texture(hawkman_texture_def);
 end
 
+function module.set_state_worship(hawkman)
+    hawkman.user_data.state = HAWKMAN_STATE.WORSHIP
+    animationlib.set_animation(hawkman.user_data, CUSTOM_ANIMATIONS.WORSHIP)
+end
+
+function module.set_state_vanilla(hawkman)
+    hawkman.user_data.state = HAWKMAN_STATE.VANILLA
+end
+
 local function hawkman_set(uid)
     ---@type Movable
     local ent = get_entity(uid)
@@ -71,7 +88,7 @@ local function hawkman_set(uid)
     -- user_data
     ent.user_data = {
         ent_type = HD_ENT_TYPE.MONS_HAWKMAN;
-        throw_state = 0; -- When zero we will use vanilla statemachine and when 1 we will use a custom statemachine for the throw
+        state = HAWKMAN_STATE.VANILLA; -- When zero we will use vanilla statemachine and when 1 we will use a custom statemachine for the throw
         thrown_ent = nil; -- Points to the entity the hawkman is trying to throw
         --ANIMATION
         animation_info = ANIMATION_INFO.THROW;
@@ -101,7 +118,7 @@ local function hawkman_update(ent)
         end
         if break_framesetting then break end
     end
-    if ent.user_data.throw_state == 0 then
+    if ent.user_data.state == HAWKMAN_STATE.VANILLA then
         if test_flag(ent.flags, ENT_FLAG.DEAD) or ent.stun_timer ~= 0 then return end
         --wait for player to get near
         for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, ent.layer)) do
@@ -113,7 +130,7 @@ local function hawkman_update(ent)
                 -- Go into throw state
                 if ent:overlaps_with(player) and (sy > py) then
                     ent.user_data.thrown_ent = player
-                    ent.user_data.throw_state = 1
+                    ent.user_data.state = HAWKMAN_STATE.THROW
                     ent.user_data.animation_frame = ANIMATION_INFO.THROW.start
                 end
             end
@@ -160,7 +177,7 @@ local function hawkman_update(ent)
                 ent.velocityx = 1*ent.movex
             end
         end
-    elseif ent.user_data.throw_state == 1 then
+    elseif ent.user_data.state == HAWKMAN_STATE.THROW then
         ent.move_state = 30
         ent.state = 30
         ent.lock_input_timer = 3
@@ -210,9 +227,17 @@ local function hawkman_update(ent)
         end
         -- Once the animation finishes go back to vanilla state
         if ent.user_data.animation_frame == ent.user_data.animation_info.finish and ent.user_data.animation_timer == 2 then
-            ent.user_data.throw_state = 0
+            ent.user_data.state = HAWKMAN_STATE.VANILLA
             ent.move_state = 6
         end
+    elseif ent.user_data.state == HAWKMAN_STATE.WORSHIP then
+		ent.walk_pause_timer = 0
+		ent.cooldown_timer = -1
+		if ent.move_state ~= 2 then
+			ent.move_state = 2
+		end
+        ent.animation_frame = animationlib.get_animation_frame(ent.user_data)
+        animationlib.update_timer(ent.user_data)
     end
 end
 local function hawkman_death(ent, damage_dealer, damage_amount, velocityx, velocityy, stun_amount, iframes)
