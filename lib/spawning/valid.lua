@@ -86,6 +86,10 @@ local function is_liquid_at(x, y)
 		(feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) and y < 96)
 end
 
+function module.is_gurenteed_ground_at(x, y)
+	return locatelib.get_levelcode_at_gpos(x, y) == "1"
+end
+
 local function is_anti_trap_at(x, y)
 	return locatelib.get_levelcode_at_gpos(x, y) == "q"
 end

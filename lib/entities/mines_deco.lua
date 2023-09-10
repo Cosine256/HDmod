@@ -1,4 +1,5 @@
 local commonlib = require 'lib.common'
+local validlib = require 'lib.spawning.valid'
 
 local module = {}
 
@@ -135,6 +136,7 @@ function module.add_mines_decorations()
                     module.create_support_at_floor_uid(uid, prng:random_chance(2, PRNG_CLASS.LEVEL_DECO))
 				else
                     if get_grid_entity_at(x, y+2, LAYER.FRONT) == -1
+                    and not validlib.is_gurenteed_ground_at(x, y+1)
                     and commonlib.has(VALID_DECORATION_FLOOR, get_entity_type(get_grid_entity_at(x, y+3, LAYER.FRONT)))
                     and #get_entities_at(ENT_TYPE.BG_DOOR, MASK.BG, x, y+1, LAYER.FRONT, 2) == 0
                     and prng:random_chance(7, PRNG_CLASS.LEVEL_DECO)
