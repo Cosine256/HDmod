@@ -254,7 +254,7 @@ local function anubis2_set(uid)
         module.anubis2_killed = true
     end)
     ent:set_pre_damage(function (_, damage_dealer)
-        if damage_dealer.type.search_flags & MASK.LAVA ~= 0 then
+        if damage_dealer and damage_dealer.type.search_flags & MASK.LAVA ~= 0 then
             return false
         end
     end)
@@ -286,7 +286,9 @@ set_callback(function()
         end
         if alivep ~= nil then
             local x, y, l = get_position(alivep.uid)
-            module.create_anubis2(x, y+2, l)
+            set_timeout(function ()
+                module.create_anubis2(x, y+2, l)
+            end, 1)
         end
     end
 end, ON.LEVEL)
