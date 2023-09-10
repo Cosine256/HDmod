@@ -61,23 +61,21 @@ local function anubis2_redskeleton_attack(ent)
         local used_spawns = {} -- table that contains coordinates of spawns we've already used
         for i=1, 4 do
             local failsafe = 0 -- In the incredibly rare event the game can't find a place for a skeleton, we need to stop an infinite loop from occuring
-            -- Choose a random tile within a random range
-            local rx = math.random(-4, 4)
-            local ry = math.random(-2, 2)
-            -- Choose a random tile
-            local tile = get_entity(get_grid_entity_at(tx+rx, ty+ry, tl))
+            local dest_x, dest_y, tile = tx, ty, nil
+            -- Re-roll until we find a tile that meets our requirements
             while tile ~= true do
-                -- Re-roll until we find a tile that meets our requirements
-                rx = math.random(-5, 5)
-                ry = math.random(-4, 4)
-                tile = get_entity(get_grid_entity_at(tx+rx, ty+ry, tl))
+                -- Choose a random tile within a random range
+                local rx = math.random(-5, 5)
+                local ry = math.random(-4, 4)
+                dest_x, dest_y = tx+rx, ty+ry
+                tile = get_entity(get_grid_entity_at(dest_x, dest_y, tl))
                 -- Found a tile, now see if the space above it is free
                 if tile ~= nil and test_flag(tile.flags, ENT_FLAG.SOLID) then
-                    local floor_at = get_entity(get_grid_entity_at(tx+rx, ty+ry+1, tl))
+                    local floor_at = get_entity(get_grid_entity_at(dest_x, dest_y+1, tl))
                     if floor_at == nil or not test_flag(floor_at.flags, ENT_FLAG.SOLID) then
                         tile = true
                         -- Check if there's maybe an activefloor or something grid entity won't find
-                        local pf = get_entities_at(0, MASK.FLOOR | MASK.ACTIVEFLOOR, tx+rx, ty+ry+1, tl, 0.5)[1]
+                        local pf = get_entities_at(0, MASK.FLOOR | MASK.ACTIVEFLOOR, dest_x, dest_y+1, tl, 0.5)[1]
                         if pf ~= nil then
                             local f = get_entity(pf)
                             if test_flag(f.flags, ENT_FLAG.SOLID) then
@@ -85,24 +83,24 @@ local function anubis2_redskeleton_attack(ent)
                             end
                         end
                         -- Check if we're trying to spawn entities on the roof of the level
-                        _, ceiling, _, _ = get_bounds()
-                        if ty+ry+1 >= ceiling then
+                        local _, ceiling, _, _ = get_bounds()
+                        if dest_y+1 >= ceiling then
                             tile = nil
                         end
                         -- Did we already use this spawn? if so, DON'T USE IT!!
                         local used = false
                         for _, cord in ipairs(used_spawns) do
-                            if tx+rx == cord[1] and ty+ry+1 == cord[2] then
+                            if dest_x == cord[1] and dest_y+1 == cord[2] then
                                 used = true
                                 break
                             end
                         end
-                        if used then 
-                            tile = nil 
+                        if used then
+                            tile = nil
                         end
                         -- Add to the table of already used spawns
                         if tile ~= nil then
-                            table.insert(used_spawns, {tx+rx, ty+ry+1})
+                            table.insert(used_spawns, {dest_x, dest_y+1})
                         end
                     end
                 end
@@ -113,14 +111,15 @@ local function anubis2_redskeleton_attack(ent)
             end
             if failsafe < 300 then
                 -- Spawn a skelly right above the now located tile
-                local source = get_entity(spawn(ENT_TYPE.FX_ANUBIS_SPECIAL_SHOT_RETICULE, tx+rx, ty+ry+1, tl, 0, 0))
+                local source_uid = spawn(ENT_TYPE.FX_ANUBIS_SPECIAL_SHOT_RETICULE, dest_x, dest_y+1, tl, 0, 0)
+                local source = get_entity(source_uid)
                 source:set_texture(TEXTURE.DATA_TEXTURES_FX_SMALL3_0)
                 source.animation_frame = 32
-                commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_NECROMANCER_SPAWN, source.uid, 1, false)
+                commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_NECROMANCER_SPAWN, source_uid, 1, false)
                 set_timeout(function()
-                    spawn(ENT_TYPE.MONS_REDSKELETON, tx+rx, ty+ry+1, tl, 0, 0)
-                    commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_SORCERESS_ATK, source.uid, 1, false)
-                    generate_world_particles(PARTICLEEMITTER.NECROMANCER_SUMMON, source.uid)
+                    spawn(ENT_TYPE.MONS_REDSKELETON, dest_x, dest_y+1, tl, 0, 0)
+                    commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_SORCERESS_ATK, source_uid, 1, false)
+                    generate_world_particles(PARTICLEEMITTER.NECROMANCER_SUMMON, source_uid)
                 end, 45)
             end
         end
@@ -211,7 +210,7 @@ local function anubis2_update(ent)
         get_hitbox(ent.uid),
         ent.layer
       )[1]
-    )
+    ) --[[@as Movable]]
     if colliding_olmec and ent.exit_invincibility_timer == 0 and (
         math.abs(colliding_olmec.velocityx) >= 0.175 or
         math.abs(colliding_olmec.velocityy) >= 0.175
@@ -222,9 +221,7 @@ local function anubis2_update(ent)
 end
 
 local function anubis2_set(uid)
-    ---@type Movable
-    local ent = get_entity(uid)
-    local x, y, l = get_position(ent.uid)
+    local ent = get_entity(uid) --[[@as Movable]]
     -- Set health
     ent.health = 20
     -- user_data
