@@ -22,10 +22,10 @@ module.INTRO_STATE = {
 }
 
 local CAMEL_ANIMATIONS = {
-    CROUCH_LEAVE = {20, 21, loop = false, frames = 2, frame_time = 4},
+    CROUCH_LEAVE = {21, 20, 19, loop = false, frames = 3, frame_time = 6},
 }
 local GUY_ANIMATIONS = {
-    MOUNTED_CROUCH_ENTER = {122, 123, loop = false, frames = 2, frame_time = 4},
+    MOUNTED_CROUCH_ENTER = {124, 123, 122, loop = false, frames = 3, frame_time = 6},
 }
 
 ---@param guy Entity | Movable | Player
@@ -38,6 +38,7 @@ end
 function module.set_uncrouching(camel)
     camel.user_data.state = module.INTRO_STATE.CROUCH_LEAVE
     animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.CROUCH_LEAVE)
+    -- message("SET CROUCH_LEAVE")
 end
 
 return module

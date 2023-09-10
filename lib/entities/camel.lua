@@ -40,8 +40,8 @@ local CAMEL_WALKING_STATE <const> = {
 }
 
 local CAMEL_ANIMATIONS <const> = {
-    CROUCH_ENTER = {17, 18, loop = false, frames = 2, frame_time = 4},
-    CROUCHING = {19, loop = true, frames = 1, frame_time = 4},
+    CROUCH_ENTER = {19, 18, 17, loop = false, frames = 3, frame_time = 6},
+    CROUCHING = {19, loop = true, frames = 1, frame_time = 6},
     NOT_FAKE_WALKING = {0, loop = false, frames = 1, frame_time = 4},
     FAKE_WALKING = {8, 7, 6, 5, 4, 3, 2, 1, loop = true, frames = 8, frame_time = 6}
 }
@@ -180,6 +180,7 @@ local function camel_post_update_intro(camel)
         else
             camel.user_data.state = introanimationslib.INTRO_STATE.CROUCH_ENTER
             animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.CROUCH_ENTER)
+            -- message("SET CROUCH_ENTER")
             introanimationslib.set_crouching(get_entity(camel.user_data.guy_uid))
         end
     elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCH_ENTER then
@@ -187,6 +188,7 @@ local function camel_post_update_intro(camel)
         if camel.user_data.animation_timer == 0 then -- if animation finished
             camel.user_data.state = introanimationslib.INTRO_STATE.CROUCHING
             animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.CROUCHING)
+            -- message("SET CROUCHING")
         else
             camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
             animationlib.update_timer(camel.user_data)
@@ -199,6 +201,7 @@ local function camel_post_update_intro(camel)
         -- don't change camel hitbox (so now it's bigger)
         if camel.user_data.animation_timer == 0 then -- if animation finished
             camel.user_data.state = introanimationslib.INTRO_STATE.POST_CROUCH
+            -- message("SET POST_CROUCH")
         else
             camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
             animationlib.update_timer(camel.user_data)
@@ -206,6 +209,10 @@ local function camel_post_update_intro(camel)
     elseif camel.user_data.state == introanimationslib.INTRO_STATE.POST_CROUCH then
         -- SORRY NOTHING
     end
+    -- if camel.user_data.state ~= introanimationslib.INTRO_STATE.WALKING
+    -- and camel.user_data.state ~= introanimationslib.INTRO_STATE.POST_CROUCH then
+    --     message(string.format("timer & frame: %s, %s", camel.user_data.animation_timer, camel.animation_frame))
+    -- end
 end
 
 -- create a bullet with velocity in relation to the angle of the cannon
@@ -237,7 +244,7 @@ local function shoot_gun(ent)
 
     local x, y, l = get_position(ent.uid)
     local x_i, y_i = -1*math.cos(ent.angle), -1*math.sin(ent.angle)
-    message(string.format("cos: %s, sin: %s, ang: %s", x_i, y_i, ent.angle))
+    -- message(string.format("cos: %s, sin: %s, ang: %s", x_i, y_i, ent.angle))
     local projectile = get_entity(spawn(ENT_TYPE.ITEM_BULLET, x+(gap*x_i), y+(gap*y_i), l, vel_magnitude*x_i, vel_magnitude*y_i))
     -- projectile.angle = ent.angle
     commonlib.play_vanilla_sound(VANILLA_SOUND.ITEMS_WEBGUN, ent.uid, 1, false)
