@@ -1,6 +1,6 @@
 local module = {}
 
-module.dynamic_music_debug_print = false
+module.music_debug_print = false
 
 local has_seen_bao_this_cycle = false
 local has_seen_difu_or_chujiang_this_cycle = false
@@ -60,7 +60,7 @@ module.HELL_CUSTOM_MUSIC = {
                         has_seen_difu_or_chujiang_this_cycle = false
                         difu_count = 0
 
-                        if module.dynamic_music_debug_print then
+                        if module.music_debug_print then
                             print("[Cycle End] has_seen_bao = false, has_seen_difu_or_chujiang_this_cycle = false, difu_count = 0")
                         end
                     end
@@ -136,7 +136,7 @@ module.HELL_CUSTOM_MUSIC = {
                     if not has_seen_bao_this_cycle then
                         has_seen_bao_this_cycle = true
 
-                        if module.dynamic_music_debug_print then
+                        if module.music_debug_print then
                             print("[Hell Music Debug] has_seen_bao = true")
                         end
                     end
@@ -170,7 +170,7 @@ module.HELL_CUSTOM_MUSIC = {
                     if not has_seen_bao_this_cycle then
                         has_seen_bao_this_cycle = true
 
-                        if module.dynamic_music_debug_print then
+                        if module.music_debug_print then
                             print("[Hell Music Debug] has_seen_bao = true")
                         end
                     end
@@ -204,7 +204,7 @@ module.HELL_CUSTOM_MUSIC = {
                     if not has_seen_difu_or_chujiang_this_cycle then
                         has_seen_difu_or_chujiang_this_cycle = true
 
-                        if module.dynamic_music_debug_print then
+                        if module.music_debug_print then
                             print("[Hell Music Debug] has_seen_difu_or_chujiang_this_cycle = true")
                         end
                     end
@@ -233,7 +233,7 @@ module.HELL_CUSTOM_MUSIC = {
                     if not has_seen_difu_or_chujiang_this_cycle then
                         has_seen_difu_or_chujiang_this_cycle = true
 
-                        if module.dynamic_music_debug_print then
+                        if module.music_debug_print then
                             print("[Hell Music Debug] has_seen_difu_or_chujiang_this_cycle = true")
                         end
                     end
@@ -261,7 +261,7 @@ module.HELL_CUSTOM_MUSIC = {
                     if not has_seen_difu_or_chujiang_this_cycle then
                         has_seen_difu_or_chujiang_this_cycle = true
 
-                        if module.dynamic_music_debug_print then
+                        if module.music_debug_print then
                             print("[Hell Music Debug] has_seen_difu_or_chujiang_this_cycle = true")
                         end
                     end
@@ -290,7 +290,7 @@ module.HELL_CUSTOM_MUSIC = {
 
                         return next_stem
                     else
-                        if module.dynamic_music_debug_print then
+                        if module.music_debug_print then
                             print("[Hell Music Debug] difu_count = 1; exiting block")
                         end
 
@@ -307,7 +307,7 @@ module.HELL_CUSTOM_MUSIC = {
                     if not has_seen_difu_or_chujiang_this_cycle then
                         has_seen_difu_or_chujiang_this_cycle = true
 
-                        if module.dynamic_music_debug_print then
+                        if module.music_debug_print then
                             print("[Hell Music Debug] has_seen_difu_or_chujiang_this_cycle = true")
                         end
                     end
@@ -336,7 +336,7 @@ module.HELL_CUSTOM_MUSIC = {
 
                         return next_stem
                     else
-                        if module.dynamic_music_debug_print then
+                        if module.music_debug_print then
                             print("[Hell Music Debug] difu_count = 1; exiting block")
                         end
 
@@ -353,7 +353,7 @@ module.HELL_CUSTOM_MUSIC = {
                     if not has_seen_difu_or_chujiang_this_cycle then
                         has_seen_difu_or_chujiang_this_cycle = true
 
-                        if module.dynamic_music_debug_print then
+                        if module.music_debug_print then
                             print("[Hell Music Debug] has_seen_difu_or_chujiang_this_cycle = true")
                         end
                     end
@@ -382,7 +382,7 @@ module.HELL_CUSTOM_MUSIC = {
 
                         return next_stem
                     else
-                        if module.dynamic_music_debug_print then
+                        if module.music_debug_print then
                             print("[Hell Music Debug] difu_count = 1; exiting block")
                         end
 

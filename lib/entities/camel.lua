@@ -136,14 +136,10 @@ local function camel_update_credits(ent)
         local input = read_input(rider.uid)
         if ent.user_data.state == CAMEL_STATE.PRE_MINIGAME then
             if (
-                test_flag(input, INPUT_FLAG.WHIP)
-                -- or test_flag(input, INPUT_FLAG.JUMP)
-                -- or test_flag(input, INPUT_FLAG.BOMB)
-                -- or test_flag(input, INPUT_FLAG.ROPE)
-                -- or test_flag(input, INPUT_FLAG.LEFT)
-                -- or test_flag(input, INPUT_FLAG.RIGHT)
-                -- or test_flag(input, INPUT_FLAG.UP)
-                -- or test_flag(input, INPUT_FLAG.DOWN)
+                test_flag(input, INPUT_FLAG.LEFT)
+                or test_flag(input, INPUT_FLAG.RIGHT)
+                or test_flag(input, INPUT_FLAG.UP)
+                or test_flag(input, INPUT_FLAG.DOWN)
             ) then
                 cannon.flags = clr_flag(cannon.flags, ENT_FLAG.INVISIBLE)
                 ent.user_data.state = CAMEL_STATE.TRANSITION_TO_MINIGAME
@@ -228,6 +224,7 @@ function module.create_camel_credits(x, y, layer)
     local cannon = get_entity(spawn_over(ENT_TYPE.ITEM_ROCK, camel.uid, 0.65, 0.05))
     cannon_set(cannon)
     camel_set(camel, cannon.uid)
+    return camel.uid
 end
 
 optionslib.register_entity_spawner("Camel Intro", module.create_camel)
