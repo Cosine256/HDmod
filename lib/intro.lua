@@ -18,13 +18,45 @@ local GUY_WALKS <const> = {--Haha. Guy Fawkes.
 }
 
 local GUY_ANIMATIONS = {
-    -- PET = {90, 89, 88, 87, 86, 85, 84, 83, 82, 81, loop = true, frames = 10, frame_time = 4}
+    PET_START = {224, 225, loop = false, frames = 2, frame_time = 4},
+    PET = {226, 227, 228, 229, loop = true, frames = 4, frame_time = 4},
+    PET_END = {230, 231, loop = false, frames = 2, frame_time = 4},
 }
 
 ---@type Entity | Movable | Player
 local guy
 ---@type Rockdog | Mount | Entity | Movable | PowerupCapable
 local camel
+
+
+local function animate_guy()
+    if guy.user_data.animation_state == GUY_ANIMATIONS.PET_START
+    and guy.user_data.animation_timer == 0 then
+        message("PET")
+        animationlib.set_animation(guy.user_data, GUY_ANIMATIONS.PET)
+    end
+    if guy.user_data.animation_state == GUY_ANIMATIONS.PET then
+        --pet camel and timeout
+        if intro_timeout > 0 then
+            intro_timeout = intro_timeout - 1
+            -- message(string.format('post_dismount_timeout: %s', post_dismount_timeout))
+        else
+            animationlib.set_animation(guy.user_data, GUY_ANIMATIONS.PET_END)
+        end
+    end
+    if guy.user_data.animation_state == GUY_ANIMATIONS.PET_END
+    and guy.user_data.animation_timer == 0 then
+        message("EXIT CUSTOM ANIMATION")
+        -- set the state to something else
+        GUY_WALKS_STATE = GUY_WALKS.WALKING_POST_PET
+            guy.flags = clr_flag(guy.flags, ENT_FLAG.FACING_LEFT)
+        intro_timeout = TIMEOUT_GENERAL
+    end
+    if GUY_WALKS_STATE == GUY_WALKS.PETTING then
+        guy.animation_frame = animationlib.get_animation_frame(guy.user_data)
+        animationlib.update_timer(guy.user_data)
+    end
+end
 
 set_callback(function()
     surfacelib.decorate_existing_surface()
@@ -33,10 +65,32 @@ set_callback(function()
     spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
 
     guy = get_entity(spawn_entity(ENT_TYPE.CHAR_GUY_SPELUNKY, 7, 100, LAYER.FRONT, 0, 0))--x = 16
+    guy.user_data = {
+        animation_timer = 0
+    }
     spawn_entity_over(ENT_TYPE.FX_SHADOW, guy.uid, 0, 0)
     carry(camel.uid, guy.uid)
 
     state.camera.focused_entity_uid = guy.uid
+
+    -- visually fix intro player offset from mount not working
+    guy.flags = set_flag(guy.flags, ENT_FLAG.INVISIBLE)
+    set_callback(function(render_ctx, draw_depth)
+        if state.screen == SCREEN.INTRO then
+            if not guy then return end
+            if draw_depth == guy.type.draw_depth then
+                -- reposition guy to look like he's sitting correctly
+                local guy_realoffx = -0.15
+                local guy_realoffy = 0.6
+                local guy_goaloffx = -0.45
+                local guy_goaloffy = 0.8
+                local dest = guy.rendering_info.destination:offset(guy_goaloffx-guy_realoffx, guy_goaloffy-guy_realoffy)
+                render_ctx:draw_world_texture(guy:get_texture(), guy.rendering_info.source, dest, Color:white())
+            end
+        else
+            clear_callback()
+        end
+    end, ON.RENDER_PRE_DRAW_DEPTH)
 
     local pre_entrance_timeout = TIMEOUT_PRE_ENTRANCE
     intro_timeout = TIMEOUT_GENERAL
@@ -69,34 +123,36 @@ set_callback(function()
             if intro_timeout > 0 then
                 intro_timeout = intro_timeout - 1
                 -- message(string.format('intro_timeout: %s', intro_timeout))
+                camel.last_state = 1
+                camel.state = 5
+                camel:set_behavior(5)
+                message("CAMEL CROUCHING")
+            else
+                camel.last_state = 5--camel.state
+                camel.state = 1
+                camel:set_behavior(1)
+                message("STOPPED CROUCHING")
             end
-            -- if intro_timeout == 20 then
-            --     camel:remove_rider()
-            --     message("REMOVE RIDER")
-            -- end
-            if intro_timeout <= 20 then
-                -- ent.last_state = ent.state
-                -- ent.state = 1
-                -- ent:set_behavior(1)
-                -- message("GUY CROUCHING")
+            if intro_timeout == 20 then
+                camel:remove_rider()
+                guy.last_state = CHAR_STATE.SITTING
+                guy.state = CHAR_STATE.FALLING
+                guy:set_behavior(CHAR_STATE.FALLING)
+                message("REMOVE RIDER")
             end
 
             if ent.standing_on_uid ~= -1 then
                 -- This Works
                 GUY_WALKS_STATE = GUY_WALKS.LAND_STANDING
                 intro_timeout = TIMEOUT_GENERAL
-                camel.last_state = camel.state
+                camel.last_state = 5--camel.state
                 camel.state = 1
                 camel:set_behavior(1)
                 message("LANDED")
-            else
-                -- ent.last_state = 2
-                -- ent.state = 5
-                -- ent:set_behavior(5)
-                camel.last_state = 1
-                camel.state = 5
-                camel:set_behavior(5)
-                message("CAMEL CROUCHING")
+            elseif intro_timeout <= 20 then
+                -- camel:remove_rider()
+                guy.last_state = CHAR_STATE.SITTING
+                guy.state = CHAR_STATE.FALLING
             end
             
         end
@@ -118,22 +174,14 @@ set_callback(function()
                 --turn, set petting state
                 GUY_WALKS_STATE = GUY_WALKS.PETTING
                 guy.flags = set_flag(guy.flags, ENT_FLAG.FACING_LEFT)
+                animationlib.set_animation(guy.user_data, GUY_ANIMATIONS.PET_START)
                 -- ---@type Movable
                 -- local guy
                 intro_timeout = 100
             end
         end
         if GUY_WALKS_STATE == GUY_WALKS.PETTING then
-            --pet camel and timeout
-            if intro_timeout > 0 then
-                intro_timeout = intro_timeout - 1
-                -- message(string.format('post_dismount_timeout: %s', post_dismount_timeout))
-            else
-                --pet camel, set petting state
-                GUY_WALKS_STATE = GUY_WALKS.WALKING_POST_PET
-                guy.flags = clr_flag(guy.flags, ENT_FLAG.FACING_LEFT)
-                intro_timeout = TIMEOUT_GENERAL
-            end
+            animate_guy()
         end
         if GUY_WALKS_STATE == GUY_WALKS.WALKING_POST_PET then
             if intro_timeout > 0 then
