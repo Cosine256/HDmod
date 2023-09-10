@@ -1,6 +1,7 @@
 local module = {}
 
 local palmtreelib = require('lib.entities.palmtree')
+local minesdecolib = require('lib.entities.mines_deco')
 
 local sky_hard_texture_id
 local surface_hard_texture_id
@@ -129,6 +130,12 @@ function module.decorate_surface()
 
     -- prevent teetering animation in intro
     spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, 53, 99, LAYER.FRONT)
+
+    minesdecolib.create_cutscene_support_bg(42, 100, true)
+    minesdecolib.create_support_at_floor_uid(get_grid_entity_at(43, 99, LAYER.FRONT))
+    minesdecolib.create_cutscene_support_bg(44, 100, true)
+    minesdecolib.create_cutscene_support_bg(49, 100)
+    minesdecolib.create_support_at_floor_uid(get_grid_entity_at(51, 99, LAYER.FRONT))
 
     palmtreelib.create_palmtree(30, 100, 1, palmtreelib.SURFACE_BG_DEPTH.FOREGROUND)
 
