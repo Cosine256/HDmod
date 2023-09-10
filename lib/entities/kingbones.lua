@@ -19,10 +19,14 @@ function module.create_kingbones(x, y, l)
     -- local dar_crown = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_DIAMOND, x, y, l))
     local dar_crown_uid = spawn_entity_over(ENT_TYPE.ITEM_DIAMOND, skull_uid, -0.15, 0.42)
     local dar_crown = get_entity(dar_crown_uid)
-    -- # TODO: Setting the crown angled results in it staying angled when knocked off.
-    -- Make an on frame method to adjust the angle after dismount
-    -- dar_crown.angle = -0.15
-
+    -- Correct the angle once not on the skull
+    dar_crown.angle = -0.15
+    dar_crown:set_post_update_state_machine(function (self)
+        if not self.overlay then
+            dar_crown.angle = 0
+            clear_callback()
+        end
+    end)
     dar_crown:set_texture(texture_id)
 end
 

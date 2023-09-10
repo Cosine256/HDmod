@@ -186,7 +186,13 @@ module.HD_TILENAME = {
 					},
 					[THEME.NEO_BABYLON] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_MOTHERSHIP, x, y, l) end,},
 					[THEME.OLMEC] = {function(x, y, l) spawn_grid_entity(prng:random_chance(80, PRNG_CLASS.LEVEL_GEN) and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOORSTYLED_STONE, x, y, l) end,},
-					[THEME.TEMPLE] = {function(x, y, l) spawn_grid_entity(prng:random_chance(80, PRNG_CLASS.LEVEL_GEN) and ENT_TYPE.FLOOR_JUNGLE or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l) end,},
+					[THEME.TEMPLE] = {function(x, y, l)
+						spawn_grid_entity(
+							prng:random_chance(80, PRNG_CLASS.LEVEL_GEN)
+							and (options.hd_og_floorstyle_temple and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOOR_GENERIC)
+							or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE),
+							x, y, l
+						) end,},
 					[THEME.CITY_OF_GOLD] = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOORSTYLED_COG, x, y, l) end,},
 				},
 			}
@@ -235,7 +241,11 @@ module.HD_TILENAME = {
 					},
 					[THEME.TEMPLE] = {
 						function(x, y, l)
-							spawn_grid_entity(prng:random_chance(80, PRNG_CLASS.LEVEL_GEN) and ENT_TYPE.FLOOR_JUNGLE or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l)
+							spawn_grid_entity(
+								prng:random_chance(80, PRNG_CLASS.LEVEL_GEN)
+								and (options.hd_og_floorstyle_temple and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOOR_GENERIC)
+								or (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE),
+							x, y, l)
 						end,
 						function(x, y, l) return 0 end,
 					},
@@ -752,13 +762,13 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {
 					function(x, y, l)
-						embedlib.embed_item(ENT_TYPE.ITEM_MATTOCK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l), 128)
+						embedlib.remove_and_embed_item(ENT_TYPE.ITEM_MATTOCK, ENT_TYPE.FLOOR_GENERIC, x, y, l)
 					end,
 				},
 				alternate = {
 					[THEME.ICE_CAVES] = {
 						function(x, y, l)
-							embedlib.embed_item(ENT_TYPE.ITEM_JETPACK, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l), 41)
+							embedlib.remove_and_embed_item(ENT_TYPE.ITEM_JETPACK, ENT_TYPE.FLOOR_GENERIC, x, y, l)
 						end
 					},
 				}
@@ -980,7 +990,7 @@ module.HD_TILENAME = {
 		-- HD may spawn this as wood at times. The solution is to replace that tilecode with "v"
 		phases = {
 			[1] = {
-				default = {function(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR_JUNGLE, x, y, l) end,},
+				default = {function(x, y, l) spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOOR_JUNGLE or ENT_TYPE.FLOOR_GENERIC), x, y, l) end,},
 				alternate = {
 					[THEME.EGGPLANT_WORLD] = {function(x, y, l) createlib.create_regenblock(x, y, l) end,},
 				},
@@ -1279,18 +1289,18 @@ module.HD_TILENAME = {
 			[1] = {
 				default = {
 					function(x, y, l)
-						embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, x, y, l))
+						embedlib.remove_and_embed_item(ENT_TYPE.ITEM_RUBY, ENT_TYPE.FLOOR_GENERIC, x, y, l)
 					end
 				},
 				alternate = {
 					[THEME.TEMPLE] = {
 						function(x, y, l)
-							embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity((options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l))
+							embedlib.remove_and_embed_item(ENT_TYPE.ITEM_RUBY, (options.hd_og_floorstyle_temple and ENT_TYPE.FLOORSTYLED_STONE or ENT_TYPE.FLOORSTYLED_TEMPLE), x, y, l)
 						end
 					},
 					[THEME.VOLCANA] = {
 						function(x, y, l)
-							embedlib.embed_nonitem(ENT_TYPE.ITEM_RUBY, spawn_grid_entity(ENT_TYPE.FLOORSTYLED_VLAD, x, y, l))
+							embedlib.remove_and_embed_item(ENT_TYPE.ITEM_RUBY, ENT_TYPE.FLOORSTYLED_VLAD, x, y, l)
 						end
 					}
 				}
@@ -1340,13 +1350,14 @@ module.HD_TILENAME = {
 						local shopkeeper_uid = spawn_entity_snapped_to_floor(ENT_TYPE.MONS_SHOPKEEPER, x+1, y-2, l)
 						local shopkeeper = get_entity(shopkeeper_uid)
 						
-						if state.shoppie_aggro_next <= 0 then
-							pick_up(shopkeeper_uid, spawn_entity(ENT_TYPE.ITEM_SHOTGUN, x+1, y-2, l, 0, 0))
-							shopkeeper.flags = set_flag(shopkeeper.flags, ENT_FLAG.CAN_BE_STOMPED)
-							shopkeeper.flags = clr_flag(shopkeeper.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
-						end
-						shopkeeper.is_patrolling = true
-						shopkeeper.move_state = 9
+						-- Setting the room types before lvl gen phase 1 made it not neccesary to do this anymore (since room is now vault before spawning the shopkeeper)
+						-- if state.shoppie_aggro_next <= 0 then
+						-- 	pick_up(shopkeeper_uid, spawn_entity(ENT_TYPE.ITEM_SHOTGUN, x+1, y-2, l, 0, 0))
+						-- 	shopkeeper.flags = set_flag(shopkeeper.flags, ENT_FLAG.CAN_BE_STOMPED)
+						-- 	shopkeeper.flags = clr_flag(shopkeeper.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+						-- end
+						-- shopkeeper.is_patrolling = true
+						-- shopkeeper.move_state = 9
 					end
 				},
 			}

@@ -40,9 +40,10 @@ function module.set_ash_tombstone()
         local tombstone = get_entity(module.tombstone_blocks[prng:random_index(#module.tombstone_blocks, PRNG_CLASS.LEVEL_GEN)])
         if tombstone then
             tombstone.animation_frame = 1
-            
+
             local x, y, l = get_position(tombstone.uid)
-            embedlib.embed_item(ENT_TYPE.ITEM_SHOTGUN, get_grid_entity_at(x, y-1, l), 48)
+            removelib.remove_embedded_at(x, y-1, l)
+            embedlib.embed_item(spawn_entity(ENT_TYPE.ITEM_SHOTGUN, x, y-1, l, 0, 0), get_grid_entity_at(x, y-1, l))
         end
     end
 end
