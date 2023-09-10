@@ -97,10 +97,10 @@ local function cutscene_arrange_worshipers()
 	end
 	---@param self WalkingMonster
 	hawkman:set_post_update_state_machine(function (self)
-		self.walk_pause_timer = 10
+		self.walk_pause_timer = 0
 		self.cooldown_timer = -1
-		if self.move_state == 2 then
-			self.move_state = 0
+		if self.move_state ~= 2 then
+			self.move_state = 2
 		end
 		if THREW_HAWKMAN then
 			clear_callback()
