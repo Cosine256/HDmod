@@ -25,7 +25,7 @@ set_callback(function ()
 
             local camel = get_entity(camellib.create_camel_credits(x, 111, LAYER.FRONT))
             spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
-            camellib.set_camel_walk_in(camel, x)
+            camellib.set_camel_credits_walk_in(camel, x)
             camels[#camels+1] = camel.uid
 
             local player = get_entity(players[p_i].uid)

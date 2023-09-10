@@ -1,6 +1,7 @@
 local animationlib = require('lib.entities.animation')
 local minigamelib = require('lib.entities.minigame')
 local decorlib = require('lib.gen.decor')
+local introanimationslib = require('lib.introanimations')
 
 local module = {}
 
@@ -24,18 +25,23 @@ do
 	cannon_texture_id = define_texture(cannon_texture_def)
 end
 
+local TIMEOUT_GENERAL = 65
+local TIMEOUT_PRE_ENTRANCE = 120
+
 local MINIGAME_STATE <const> = {
     WALK_IN = 0,
     PRE_MINIGAME = 1,
     TRANSITION_TO_MINIGAME = 2,
     MINIGAME = 3
 }
-
 local CAMEL_WALKING_STATE <const> = {
     NOT_FAKE_WALKING = 0,
     FAKE_WALKING = 1
 }
+
 local CAMEL_ANIMATIONS <const> = {
+    CROUCH_ENTER = {17, 18, loop = false, frames = 2, frame_time = 4},
+    CROUCHING = {19, loop = true, frames = 1, frame_time = 4},
     NOT_FAKE_WALKING = {0, loop = false, frames = 1, frame_time = 4},
     FAKE_WALKING = {8, 7, 6, 5, 4, 3, 2, 1, loop = true, frames = 8, frame_time = 6}
 }
@@ -146,6 +152,62 @@ local function camel_post_update(ent)
     end
 end
 
+function module.set_camel_intro_walk_in(camel, _guy_uid)
+    camel.user_data.state = introanimationslib.INTRO_STATE.WALKING
+    camel.user_data.animation_timer = 0
+    camel.user_data.timeout = TIMEOUT_PRE_ENTRANCE
+    camel.user_data.guy_uid = _guy_uid
+end
+
+---@param camel Rockdog | Mount | Entity | Movable | PowerupCapable
+local function camel_post_update_intro(camel)
+    camel_post_update(camel)
+    -- Traditional inputs and a few other things don't seem to be working in the intro,
+    -- so we must work around it by custom animating both guy and the camel.
+    if camel.user_data.state == introanimationslib.INTRO_STATE.WALKING then
+        if camel.user_data.timeout > 0 then
+            camel.user_data.timeout = camel.user_data.timeout - 1
+        elseif camel.x < 25 then
+            -- This appears to animate guy as well.
+            camel.velocityx = 0.072--0.105 is ana's intro walking speed
+        else
+            camel.user_data.state = introanimationslib.INTRO_STATE.PRE_CROUCH
+            camel.user_data.timeout = TIMEOUT_GENERAL
+        end
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.PRE_CROUCH then
+        if camel.user_data.timeout > 0 then
+            camel.user_data.timeout = camel.user_data.timeout - 1
+        else
+            camel.user_data.state = introanimationslib.INTRO_STATE.CROUCH_ENTER
+            animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.CROUCH_ENTER)
+            introanimationslib.set_crouching(get_entity(camel.user_data.guy_uid))
+        end
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCH_ENTER then
+        -- # TODO: set camel hitbox small
+        if camel.user_data.animation_timer == 0 then -- if animation finished
+            camel.user_data.state = introanimationslib.INTRO_STATE.CROUCHING
+            animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.CROUCHING)
+        else
+            camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
+            animationlib.update_timer(camel.user_data)
+        end
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCHING then
+        -- # TODO: set camel hitbox small
+        camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
+        animationlib.update_timer(camel.user_data)
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCH_LEAVE then
+        -- don't change camel hitbox (so now it's bigger)
+        if camel.user_data.animation_timer == 0 then -- if animation finished
+            camel.user_data.state = introanimationslib.INTRO_STATE.POST_CROUCH
+        else
+            camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
+            animationlib.update_timer(camel.user_data)
+        end
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.POST_CROUCH then
+        -- SORRY NOTHING
+    end
+end
+
 -- create a bullet with velocity in relation to the angle of the cannon
 local function shoot_gun(ent)
     --[[left
@@ -183,13 +245,12 @@ end
 
 ---camel
 ---@param camel Rockdog | Mount | Entity | Movable | PowerupCapable
-function module.set_camel_walk_in(camel, spawn_x)
+function module.set_camel_credits_walk_in(camel, spawn_x)
     camel.user_data.state = MINIGAME_STATE.WALK_IN
     camel.user_data.bounds_min = 5
     camel.user_data.bounds_max = 23
     camel.user_data.spawn_x = spawn_x
 end
-
 ---@param ent Rockdog | Mount | Entity | Movable | PowerupCapable
 local function camel_post_update_credits(ent)
     camel_post_update(ent)
@@ -426,8 +487,14 @@ local function camel_set(ent, cannon_uid)
             clear_callback(cb)
             clear_callback()
         end, ON.POST_ROOM_GENERATION)
+    else
+        ent.user_data = {
+            state = introanimationslib.INTRO_STATE.POST_CROUCH,
+            animation_timer = 0,
+            timeout = 0
+        }
     end
-    set_post_statemachine(ent.uid, cannon_uid ~= -1 and camel_post_update_credits or camel_post_update)
+    set_post_statemachine(ent.uid, cannon_uid ~= -1 and camel_post_update_credits or camel_post_update_intro)
 end
 
 function module.create_camel(x, y, layer)
