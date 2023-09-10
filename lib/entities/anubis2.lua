@@ -220,8 +220,13 @@ local function anubis2_update(ent)
     end
 end
 
+-- Fix anubis2 interaction with ropes
+local custom_anubis2_type = EntityDB:new(ENT_TYPE.MONS_ANUBIS2)
+custom_anubis2_type.id = ENT_TYPE.MONS_ANUBIS
+
 local function anubis2_set(uid)
     local ent = get_entity(uid) --[[@as Movable]]
+    ent.type = custom_anubis2_type
     -- Set health
     ent.health = 20
     -- user_data
