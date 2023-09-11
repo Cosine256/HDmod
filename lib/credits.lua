@@ -6,16 +6,18 @@ local minigamelib = require('lib.entities.minigame')
 
 local Y_TOP = 0.75
 local TITLE_SPACING = 0.025
-local TITLE_X = 0.25
+local TITLE_X = -0.1
 local TITLE_SIZE = 0.0015
-local TITLE_ALIGNMENT = VANILLA_TEXT_ALIGNMENT.CENTER
+local TITLE_ALIGNMENT = VANILLA_TEXT_ALIGNMENT.LEFT
 local TITLE_STYLE = VANILLA_FONT_STYLE.BOLD
 local SUBTITLE_SPACING = 0.085
-local SUBTITLE_X = -0.25
-local SUBTITLE_X_2ND = 0.25
+local SUBTITLE_X = -0.2
 local SUBTITLE_SIZE = 0.00085
 local SUBTITLE_ALIGNMENT = VANILLA_TEXT_ALIGNMENT.LEFT
 local SUBTITLE_STYLE = VANILLA_FONT_STYLE.NORMAL
+local SUBTITLE_X_2ND = 0.37
+local SUBTITLE_X_CENTER = 0.24
+local SUBTITLE_ALIGNMENT_CENTER = VANILLA_TEXT_ALIGNMENT.CENTER
 
 local fade_timeout
 local FADE_TIME = 100
@@ -133,22 +135,22 @@ local function render_skip_text(render_ctx)
     render_ctx:draw_text(skip_text, Color:yellow())
 end
 
+local function fade_color(color)
+    local alpha = fade_timeout/100
+    color.a = alpha
+    return color
+end
+
 local function render_credits_text(render_ctx, text, x, y, text_size, alignment, style)
     ---@type TextRenderingInfo
     local skip_text = TextRenderingInfo:new(text, text_size, text_size, alignment, style)
     skip_text.x, skip_text.y = x, y
-    local alpha = fade_timeout/100
-
-    local black = Color:black()
-    black.a = alpha
-    render_ctx:draw_text(skip_text, black)
+    render_ctx:draw_text(skip_text, fade_color(Color:black()))
     skip_text:set_text(text, text_size, text_size, alignment, style)
 
     skip_text.x, skip_text.y = skip_text.x-0.0035, skip_text.y+0.0035
 
-    local yellow = Color:yellow()
-    yellow.a = alpha
-    render_ctx:draw_text(skip_text, yellow)
+    render_ctx:draw_text(skip_text, fade_color(Color:yellow()))
     return y - SUBTITLE_SPACING
 end
 
@@ -173,7 +175,6 @@ set_callback(function(render_ctx)
                 fade_timeout = fade_timeout - 1
             end
         end
-        fade_timeout = FADE_TIME
 
         render_skip_text(render_ctx)
 
@@ -190,24 +191,24 @@ set_callback(function(render_ctx)
         alignment = SUBTITLE_ALIGNMENT
         style = SUBTITLE_STYLE
 
-        yb = render_credits_text(render_ctx, "Super Ninja Fat - Project Lead, Programming", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "Super Ninja Fat - Project Lead, Programming", SUBTITLE_X_CENTER, yb, text_size, SUBTITLE_ALIGNMENT_CENTER, style)
         local column_2_y = yb
         yb = render_credits_text(render_ctx, "Estebanfer - Programming", x, yb, text_size, alignment, style)
         yb = render_credits_text(render_ctx, "Cosine - Programming", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "Dr.BaconSlices - Public Relations", SUBTITLE_X_CENTER, yb, text_size, SUBTITLE_ALIGNMENT_CENTER, style)
         yb = render_credits_text(render_ctx, "The Greeni Porcini - Artwork", x, yb, text_size, alignment, style)
-        yb = render_credits_text(render_ctx, "Dr.BaconSlices - Public Relations", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "Leslie - Sound Effects", SUBTITLE_X_CENTER, yb, text_size, SUBTITLE_ALIGNMENT_CENTER, style)
         yb = render_credits_text(render_ctx, "Pattiemurr - Music", x, yb, text_size, alignment, style)
-        yb = render_credits_text(render_ctx, "Leslie - Sound Effects", x, yb, text_size, alignment, style)
 
         --right column
         x = SUBTITLE_X_2ND
         yb = column_2_y
         yb = render_credits_text(render_ctx, "Erictran - Programming", x, yb, text_size, alignment, style)
         yb = render_credits_text(render_ctx, "Taffer - Programming", x, yb, text_size, alignment, style)
+        yb = yb - SUBTITLE_SPACING
         yb = render_credits_text(render_ctx, "Omeletttte - Artwork", x, yb, text_size, alignment, style)
         yb = yb - SUBTITLE_SPACING
         yb = render_credits_text(render_ctx, "Logan Moore - Title Music", x, yb, text_size, alignment, style)
-        yb = yb - SUBTITLE_SPACING
         
         yb = yb - TITLE_SPACING
         x = TITLE_X
@@ -226,7 +227,7 @@ set_callback(function(render_ctx)
         yb = render_credits_text(render_ctx, "Spelunky 2 API Developers", x, yb, text_size, alignment, style)
         yb = render_credits_text(render_ctx, "hd-science    s2-science    Cheengo", x, yb, text_size, alignment, style)
         
-        yb = yb - TITLE_SPACING
+        yb = yb - TITLE_SPACING*2
         x = SUBTITLE_X
         text_size = TITLE_SIZE
         alignment = SUBTITLE_ALIGNMENT
