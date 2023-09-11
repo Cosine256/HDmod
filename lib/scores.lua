@@ -3,6 +3,7 @@ local camellib = require('lib.entities.camel')
 local endingtreasurelib = require('lib.entities.endingtreasure')
 local decorlib = require('lib.gen.decor')
 local animationlib = require('lib.entities.animation')
+local introanimationslib = require('lib.introanimations')
 local commonlib = require('lib.common')
 
 local CHARACTER_ANIMATIONS = {
@@ -283,6 +284,14 @@ set_callback(function ()
     local camel = get_entity(camellib.create_camel(25, 100, LAYER.FRONT))
     spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
     flip_entity(camel.uid)
+    camel.user_data.state = introanimationslib.INTRO_STATE.IDLE
+    camel:set_post_update_state_machine(function (self)
+        if VOLCANO_DISAPPEAR then
+            self.user_data.state = introanimationslib.INTRO_STATE.IDLE_NOISES
+            self.user_data.timeout = 100
+            clear_callback()
+        end
+    end)
 
     create_flung_entity(players[1]:get_texture(), 0, 160, 0.15, CHARACTER_ANIMATIONS.FALL)
     create_flung_entity(TEXTURE.DATA_TEXTURES_ITEMS_0, 31, 180, 0.2)
