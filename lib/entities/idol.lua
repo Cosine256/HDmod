@@ -172,7 +172,7 @@ local function activate_idoltrap_ceiling(block_id)
         local block = get_entity(spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, x, y, l, 0, 0))
         block.flags = set_flag(block.flags, ENT_FLAG.NO_GRAVITY)
         block.more_flags = set_flag(block.more_flags, ENT_MORE_FLAG.DISABLE_INPUT)
-        block.velocityy = -0.065
+        block.velocityy = -0.035
 
         block:set_texture(options.hd_og_floorstyle_temple and ceiling_spikes_stone_texture_id or ceiling_spikes_texture_id)
     end
@@ -208,16 +208,18 @@ set_callback(function()
                     kill_entity(idoltrap_blocks[i])
                 end
             else -- Normal temple trap
-                commonlib.shake_camera(20, 100, 2, 2, 3, false)
                 -- sliding doors
                 for _, sliding_wall_ceiling in ipairs(sliding_wall_ceilings) do
                     local ent = get_entity(sliding_wall_ceiling)
                     if (ent) then ent.state = 0 end
                 end
-                
-                for i = 1, #idoltrap_blocks, 1 do
-                    activate_idoltrap_ceiling(i)
-                end
+
+                set_timeout(function()
+                    commonlib.shake_camera(20, 200, 2, 2, 3, false)
+                    for i = 1, #idoltrap_blocks, 1 do
+                        activate_idoltrap_ceiling(i)
+                    end
+                end, 30)
             end
         end
     elseif IDOLTRAP_TRIGGER == true and IDOL_UID ~= nil and state.theme == THEME.DWELLING then
