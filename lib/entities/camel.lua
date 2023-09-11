@@ -222,7 +222,7 @@ local function camel_post_update_intro(camel)
             camel.user_data.timeout = camel.user_data.timeout - 1
         else
             commonlib.play_custom_sound(idle_sound[prng:random_index(#idle_sound, PRNG_CLASS.FX)], camel.uid, 0.25, false)
-            camel.user_data.timeout = 130
+            camel.user_data.timeout = 230
         end
     end
     -- if camel.user_data.state ~= introanimationslib.INTRO_STATE.WALKING
