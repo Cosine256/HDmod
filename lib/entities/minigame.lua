@@ -81,10 +81,6 @@ local function create_minigame_ufo(y)
         return false
     end)
     entity:set_post_damage(post_damage_minigame_handling)
-    entity:set_pre_update_state_machine(function()
-        lamassu_db.id = 0
-        return false
-    end)
 end
 
 -- Force velocity of the imp to go to the right slowly
