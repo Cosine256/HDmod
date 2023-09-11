@@ -4,7 +4,35 @@ local surfacelib = require('lib.surface')
 local camellib = require('lib.entities.camel')
 local minigamelib = require('lib.entities.minigame')
 
+local Y_TOP = 0.75
+local TITLE_SPACING = 0.025
+local TITLE_X = 0.25
+local TITLE_SIZE = 0.0015
+local TITLE_ALIGNMENT = VANILLA_TEXT_ALIGNMENT.CENTER
+local TITLE_STYLE = VANILLA_FONT_STYLE.BOLD
+local SUBTITLE_SPACING = 0.085
+local SUBTITLE_X = -0.25
+local SUBTITLE_X_2ND = 0.25
+local SUBTITLE_SIZE = 0.00085
+local SUBTITLE_ALIGNMENT = VANILLA_TEXT_ALIGNMENT.LEFT
+local SUBTITLE_STYLE = VANILLA_FONT_STYLE.NORMAL
+
+local fade_timeout
+local FADE_TIME = 100
+local MODCREDITS_STATE <const> = {
+    PRE_SHOW = 0,
+    SHOW = 1,
+    POST_SHOW = 2
+}
+local MODCREDITS_STATUS
+
+local function init()
+    fade_timeout = 0
+    MODCREDITS_STATUS = MODCREDITS_STATE.PRE_SHOW
+end
+
 set_callback(function ()
+    init()
     surfacelib.build_credits_surface()
 
     state.camera.adjusted_focus_x = 13.971
@@ -95,16 +123,115 @@ set_callback(function()
     end
 end, ON.LOADING)
 
+local function render_skip_text(render_ctx)
+    ---@type TextRenderingInfo
+    local skip_text = TextRenderingInfo:new("Press     +     to skip", 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.RIGHT, VANILLA_FONT_STYLE.ITALIC)
+    skip_text.x, skip_text.y = 0.95, 0.86
+    render_ctx:draw_text(skip_text, Color:black())
+    skip_text:set_text("Press \u{8D}+\u{83} to skip", 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.RIGHT, VANILLA_FONT_STYLE.ITALIC)
+    skip_text.x, skip_text.y = skip_text.x-0.0035, skip_text.y+0.0035
+    render_ctx:draw_text(skip_text, Color:yellow())
+end
+
+local function render_credits_text(render_ctx, text, x, y, text_size, alignment, style)
+    ---@type TextRenderingInfo
+    local skip_text = TextRenderingInfo:new(text, text_size, text_size, alignment, style)
+    skip_text.x, skip_text.y = x, y
+    local alpha = fade_timeout/100
+
+    local black = Color:black()
+    black.a = alpha
+    render_ctx:draw_text(skip_text, black)
+    skip_text:set_text(text, text_size, text_size, alignment, style)
+
+    skip_text.x, skip_text.y = skip_text.x-0.0035, skip_text.y+0.0035
+
+    local yellow = Color:yellow()
+    yellow.a = alpha
+    render_ctx:draw_text(skip_text, yellow)
+    return y - SUBTITLE_SPACING
+end
+
 
 set_callback(function(render_ctx)
     if state.screen == SCREEN.CREDITS then
-        ---@type TextRenderingInfo
-        local skip_text = TextRenderingInfo:new("Press     +     to skip", 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.RIGHT, VANILLA_FONT_STYLE.ITALIC)
-        skip_text.x, skip_text.y = 0.95, 0.86
-        render_ctx:draw_text(skip_text, Color:black())
-        skip_text:set_text("Press \u{8D}+\u{83} to skip", 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.RIGHT, VANILLA_FONT_STYLE.ITALIC)
-        skip_text.x, skip_text.y = skip_text.x-0.0035, skip_text.y+0.0035
-        render_ctx:draw_text(skip_text, Color:yellow())
+        if state.screen_credits.render_timer >= 1.7325
+        and MODCREDITS_STATUS == MODCREDITS_STATE.PRE_SHOW then
+            fade_timeout = 0
+            MODCREDITS_STATUS = MODCREDITS_STATE.SHOW
+        elseif MODCREDITS_STATUS == MODCREDITS_STATE.SHOW then
+            if fade_timeout < FADE_TIME then
+                fade_timeout = fade_timeout + 1
+            elseif minigamelib.started_minigame() then
+                MODCREDITS_STATUS = MODCREDITS_STATE.POST_SHOW
+            end
+            if state.screen_credits.render_timer >= 70 then
+                MODCREDITS_STATUS = MODCREDITS_STATE.POST_SHOW
+            end
+        elseif MODCREDITS_STATUS == MODCREDITS_STATE.POST_SHOW then
+            if fade_timeout > 0 then
+                fade_timeout = fade_timeout - 1
+            end
+        end
+        fade_timeout = FADE_TIME
+
+        render_skip_text(render_ctx)
+
+        local yb = Y_TOP
+        local x = TITLE_X
+        local text_size = TITLE_SIZE
+        local alignment = TITLE_ALIGNMENT
+        local style = TITLE_STYLE
+        yb = render_credits_text(render_ctx, "HDmod Development Team:", x, yb, text_size, alignment, style)
+
+        yb = yb - TITLE_SPACING
+        x = SUBTITLE_X
+        text_size = SUBTITLE_SIZE
+        alignment = SUBTITLE_ALIGNMENT
+        style = SUBTITLE_STYLE
+
+        yb = render_credits_text(render_ctx, "Super Ninja Fat - Project Lead, Programming", x, yb, text_size, alignment, style)
+        local column_2_y = yb
+        yb = render_credits_text(render_ctx, "Estebanfer - Programming", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "Cosine - Programming", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "The Greeni Porcini - Artwork", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "Dr.BaconSlices - Public Relations", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "Pattiemurr - Music", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "Leslie - Sound Effects", x, yb, text_size, alignment, style)
+
+        --right column
+        x = SUBTITLE_X_2ND
+        yb = column_2_y
+        yb = render_credits_text(render_ctx, "Erictran - Programming", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "Taffer - Programming", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "Omeletttte - Artwork", x, yb, text_size, alignment, style)
+        yb = yb - SUBTITLE_SPACING
+        yb = render_credits_text(render_ctx, "Logan Moore - Title Music", x, yb, text_size, alignment, style)
+        yb = yb - SUBTITLE_SPACING
+        
+        yb = yb - TITLE_SPACING
+        x = TITLE_X
+        text_size = TITLE_SIZE
+        alignment = TITLE_ALIGNMENT
+        style = TITLE_STYLE
+        yb = render_credits_text(render_ctx, "Special Thanks:", x, yb, text_size, alignment, style)
+
+        yb = yb - TITLE_SPACING
+        x = SUBTITLE_X
+        text_size = SUBTITLE_SIZE
+        alignment = SUBTITLE_ALIGNMENT
+        style = SUBTITLE_STYLE
+
+        yb = render_credits_text(render_ctx, "XanaGear    KYGaming     El Blargho", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "Spelunky 2 API Developers", x, yb, text_size, alignment, style)
+        yb = render_credits_text(render_ctx, "hd-science    s2-science    Cheengo", x, yb, text_size, alignment, style)
+        
+        yb = yb - TITLE_SPACING
+        x = SUBTITLE_X
+        text_size = TITLE_SIZE
+        alignment = SUBTITLE_ALIGNMENT
+        style = TITLE_STYLE
+        yb = render_credits_text(render_ctx, "More coming soon! :)", x, yb, text_size, alignment, style)
     end
 end, ON.RENDER_PRE_HUD)
 

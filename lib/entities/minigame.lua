@@ -13,13 +13,16 @@ end
 
 local GAME_STATE <const> = {
     PRE_GAME = 0,
-    IN_GAME = 1,
-    POST_GAME = 2
+    GAME_LOAD = 1,
+    IN_GAME = 2,
+    POST_GAME = 3
 }
 local TIMEOUT_MIN = 60
 local TIMEOUT_MAX = 160
+local LOAD_TIME = 130
 
 local minigame_state
+local timeout
 local spawn_timeout
 local target_uid
 local camels
@@ -62,7 +65,13 @@ local function create_minigame_imp(y)
 end
 
 local function update_minigame(_)
-    if minigame_state == GAME_STATE.IN_GAME then
+    if minigame_state == GAME_STATE.GAME_LOAD then
+        if timeout > 0 then
+            timeout = timeout - 1
+        else
+            minigame_state = GAME_STATE.IN_GAME
+        end
+    elseif minigame_state == GAME_STATE.IN_GAME then
         --randomly spawn enemies, but pad them out so it isn't too spammy or empty
         if spawn_timeout <= 0 then
             local enemy_total = #get_entities_by({ENT_TYPE.MONS_IMP, ENT_TYPE.MONS_UFO}, MASK.MONSTER, LAYER.FRONT)
@@ -230,9 +239,14 @@ function(render_ctx)
     end
 end, ON.RENDER_PRE_HUD)
 
+function module.started_minigame()
+    return minigame_state ~= GAME_STATE.PRE_GAME
+end
+
 function module.start_minigame()
     if minigame_state ~= GAME_STATE.POST_GAME then
-        minigame_state = GAME_STATE.IN_GAME
+        minigame_state = GAME_STATE.GAME_LOAD
+        timeout = LOAD_TIME
     end
 end
 
