@@ -25,10 +25,22 @@ local minigame_state
 local timeout
 local spawn_timeout
 local target_uid
+---@type integer[]
 local camels
 
 local X_SPAWN = 3
 local X_LIMIT = 27
+
+local function add_to_score(player_uid)
+    for _, uid in pairs(camels) do
+        ---@type Mount
+        local camel = get_entity(uid)
+        if camel.rider_uid ~= -1
+        and camel.rider_uid == player_uid then
+            camel.user_data.score = camel.user_data.score + 1
+        end
+    end
+end
 
 local function update_offscreen_ent(self)
     if self.x > X_LIMIT then
@@ -38,6 +50,21 @@ end
 
 local function update_ufo(self)
     update_offscreen_ent(self)
+end
+
+---@param self Movable
+---@param damage_dealer Movable
+---@param damage_amount any
+---@param stun_time any
+---@param velocity_x any
+---@param velocity_y any
+---@param iframes any
+local function post_damage_minigame_handling(self, damage_dealer, damage_amount, stun_time, velocity_x, velocity_y, iframes)
+    if damage_dealer.type.id == ENT_TYPE.MOUNT_ROCKDOG then
+        damage_dealer.last_owner_uid = damage_dealer.rider_uid
+    end
+    message(string.format("%s attacked by %s", self.uid, damage_dealer.last_owner_uid))
+    add_to_score(damage_dealer.last_owner_uid)
 end
 
 -- Force velocity of ufo to go to the right slowly
@@ -51,6 +78,11 @@ local function create_minigame_ufo(y)
     entity:set_pre_update_state_machine(function(self)
         self.chased_target_uid = target_uid
         self.patrol_distance = 10
+        return false
+    end)
+    entity:set_post_damage(post_damage_minigame_handling)
+    entity:set_pre_update_state_machine(function()
+        lamassu_db.id = 0
         return false
     end)
 end
@@ -111,6 +143,7 @@ local function init_minigame_ents()
             end
             update_offscreen_ent(self)
         end)
+        alien:set_post_damage(post_damage_minigame_handling)
     end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_ALIEN)
     local item_cb = set_post_entity_spawn(function(item, spawn_flags)
         if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
@@ -149,11 +182,20 @@ function module.init(_target_uid, _camels)
     camels = _camels
 end
 
+local function get_team_total()
+    local total = 0
+    for _, camel in pairs(camels) do
+        total = total + camels.user_data.score
+    end
+    return total
+end
+
 set_callback(
     ---@param render_ctx VanillaRenderContext
 function(render_ctx)
     if state.screen == SCREEN.CREDITS
-    and minigame_state == GAME_STATE.IN_GAME then
+    and minigame_state == GAME_STATE.IN_GAME
+    or minigame_state == GAME_STATE.GAME_LOAD then
         for c_i, camel_uid in ipairs(camels) do
             local camel = get_entity(camel_uid)
             if camel.user_data.state == 3 then -- MINIGAME_STATE.MINIGAME
@@ -231,7 +273,7 @@ function(render_ctx)
                 dest:offset(x+0.02, y)
                 render_ctx:draw_screen_texture(hud_texture_id, src, dest, Color:white())
         
-                local hit_text = TextRenderingInfo:new(string.format("x%s", 0), 0.0012, 0.0012, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.BOLD)
+                local hit_text = TextRenderingInfo:new(string.format("x%s", camel.user_data.score), 0.0012, 0.0012, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.BOLD)
                 hit_text.x, hit_text.y = x+0.04, y
                 render_ctx:draw_text(hit_text, Color:white())
             end

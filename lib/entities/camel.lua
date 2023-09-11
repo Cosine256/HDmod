@@ -232,7 +232,7 @@ local function camel_post_update_intro(camel)
 end
 
 -- create a bullet with velocity in relation to the angle of the cannon
-local function shoot_gun(ent)
+local function shoot_gun(ent, rider_uid)
     --[[left
         angle: 0
         velx:-0.35
@@ -263,6 +263,7 @@ local function shoot_gun(ent)
     -- message(string.format("cos: %s, sin: %s, ang: %s", x_i, y_i, ent.angle))
     local projectile = get_entity(spawn(ENT_TYPE.ITEM_BULLET, x+(gap*x_i), y+(gap*y_i), l, vel_magnitude*x_i, vel_magnitude*y_i))
     -- projectile.angle = ent.angle
+    projectile.last_owner_uid = rider_uid
     commonlib.play_vanilla_sound(VANILLA_SOUND.ITEMS_WEBGUN, ent.uid, 1, false)
 end
 
@@ -394,6 +395,7 @@ local function camel_set(ent, cannon_uid)
             cannon_uid = cannon_uid,
             -- animation_state = CAMEL_ANIMATIONS.NOT_FAKE_WALKING,
             animation_timer = 0,
+            score = 0
         }
         animationlib.set_animation(get_entity(cannon_uid).user_data, CANNON_ANIMATIONS.IDLE)
 
@@ -497,7 +499,7 @@ local function camel_set(ent, cannon_uid)
 
                     -- When input whip, fire the cannon.
                     if test_flag(input, INPUT_FLAG.WHIP) and cannon.user_data.cannon_timer == 0 then
-                        shoot_gun(cannon)
+                        shoot_gun(cannon, ent.rider_uid)
                         cannon.user_data.cannon_timer = 10
                     end
                 end
