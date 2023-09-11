@@ -3719,7 +3719,7 @@ module.HD_ROOMOBJECT.WORLDS[THEME.TEMPLE] = {
 					elseif (
 						feelingslib.feeling_check(feelingslib.FEELING_ID.SACRIFICIALPIT) == false
 						and module.CHUNKBOOL_IDOL == false
-						-- and prng:random_chance(15, PRNG_CLASS.LEVEL_GEN)
+						and prng:random_chance(15, PRNG_CLASS.LEVEL_GEN)
 					) then
 						module.CHUNKBOOL_IDOL = true
 						return {idol = true}
