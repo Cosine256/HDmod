@@ -25,6 +25,17 @@ do
 	cannon_texture_id = define_texture(cannon_texture_def)
 end
 
+local idle_sound = {
+    create_sound('res/sounds/camel1.wav'),
+    create_sound('res/sounds/camel2.wav'),
+    create_sound('res/sounds/camel3.wav'),
+    create_sound('res/sounds/camel4.wav'),
+    create_sound('res/sounds/camel5.wav'),
+    create_sound('res/sounds/camel6.wav'),
+    create_sound('res/sounds/camel7.wav'),
+    create_sound('res/sounds/camel8.wav')
+}
+
 local TIMEOUT_GENERAL = 65
 local TIMEOUT_PRE_ENTRANCE = 120
 
@@ -184,7 +195,6 @@ local function camel_post_update_intro(camel)
             introanimationslib.set_crouching(get_entity(camel.user_data.guy_uid))
         end
     elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCH_ENTER then
-        -- # TODO: set camel hitbox small
         if camel.user_data.animation_timer == 0 then -- if animation finished
             camel.user_data.state = introanimationslib.INTRO_STATE.CROUCHING
             animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.CROUCHING)
@@ -194,23 +204,29 @@ local function camel_post_update_intro(camel)
             animationlib.update_timer(camel.user_data)
         end
     elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCHING then
-        -- # TODO: set camel hitbox small
         camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
         animationlib.update_timer(camel.user_data)
     elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCH_LEAVE then
-        -- don't change camel hitbox (so now it's bigger)
         if camel.user_data.animation_timer == 0 then -- if animation finished
-            camel.user_data.state = introanimationslib.INTRO_STATE.POST_CROUCH
-            -- message("SET POST_CROUCH")
+            camel.user_data.state = introanimationslib.INTRO_STATE.IDLE_NOISES
+            -- message("SET IDLE_NOISES")
+            camel.user_data.timeout = 100
         else
             camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
             animationlib.update_timer(camel.user_data)
         end
-    elseif camel.user_data.state == introanimationslib.INTRO_STATE.POST_CROUCH then
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.IDLE then
         -- SORRY NOTHING
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.IDLE_NOISES then
+        if camel.user_data.timeout > 0 then
+            camel.user_data.timeout = camel.user_data.timeout - 1
+        else
+            commonlib.play_custom_sound(idle_sound[prng:random_index(#idle_sound, PRNG_CLASS.FX)], camel.uid, 0.25, false)
+            camel.user_data.timeout = 130
+        end
     end
     -- if camel.user_data.state ~= introanimationslib.INTRO_STATE.WALKING
-    -- and camel.user_data.state ~= introanimationslib.INTRO_STATE.POST_CROUCH then
+    -- and camel.user_data.state ~= introanimationslib.INTRO_STATE.IDLE then
     --     message(string.format("timer & frame: %s, %s", camel.user_data.animation_timer, camel.animation_frame))
     -- end
 end
@@ -496,7 +512,7 @@ local function camel_set(ent, cannon_uid)
         end, ON.POST_ROOM_GENERATION)
     else
         ent.user_data = {
-            state = introanimationslib.INTRO_STATE.POST_CROUCH,
+            state = introanimationslib.INTRO_STATE.IDLE,
             animation_timer = 0,
             timeout = 0
         }
