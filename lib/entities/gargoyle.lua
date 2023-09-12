@@ -25,7 +25,7 @@ local function add_gargoyle(block_uid)
     elseif prng:random_chance(2, PRNG_CLASS.LEVEL_GEN) then
         decoration.animation_frame = 1
     end
-    decoration.draw_depth = 10
+    decoration:set_draw_depth(10)
 
     set_on_destroy(block_uid, function(entity)
         local decoration = get_entity(decoration_uid)
