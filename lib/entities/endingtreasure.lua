@@ -1,5 +1,6 @@
 local module = {}
 local decorlib = require('lib.gen.decor')
+local minigamelib = require('lib.entities.minigame')
 
 local idol_texture_id
 local idol_normal_texture_id
@@ -20,6 +21,13 @@ do
     idol_normal_texture_def.texture_path = "res/ending_giantidol_normal.png"
     idol_normal_texture_id = define_texture(idol_normal_texture_def)
 end
+
+local MINIGAME_INTRO_STATE <const> = {
+    PRE_MINIGAME = 0,
+    RUNNING_TO_CENTER = 1,
+    PROTECT_INDICATOR = 2,
+    FINISHED_MINIGAME_INTRO = 3,
+}
 
 ---treasure
 ---@param ent Treasure | HundunChest
@@ -51,6 +59,37 @@ function module.create_ending_treasure(x, y, l, vx, vy)
     return ent.uid
 end
 
+local function update_treasure(self)
+    if not decorlib.CREDITS_SCROLLING then
+        -- move the entity to the left until decorlib.CREDITS_SCROLL is true
+        self.velocityx = -0.095
+    end
+    if self.user_data.state == MINIGAME_INTRO_STATE.PRE_MINIGAME then
+        if minigamelib.started_minigame() then
+            self.user_data.state = MINIGAME_INTRO_STATE.RUNNING_TO_CENTER
+            message("RUNNING_TO_CENTER")
+        end
+    elseif self.user_data.state == MINIGAME_INTRO_STATE.RUNNING_TO_CENTER then
+        local x, _, _ = get_position(self.uid)
+        if x > 14.5 then
+            self.velocityx = -0.095
+        else
+            self.user_data.state = MINIGAME_INTRO_STATE.PROTECT_INDICATOR
+            self.user_data.timeout = 300
+            message("PROTECT_INDICATOR")
+        end
+    elseif self.user_data.state == MINIGAME_INTRO_STATE.PROTECT_INDICATOR then
+        if self.user_data.timeout > 0 then
+            self.user_data.timeout = self.user_data.timeout - 1
+        else
+            self.user_data.state = MINIGAME_INTRO_STATE.FINISHED_MINIGAME_INTRO
+            message("FINISHED_MINIGAME_INTRO")
+        end
+    elseif self.user_data.state == MINIGAME_INTRO_STATE.FINISHED_MINIGAME_INTRO then
+        -- SORRY NOTHING
+    end
+end
+
 function module.create_credits_treasure(x, y, l)
     -- use a no-gravity rock as a base
     local base = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ROCK, x, y, l))
@@ -65,13 +104,38 @@ function module.create_credits_treasure(x, y, l)
     local treasure = get_entity(module.create_ending_treasure(x, _y+2.65, l, 0, 0))
     attach_entity(base.uid, treasure.uid)
     -- # TODO: move treasure in a sine-wave **use yama's phase 2 as an example
+    -- probably will do this via states inside treasure.user_data
 
-    -- move the entity to the left until decorlib.CREDITS_SCROLL is true
-    set_post_statemachine(base.uid, function (self)
-        if not decorlib.CREDITS_SCROLLING then
-            self.velocityx = -0.095
+    base.user_data = {
+        state = MINIGAME_INTRO_STATE.PRE_MINIGAME,
+        timeout = 0
+    }
+    set_post_statemachine(base.uid, update_treasure)
+    
+    --[[
+        # TODO: Create a state-animated indicator using PRE_RENDER_DEPTH
+        - Toggle drawing it using states and timers
+        - if the screen changes
+        - or it doesn't and reaches a specific state
+            - clear the callback
+    ]]
+    set_callback(function(render_ctx, draw_depth)
+        if state.screen ~= SCREEN.INTRO
+        or state.screen == SCREEN.INTRO
+        and base.user_data.state == MINIGAME_INTRO_STATE.FINISHED_MINIGAME_INTRO then
+            clear_callback()
+        else
+            if draw_depth == 44 -- die/transporter indicator entitie's draw depth
+            -- Render both text and indicator based on timeout
+            -- sine(timeout*0.25) > 0
+            then
+                -- Draw indicator at the same dimensions as the FX entity
+                -- TEXTURE.DATA_TEXTURES_HUD_0
+                -- Draw text offset
+            end
         end
-    end)
+    end, ON.RENDER_PRE_DRAW_DEPTH)
+
     return base.uid
 end
 

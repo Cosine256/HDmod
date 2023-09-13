@@ -53,9 +53,9 @@ set_callback(function ()
         -- if participating, spawn player.
         -- # TODO: if they were dead, spawn a ghost. Implement ghost minigame logic.
         if slot.is_participating then
-            spawn_player(s_i, x, 111)
+            spawn_player(s_i, x, y)
 
-            local camel = get_entity(camellib.create_camel_credits(x, 111, LAYER.FRONT))
+            local camel = get_entity(camellib.create_camel_credits(x, y, LAYER.FRONT))
             spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
             camellib.set_camel_credits_walk_in(camel, x)
             camels[#camels+1] = camel.uid

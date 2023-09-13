@@ -187,10 +187,18 @@ local function update_minigame(_)
     end
 end
 
+local function create_minigame_statemachine()
+    local entity = get_entity(spawn_entity(ENT_TYPE.ITEM_ROCK, 3, 109, LAYER.FRONT, 0, 0))
+    entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
+    entity.flags = set_flag(entity.flags, ENT_FLAG.NO_GRAVITY)
+    entity.flags = set_flag(entity.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
+    entity:set_post_update_state_machine(update_minigame)
+end
+
 local alien_credits_type = EntityDB:new(get_type(ENT_TYPE.MONS_ALIEN))
 alien_credits_type.max_speed = 0.06
 
-local function init_minigame_ents()
+local function init_minigame_ent_properties()
     local alien_cb = set_post_entity_spawn(function(alien)
         alien.type = alien_credits_type
         alien:set_post_update_state_machine(function(self)
@@ -230,14 +238,9 @@ end
 function module.init(_target_uid, _camels, caveman1, caveman2)
     minigame_state = GAME_STATE.PRE_GAME
     spawn_timeout = TIMEOUT_MIN
-    --have to create a physical entity to be able to use a state machine
-    local entity = get_entity(spawn_entity(ENT_TYPE.ITEM_ROCK, 3, 109, LAYER.FRONT, 0, 0))
-    entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
-    entity.flags = set_flag(entity.flags, ENT_FLAG.NO_GRAVITY)
-    entity.flags = set_flag(entity.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
-    entity:set_post_update_state_machine(update_minigame)
+    create_minigame_statemachine()--have to create a physical entity to be able to use a state machine
+    init_minigame_ent_properties()
     target_uid = _target_uid
-    init_minigame_ents()
     camels = _camels
     get_entity(caveman1):set_pre_damage(pre_caveman_damage_minigame_handling)
     get_entity(caveman2):set_pre_damage(pre_caveman_damage_minigame_handling)
