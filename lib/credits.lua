@@ -1,4 +1,5 @@
 local endingtreasurelib = require('lib.entities.endingtreasure')
+local creditscavemenlib = require('lib.entities.credits_cavemen')
 local creditsballoonlib = require('lib.entities.creditsballoon')
 local surfacelib = require('lib.surface')
 local camellib = require('lib.entities.camel')
@@ -43,6 +44,7 @@ set_callback(function ()
     state.camera.bounds_left = 1.8
 
     local x = 25
+    local y = 111
     local p_i = 1
     local camels = {}
     -- # TODO: Loop over participating players, spawn players, initialize minigame logic with spawned players.
@@ -69,13 +71,14 @@ set_callback(function ()
         end
     end
 
-
-
-    local treasure_uid = endingtreasurelib.create_credits_treasure(30, 111, LAYER.FRONT)
+    x = 30
+    local treasure_uid = endingtreasurelib.create_credits_treasure(30, y, LAYER.FRONT)
+    creditscavemenlib.create_credits_caveman(treasure_uid, x-.5, y, LAYER.FRONT)
+    creditscavemenlib.create_credits_caveman(treasure_uid, x+.5, y, LAYER.FRONT)
 
     minigamelib.init(treasure_uid, camels)
 
-    local x, y = 26, 116.5
+    x, y = 26, 116.5
     local ENTER_TIMEOUT = 1500
     local SPACING_TIMEOUT = 1450
     local HEIGHT_OFFSET = 0.80
