@@ -210,7 +210,7 @@ local function camel_post_update_intro(camel)
         if camel.user_data.animation_timer == 0 then -- if animation finished
             camel.user_data.state = introanimationslib.INTRO_STATE.IDLE_NOISES
             -- message("SET IDLE_NOISES")
-            camel.user_data.timeout = 100
+            camel.user_data.timeout = 200
         else
             camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
             animationlib.update_timer(camel.user_data)
@@ -222,7 +222,7 @@ local function camel_post_update_intro(camel)
             camel.user_data.timeout = camel.user_data.timeout - 1
         else
             commonlib.play_custom_sound(idle_sound[prng:random_index(#idle_sound, PRNG_CLASS.FX)], camel.uid, 0.25, false)
-            camel.user_data.timeout = 230
+            camel.user_data.timeout = 400
         end
     end
     -- if camel.user_data.state ~= introanimationslib.INTRO_STATE.WALKING
