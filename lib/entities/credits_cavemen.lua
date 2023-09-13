@@ -34,15 +34,18 @@ function module.create_credits_caveman(base_uid, x, y, l)
     caveman.stand_counter = 0
     caveman.flags = set_flag(caveman.flags, ENT_FLAG.DEAD)
     caveman.flags = set_flag(caveman.flags, ENT_FLAG.FACING_LEFT)
-    caveman.flags = set_flag(caveman.flags, ENT_FLAG.TAKE_NO_DAMAGE)
-    caveman.flags = set_flag(caveman.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
-    caveman.flags = set_flag(caveman.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
+    -- caveman.flags = set_flag(caveman.flags, ENT_FLAG.TAKE_NO_DAMAGE)
+    -- caveman.flags = set_flag(caveman.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
+    -- caveman.flags = set_flag(caveman.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
+    caveman.flags = set_flag(caveman.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
     caveman.user_data = {
         animation_timer = 0,
     }
     -- custom animate cavemen
     animationlib.set_animation(caveman.user_data, CAVEMAN_ANIMATIONS.WALK)
     set_post_statemachine(caveman.uid, credits_caveman_update)
+
+    return caveman.uid
 end
 
 return module

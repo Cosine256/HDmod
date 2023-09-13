@@ -31,6 +31,15 @@ local camels
 local X_SPAWN = 3
 local X_LIMIT = 27
 
+local function get_team_total()
+    local total = 0
+    for _, uid in pairs(camels) do
+        local camel = get_entity(uid)
+        total = total + camel.user_data.score
+    end
+    return total
+end
+
 local function add_to_score(player_uid)
     for _, uid in pairs(camels) do
         ---@type Mount
@@ -39,6 +48,26 @@ local function add_to_score(player_uid)
         and camel.rider_uid == player_uid then
             camel.user_data.score = camel.user_data.score + 1
         end
+    end
+end
+
+local function subtract_from_total_score(amount, responsible_uid)
+    local sub_amount = amount/#camels
+    local distributed_amount = amount % #camels
+    for _, uid in pairs(camels) do
+        ---@type Mount
+        local camel = get_entity(uid)
+        --[[ # TODO:
+            distribute the remainder first to the one responsible, then
+            amongst the players with the most
+        ]]
+        -- if camel.rider_uid ~= -1
+        -- and camel.rider_uid == player_uid then
+        -- end
+        local amount_to_subtract = sub_amount - (distributed_amount > 0 and 1 or 0)
+        local total = get_team_total()
+        camel.user_data.score = (total - amount_to_subtract < 0) and 0 or camel.user_data.score - amount_to_subtract
+        distributed_amount = distributed_amount - 1
     end
 end
 
@@ -59,7 +88,34 @@ end
 ---@param velocity_x any
 ---@param velocity_y any
 ---@param iframes any
-local function post_damage_minigame_handling(self, damage_dealer, damage_amount, stun_time, velocity_x, velocity_y, iframes)
+local function pre_caveman_damage_minigame_handling(self, damage_dealer, damage_amount, stun_time, velocity_x, velocity_y, iframes)
+    message(string.format("caveman attacked by %s", damage_dealer.last_owner_uid))
+    if damage_dealer.type.id == ENT_TYPE.ITEM_BULLET then
+        return false
+    end
+    local was_player = false
+    for _, uid in pairs(camels) do
+        ---@type Mount
+        local camel = get_entity(uid)
+        if camel.rider_uid ~= -1
+        and camel.rider_uid == damage_dealer.last_owner_uid then
+            was_player = true
+        end
+    end
+    subtract_from_total_score(damage_amount*4, was_player and damage_dealer.last_owner_uid or nil)
+    self.invincibility_frames_timer = 20
+    commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_CAVEMAN_TRIGGER, self.uid, 0.75, false)
+    return false
+end
+
+---@param self Movable
+---@param damage_dealer Movable
+---@param damage_amount any
+---@param stun_time any
+---@param velocity_x any
+---@param velocity_y any
+---@param iframes any
+local function post_enemy_damage_minigame_handling(self, damage_dealer, damage_amount, stun_time, velocity_x, velocity_y, iframes)
     if damage_dealer.type.id == ENT_TYPE.MOUNT_ROCKDOG then
         damage_dealer.last_owner_uid = damage_dealer.rider_uid
     end
@@ -80,7 +136,14 @@ local function create_minigame_ufo(y)
         self.patrol_distance = 10
         return false
     end)
-    entity:set_post_damage(post_damage_minigame_handling)
+    entity:set_post_damage(post_enemy_damage_minigame_handling)
+    -- entity:set_pre_update_state_machine(function (self)
+    --     ---@type UFO
+    --     if self.t then
+            
+    --     end
+    --     return false
+    -- end)
 end
 
 -- Force velocity of the imp to go to the right slowly
@@ -139,7 +202,7 @@ local function init_minigame_ents()
             end
             update_offscreen_ent(self)
         end)
-        alien:set_post_damage(post_damage_minigame_handling)
+        alien:set_post_damage(post_enemy_damage_minigame_handling)
     end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_ALIEN)
     local item_cb = set_post_entity_spawn(function(item, spawn_flags)
         if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
@@ -164,7 +227,7 @@ local function init_minigame_ents()
     end, ON.CAMP)
 end
 
-function module.init(_target_uid, _camels)
+function module.init(_target_uid, _camels, caveman1, caveman2)
     minigame_state = GAME_STATE.PRE_GAME
     spawn_timeout = TIMEOUT_MIN
     --have to create a physical entity to be able to use a state machine
@@ -176,14 +239,8 @@ function module.init(_target_uid, _camels)
     target_uid = _target_uid
     init_minigame_ents()
     camels = _camels
-end
-
-local function get_team_total()
-    local total = 0
-    for _, camel in pairs(camels) do
-        total = total + camels.user_data.score
-    end
-    return total
+    get_entity(caveman1):set_pre_damage(pre_caveman_damage_minigame_handling)
+    get_entity(caveman2):set_pre_damage(pre_caveman_damage_minigame_handling)
 end
 
 set_callback(
@@ -269,7 +326,7 @@ function(render_ctx)
                 dest:offset(x+0.02, y)
                 render_ctx:draw_screen_texture(hud_texture_id, src, dest, Color:white())
         
-                local hit_text = TextRenderingInfo:new(string.format("x%s", camel.user_data.score), 0.0012, 0.0012, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.BOLD)
+                local hit_text = TextRenderingInfo:new(string.format("x%s", math.floor(camel.user_data.score)), 0.0012, 0.0012, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.BOLD)
                 hit_text.x, hit_text.y = x+0.04, y
                 render_ctx:draw_text(hit_text, Color:white())
             end
