@@ -58,73 +58,52 @@ local function anubis2_redskeleton_attack(ent)
         local tx, ty, tl = get_position(ent.chased_target_uid)
         tx = math.floor(tx)
         ty = math.floor(ty)
-        local used_spawns = {} -- table that contains coordinates of spawns we've already used
-        for i=1, 4 do
-            local failsafe = 0 -- In the incredibly rare event the game can't find a place for a skeleton, we need to stop an infinite loop from occuring
-            local dest_x, dest_y, tile = tx, ty, nil
-            -- Re-roll until we find a tile that meets our requirements
-            while tile ~= true do
-                -- Choose a random tile within a random range
-                local rx = math.random(-5, 5)
-                local ry = math.random(-4, 4)
-                dest_x, dest_y = tx+rx, ty+ry
-                tile = get_entity(get_grid_entity_at(dest_x, dest_y, tl))
+        local valid_spawns = {}
+        for x = -5, 5 do
+            for y = -4, 4 do
+                local dest_x, dest_y = tx+x, ty+y
+                local tile = get_entity(get_grid_entity_at(dest_x, dest_y, tl))
                 -- Found a tile, now see if the space above it is free
                 if tile ~= nil and test_flag(tile.flags, ENT_FLAG.SOLID) then
                     local floor_at = get_entity(get_grid_entity_at(dest_x, dest_y+1, tl))
                     if floor_at == nil or not test_flag(floor_at.flags, ENT_FLAG.SOLID) then
-                        tile = true
                         -- Check if there's maybe an activefloor or something grid entity won't find
-                        local pf = get_entities_at(0, MASK.FLOOR | MASK.ACTIVEFLOOR, dest_x, dest_y+1, tl, 0.5)[1]
-                        if pf ~= nil then
-                            local f = get_entity(pf)
-                            if test_flag(f.flags, ENT_FLAG.SOLID) then
-                                tile = nil
-                            end
-                        end
-                        -- Check if we're trying to spawn entities on the roof of the level
+                        local activefloor_uid = get_entities_at(0, MASK.ACTIVEFLOOR, dest_x, dest_y+1, tl, 0.5)[1]
                         local _, ceiling, _, _ = get_bounds()
-                        if dest_y+1 >= ceiling then
-                            tile = nil
-                        end
-                        -- Did we already use this spawn? if so, DON'T USE IT!!
-                        local used = false
-                        for _, cord in ipairs(used_spawns) do
-                            if dest_x == cord[1] and dest_y+1 == cord[2] then
-                                used = true
-                                break
-                            end
-                        end
-                        if used then
-                            tile = nil
-                        end
-                        -- Add to the table of already used spawns
-                        if tile ~= nil then
-                            table.insert(used_spawns, {dest_x, dest_y+1})
+                        if (
+                            (activefloor_uid == nil or not test_flag(get_entity_flags(activefloor_uid), ENT_FLAG.SOLID)) and
+                            dest_y+1 < ceiling and
+                            get_entities_overlapping_hitbox(0, MASK.PLAYER, AABB:new(dest_x-0.4, dest_y+1.45, dest_x+0.4, dest_y+0.55), tl)[1] == nil
+                        ) then
+                            table.insert(valid_spawns, {dest_x, dest_y})
                         end
                     end
                 end
-                failsafe = failsafe + 1
-                if failsafe >= 300 then
-                    tile = true
+            end
+        end
+        local valid_spawn_num = #valid_spawns
+        -- Limit amount of red skeletons to the amount of valid spawns if less than 4
+        for i=1, math.min(4, valid_spawn_num) do
+            local spot_idx = prng:random_index(valid_spawn_num, PRNG_CLASS.PROCEDURAL_SPAWNS)
+            local dest_x, dest_y = table.unpack(valid_spawns[spot_idx])
+            local source_uid = spawn(ENT_TYPE.FX_ANUBIS_SPECIAL_SHOT_RETICULE, dest_x, dest_y+1, tl, 0, 0)
+            local source = get_entity(source_uid)
+            source:set_texture(TEXTURE.DATA_TEXTURES_FX_SMALL3_0)
+            source.animation_frame = 32
+            commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_NECROMANCER_SPAWN, source_uid, 1, false)
+            set_timeout(function()
+                local uid = spawn(ENT_TYPE.MONS_REDSKELETON, dest_x, dest_y+1, tl, 0, 0)
+                if get_entities_overlapping_hitbox(0, MASK.ACTIVEFLOOR, AABB:new(dest_x-0.15, dest_y+1.25, dest_x+0.15, dest_y+0.75), tl)[1] then
+                    kill_entity(uid)
                 end
-            end
-            if failsafe < 300 then
-                -- Spawn a skelly right above the now located tile
-                local source_uid = spawn(ENT_TYPE.FX_ANUBIS_SPECIAL_SHOT_RETICULE, dest_x, dest_y+1, tl, 0, 0)
-                local source = get_entity(source_uid)
-                source:set_texture(TEXTURE.DATA_TEXTURES_FX_SMALL3_0)
-                source.animation_frame = 32
-                commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_NECROMANCER_SPAWN, source_uid, 1, false)
-                set_timeout(function()
-                    local uid = spawn(ENT_TYPE.MONS_REDSKELETON, dest_x, dest_y+1, tl, 0, 0)
-                    if get_entities_overlapping_hitbox(0, MASK.ACTIVEFLOOR, AABB:new(dest_x-0.15, dest_y+1.25, dest_x+0.15, dest_y+0.75), tl)[1] then
-                        kill_entity(uid)
-                    end
-                    commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_SORCERESS_ATK, source_uid, 1, false)
-                    generate_world_particles(PARTICLEEMITTER.NECROMANCER_SUMMON, source_uid)
-                end, 45)
-            end
+                commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_SORCERESS_ATK, source_uid, 1, false)
+                generate_world_particles(PARTICLEEMITTER.NECROMANCER_SUMMON, source_uid)
+            end, 45)
+
+            --Unordered remove from table
+            valid_spawns[spot_idx] = valid_spawns[valid_spawn_num]
+            valid_spawns[valid_spawn_num] = nil
+            valid_spawn_num = valid_spawn_num - 1
         end
     end
 end
