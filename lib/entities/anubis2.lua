@@ -117,7 +117,10 @@ local function anubis2_redskeleton_attack(ent)
                 source.animation_frame = 32
                 commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_NECROMANCER_SPAWN, source_uid, 1, false)
                 set_timeout(function()
-                    spawn(ENT_TYPE.MONS_REDSKELETON, dest_x, dest_y+1, tl, 0, 0)
+                    local uid = spawn(ENT_TYPE.MONS_REDSKELETON, dest_x, dest_y+1, tl, 0, 0)
+                    if get_entities_overlapping_hitbox(0, MASK.ACTIVEFLOOR, AABB:new(dest_x-0.15, dest_y+1.25, dest_x+0.15, dest_y+0.75), tl)[1] then
+                        kill_entity(uid)
+                    end
                     commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_SORCERESS_ATK, source_uid, 1, false)
                     generate_world_particles(PARTICLEEMITTER.NECROMANCER_SUMMON, source_uid)
                 end, 45)
@@ -212,10 +215,9 @@ local function anubis2_update(ent)
       )[1]
     ) --[[@as Movable]]
     if colliding_olmec and ent.exit_invincibility_timer == 0 and (
-        math.abs(colliding_olmec.velocityx) >= 0.175 or
-        math.abs(colliding_olmec.velocityy) >= 0.175
+        colliding_olmec.state == 1 and colliding_olmec.move_state == 4 and colliding_olmec.velocityy < -0.2
     ) then
-        ent:damage(colliding_olmec.uid, 1, 0, 0, 0, 10)
+        ent:damage(colliding_olmec.uid, 2, 0, 0, 0, 10)
         ent.exit_invincibility_timer = 11
     end
 end
