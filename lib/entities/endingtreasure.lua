@@ -2,6 +2,7 @@ local module = {}
 local decorlib = require('lib.gen.decor')
 
 local idol_texture_id
+local idol_normal_texture_id
 do
     local idol_texture_def = TextureDefinition.new()
     idol_texture_def.width = 512
@@ -10,6 +11,14 @@ do
     idol_texture_def.tile_height = 512
     idol_texture_def.texture_path = "res/ending_giantidol.png"
     idol_texture_id = define_texture(idol_texture_def)
+
+    local idol_normal_texture_def = TextureDefinition.new()
+    idol_normal_texture_def.width = 512
+    idol_normal_texture_def.height = 512
+    idol_normal_texture_def.tile_width = 512
+    idol_normal_texture_def.tile_height = 512
+    idol_normal_texture_def.texture_path = "res/ending_giantidol_normal.png"
+    idol_normal_texture_id = define_texture(idol_normal_texture_def)
 end
 
 ---treasure
@@ -17,7 +26,12 @@ end
 function module.set_ending_treasure(ent)
     ent:set_texture(
         -- state.win_state == WIN_STATE.HUNDUN_WIN and yama_treasure_id or
-    idol_texture_id)
+        idol_texture_id)
+    ent.rendering_info:set_normal_map_texture(
+        -- state.win_state == WIN_STATE.HUNDUN_WIN and yama_treasure_normal_id or
+    idol_normal_texture_id)
+    ent.rendering_info.shader = 30
+
     ent.hitboxx = 1.150
     if state.screen == SCREEN.CREDITS then
         ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
