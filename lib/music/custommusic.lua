@@ -157,7 +157,7 @@ function module.play_boss_music()
     if not options.hd_debug_custom_level_music_disable then
         if hd_og_music_enabled then
             if state.theme == THEME.OLMEC then
-                custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, hdmusic.YAMA_HD_BOSS_CUSTOM_MUSIC)
+                custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, hdmusic.OLMEC_BOSS_CUSTOM_MUSIC)
                 current_custom_level_music = hdmusic.OLMEC_BOSS_CUSTOM_MUSIC
             elseif state.theme == THEME.VOLCANA and feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
                 custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, hdmusic.YAMA_HD_BOSS_CUSTOM_MUSIC)
