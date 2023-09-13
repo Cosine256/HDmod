@@ -73,10 +73,10 @@ set_callback(function ()
 
     x = 30
     local treasure_uid = endingtreasurelib.create_credits_treasure(30, y, LAYER.FRONT)
-    creditscavemenlib.create_credits_caveman(treasure_uid, x-.5, y, LAYER.FRONT)
-    creditscavemenlib.create_credits_caveman(treasure_uid, x+.5, y, LAYER.FRONT)
+    local caveman1 = creditscavemenlib.create_credits_caveman(treasure_uid, x-.5, y, LAYER.FRONT)
+    local caveman2 = creditscavemenlib.create_credits_caveman(treasure_uid, x+.5, y, LAYER.FRONT)
 
-    minigamelib.init(treasure_uid, camels)
+    minigamelib.init(treasure_uid, camels, caveman1, caveman2)
 
     x, y = 26, 116.5
     local ENTER_TIMEOUT = 1500
@@ -98,6 +98,8 @@ set_callback(function ()
 
 end, ON.CREDITS)
 
+local normal_credits_end
+
 set_callback(function()
     --[[
         prevent fading out of the credits screen (when pressing jump or credits end)
@@ -105,7 +107,7 @@ set_callback(function()
     if state.screen == SCREEN.CREDITS
     and state.loading == 1
     then
-        local normal_credits_end = true
+        normal_credits_end = true
         for _, player in pairs(players) do
             local input = read_input(player.uid)
             if test_flag(input, INPUT_FLAG.JUMP) then
@@ -115,9 +117,21 @@ set_callback(function()
         if not normal_credits_end then
             -- stop loading next scene
             state.loading = 0
+            -- Dosn't work
+            -- if state.screen_credits.bg_music_info then
+            --     state.screen_credits.bg_music_info.playing = true
+            -- end
         end
     end
 
+    -- if state.screen == SCREEN.CREDITS
+    -- and state.loading == 0
+    -- and not normal_credits_end
+    -- then
+    --     if state.screen_credits.bg_music_info then
+    --         state.screen_credits.bg_music_info.playing = true
+    --     end
+    -- end
     if state.screen == SCREEN.SCORES
     and state.loading == 3
     then
