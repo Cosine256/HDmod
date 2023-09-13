@@ -115,7 +115,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
         {
             id = "2p1",
             sound = create_sound("res/music/BGM_Yama_2P1.ogg"),
-            length = 5052,
+            length = 4736,
             next_sound_id = function(ctx)
                 if isYamaPhaseTwo() then
                     if module.music_debug_print then
@@ -139,7 +139,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
         {
             id = "2p2",
             sound = create_sound("res/music/BGM_Yama_2P2.ogg"),
-            length = 5052,
+            length = 4736,
             next_sound_id = function(ctx)
                 if isYamaPhaseTwo() then
                     if module.music_debug_print then
@@ -155,7 +155,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
         {
             id = "2p3",
             sound = create_sound("res/music/BGM_Yama_2P3.ogg"),
-            length = 5052,
+            length = 4736,
             next_sound_id = "2px_3p3"
         },
         {
