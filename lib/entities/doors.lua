@@ -119,7 +119,7 @@ function module.create_door_exit_to_hell(x, y, l)
 	local door_target = spawn(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, x, y, l, 0, 0)
 	set_door_target(door_target, 5, 1, THEME.VOLCANA)
 	
-	if botdlib.OBTAINED_BOOKOFDEAD == true then
+	if botdlib.HAS_BOOKOFDEAD == true then
 		local helldoor_e = get_entity(door_target)
 		helldoor_e.flags = set_flag(helldoor_e.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
 		helldoor_e.flags = clr_flag(helldoor_e.flags, ENT_FLAG.LOCKED)
