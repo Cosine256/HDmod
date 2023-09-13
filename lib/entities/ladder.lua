@@ -3,6 +3,7 @@ local module = {}
 local validlib = require 'lib.spawning.valid'
 
 local gold_texture_id
+local gold_normal_texture_id
 local uvula_texture_id
 do
     local gold_texture_def = TextureDefinition.new()
@@ -12,6 +13,8 @@ do
     gold_texture_def.tile_height = 128
     gold_texture_def.texture_path = "res/ladder_gold.png"
     gold_texture_id = define_texture(gold_texture_def)
+    gold_texture_def.texture_path = "res/ladder_gold_normal.png"
+    gold_normal_texture_id = define_texture(gold_texture_def)
 
     uvula_texture_id = TEXTURE.DATA_TEXTURES_FLOOR_EGGPLANT_0
 end
@@ -40,6 +43,8 @@ function module.create_ladder_platform(x, y, l) spawn_grid_entity(ENT_TYPE.FLOOR
 function module.create_ladder_gold(x, y, l)
     local ent = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_LADDER, x, y, l))
     ent:set_texture(gold_texture_id)
+    ent.rendering_info:set_normal_map_texture(gold_normal_texture_id)
+    ent.rendering_info.shader = 30
     for i = 1, #ANIMATION_FRAMES_BASE[ANIMATION_FRAMES_ENUM.GOLD_LADDER], 1 do
         if ent.animation_frame == ANIMATION_FRAMES_BASE[ANIMATION_FRAMES_ENUM.GOLD_LADDER][i] then
             ent.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.GOLD_LADDER][i]
@@ -50,6 +55,8 @@ end
 function module.create_ladder_platform_gold(x, y, l)
     local ent = get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_LADDER_PLATFORM, x, y, l))
     ent:set_texture(gold_texture_id)
+    ent.rendering_info:set_normal_map_texture(gold_normal_texture_id)
+    ent.rendering_info.shader = 30
     ent.animation_frame = ANIMATION_FRAMES_BASE[ANIMATION_FRAMES_ENUM.GOLD_LADDER_PLATFORM][1]
 end
 
