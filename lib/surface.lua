@@ -169,6 +169,9 @@ function module.decorate_existing_surface()
 
     -- prevent teetering animation in intro
     spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, 53, 99, LAYER.FRONT)
+    
+    -- fix gap needed in camp for last two players on rope
+    get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, 50, 99, LAYER.FRONT)):fix_decorations(true,true)
 
     palmtreelib.create_palmtree(30, 100, 1, decorlib.SURFACE_BG_DEPTH.FOREGROUND)
 
