@@ -372,6 +372,85 @@ function module.onlevel_touchups()
 	onlevel_remove_cobwebs_on_pushblocks()
 end
 
+local present_entities = {
+	ENT_TYPE.ITEM_PICKUP_ROPEPILE,
+	ENT_TYPE.ITEM_PICKUP_BOMBBAG,
+	ENT_TYPE.ITEM_PICKUP_BOMBBOX,
+	ENT_TYPE.ITEM_PICKUP_SPECTACLES,
+	ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
+	ENT_TYPE.ITEM_PICKUP_PITCHERSMITT,
+	ENT_TYPE.ITEM_PICKUP_SPRINGSHOES,
+	ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
+	ENT_TYPE.ITEM_PICKUP_PASTE,
+	ENT_TYPE.ITEM_PICKUP_COMPASS,
+	ENT_TYPE.ITEM_MATTOCK,
+	ENT_TYPE.ITEM_BOOMERANG,
+	ENT_TYPE.ITEM_MACHETE,
+	ENT_TYPE.ITEM_WEBGUN,
+	ENT_TYPE.ITEM_SHOTGUN,
+	ENT_TYPE.ITEM_FREEZERAY,
+	ENT_TYPE.ITEM_CAMERA,
+	ENT_TYPE.ITEM_TELEPORTER,
+	ENT_TYPE.ITEM_PICKUP_PARACHUTE,
+	ENT_TYPE.ITEM_CAPE,
+	ENT_TYPE.ITEM_JETPACK,
+}
+local present_entities_num = #present_entities
+
+set_post_entity_spawn(function(e)
+	local tospawn
+	if e.type.id == ENT_TYPE.ITEM_PRESENT then
+		tospawn = present_entities[prng:random_index(present_entities_num, PRNG_CLASS.PROCEDURAL_SPAWNS)]
+	else
+		if prng:random_index(10000, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PLASMACANNON
+		elseif prng:random_index(500, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_JETPACK
+		elseif prng:random_index(200, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_FREEZERAY
+		elseif prng:random_index(200, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_CAPE
+		elseif prng:random_index(100, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_SHOTGUN
+		elseif prng:random_index(100, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_MATTOCK
+		elseif prng:random_index(100, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_TELEPORTER
+		elseif prng:random_index(90, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES
+		elseif prng:random_index(90, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_SPECTACLES
+		elseif prng:random_index(80, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_WEBGUN
+		elseif prng:random_index(80, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_CAMERA
+		elseif prng:random_index(80, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_PITCHERSMITT
+		elseif prng:random_index(60, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_PASTE
+		elseif prng:random_index(60, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_SPRINGSHOES
+		elseif prng:random_index(60, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_SPIKESHOES
+		elseif prng:random_index(60, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_BOOMERANG
+		elseif prng:random_index(40, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_MACHETE
+		elseif prng:random_index(40, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_BOMBBOX
+		elseif prng:random_index(20, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_COMPASS
+		elseif prng:random_index(10, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_PARACHUTE
+		elseif prng:random_index(2, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_BOMBBAG
+		else
+			tospawn = ENT_TYPE.ITEM_PICKUP_ROPEPILE
+		end
+	end
+	e.inside = tospawn
+end, SPAWN_TYPE.ANY, MASK.ITEM, {ENT_TYPE.ITEM_CRATE, ENT_TYPE.ITEM_PRESENT})
+
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE_METAL, x, y, l)
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_HORIZONTAL_FORCEFIELD)
