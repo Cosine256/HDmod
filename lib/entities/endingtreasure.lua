@@ -71,11 +71,11 @@ local function update_treasure(self)
         end
     elseif self.user_data.state == MINIGAME_INTRO_STATE.RUNNING_TO_CENTER then
         local x, _, _ = get_position(self.uid)
-        if x > 14.5 then
+        if x > 14 then
             self.velocityx = -0.095
         else
             self.user_data.state = MINIGAME_INTRO_STATE.PROTECT_INDICATOR
-            self.user_data.timeout = 300
+            self.user_data.timeout = 150
             message("PROTECT_INDICATOR")
         end
     elseif self.user_data.state == MINIGAME_INTRO_STATE.PROTECT_INDICATOR then

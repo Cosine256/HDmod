@@ -43,7 +43,7 @@ set_callback(function ()
     state.camera.bounds_top = 121.464
     state.camera.bounds_left = 1.8
 
-    local x = 25
+    local x = 24.5
     local y = 111
     local p_i = 1
     local camels = {}
@@ -71,8 +71,8 @@ set_callback(function ()
         end
     end
 
-    x = 30
-    local treasure_uid = endingtreasurelib.create_credits_treasure(30, y, LAYER.FRONT)
+    x = 31
+    local treasure_uid = endingtreasurelib.create_credits_treasure(x, y, LAYER.FRONT)
     local caveman1 = creditscavemenlib.create_credits_caveman(treasure_uid, x-.5, y, LAYER.FRONT)
     local caveman2 = creditscavemenlib.create_credits_caveman(treasure_uid, x+.5, y, LAYER.FRONT)
 
