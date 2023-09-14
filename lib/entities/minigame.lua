@@ -19,7 +19,7 @@ local GAME_STATE <const> = {
 }
 local TIMEOUT_MIN = 60
 local TIMEOUT_MAX = 160
-local LOAD_TIME = 130
+local LOAD_TIME = 150
 
 local minigame_state
 local timeout
@@ -28,8 +28,8 @@ local target_uid
 ---@type integer[]
 local camels
 
-local X_SPAWN = 3
-local X_LIMIT = 27
+local X_LEFT_LIMIT = 3
+local X_RIGHT_LIMIT = 27
 
 local function get_team_total()
     local total = 0
@@ -71,14 +71,16 @@ local function subtract_from_total_score(amount, responsible_uid)
     end
 end
 
-local function update_offscreen_ent(self)
-    if self.x > X_LIMIT then
+local function update_kill_left_offscreen(self)
+    if self.x < X_LEFT_LIMIT then
         self:destroy()
     end
 end
 
-local function update_ufo(self)
-    update_offscreen_ent(self)
+local function update_kill_right_offscreen(self)
+    if self.x > X_RIGHT_LIMIT then
+        self:destroy()
+    end
 end
 
 ---@param self Movable
@@ -89,7 +91,7 @@ end
 ---@param velocity_y any
 ---@param iframes any
 local function pre_caveman_damage_minigame_handling(self, damage_dealer, damage_amount, stun_time, velocity_x, velocity_y, iframes)
-    message(string.format("caveman attacked by %s", damage_dealer.last_owner_uid))
+    -- message(string.format("caveman attacked by %s", damage_dealer.last_owner_uid))
     if damage_dealer.type.id == ENT_TYPE.ITEM_BULLET then
         return false
     end
@@ -104,7 +106,7 @@ local function pre_caveman_damage_minigame_handling(self, damage_dealer, damage_
     end
     subtract_from_total_score(damage_amount*4, was_player and damage_dealer.last_owner_uid or nil)
     self.invincibility_frames_timer = 20
-    commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_CAVEMAN_TRIGGER, self.uid, 0.75, false)
+    commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_CAVEMAN_TRIGGER, self.uid, 1, false)
     return false
 end
 
@@ -119,21 +121,27 @@ local function post_enemy_damage_minigame_handling(self, damage_dealer, damage_a
     if damage_dealer.type.id == ENT_TYPE.MOUNT_ROCKDOG then
         damage_dealer.last_owner_uid = damage_dealer.rider_uid
     end
-    message(string.format("%s attacked by %s", self.uid, damage_dealer.last_owner_uid))
+    -- message(string.format("%s attacked by %s", self.uid, damage_dealer.last_owner_uid))
     add_to_score(damage_dealer.last_owner_uid)
 end
 
 -- Force velocity of ufo to go to the right slowly
 -- destroy the ufo once reaching a certain point of the stage
 -- UFO beams during the credits should not destroy floor (Mark floor as indestructable)
-local function create_minigame_ufo(y)
+local function create_minigame_ufo(spawn_left, y)
     ---@type UFO
-    local entity = get_entity(spawn_entity(ENT_TYPE.MONS_UFO, X_SPAWN, y, LAYER.FRONT, 0, 0))
-    entity.velocityx = 0.04
-    entity:set_post_update_state_machine(update_ufo)
+    local entity = get_entity(spawn_entity(ENT_TYPE.MONS_UFO, spawn_left and X_LEFT_LIMIT or X_RIGHT_LIMIT, y, LAYER.FRONT, 0, 0))
+    entity:set_post_update_state_machine(spawn_left and update_kill_right_offscreen or update_kill_left_offscreen)
+    if not spawn_left then
+        entity.flags = set_flag(entity.flags, ENT_FLAG.FACING_LEFT)
+    end
     entity:set_pre_update_state_machine(function(self)
         self.chased_target_uid = target_uid
-        self.patrol_distance = 10
+        self.patrol_distance = 10*(spawn_left and 1 or -1) -- Not working, forcing it to any number makes it move right.
+        -- if not self.is_falling then
+        --     self.velocityx = 0.02*(spawn_left and 1 or -1)-- NOT WORKING, cancels out when it tries to move right.
+        -- end
+
         return false
     end)
     entity:set_post_damage(post_enemy_damage_minigame_handling)
@@ -149,10 +157,10 @@ end
 -- Force velocity of the imp to go to the right slowly
 -- destroy the imp and its item once reaching a certain point of the stage
 -- Maybe the imp holds random stuff?
-local function create_minigame_imp(y)
-    local entity = get_entity(spawn_entity(ENT_TYPE.MONS_IMP, X_SPAWN, y, LAYER.FRONT, 0, 0))
-    entity.velocityx = 0.04
-    entity:set_post_update_state_machine(update_offscreen_ent)
+local function create_minigame_imp(spawn_left, y)
+    local entity = get_entity(spawn_entity(ENT_TYPE.MONS_IMP, spawn_left and X_LEFT_LIMIT or X_RIGHT_LIMIT, y, LAYER.FRONT, 0, 0))
+    entity.velocityx = 0.04*(spawn_left and 1 or -1)
+    entity:set_post_update_state_machine(spawn_left and update_kill_right_offscreen or update_kill_left_offscreen)
 end
 
 local function update_minigame(_)
@@ -169,11 +177,12 @@ local function update_minigame(_)
             if enemy_total < 7 then
                 local y = 114.5 + prng:random_int(0, 5, PRNG_CLASS.PARTICLES)
                 spawn_timeout = prng:random_int(TIMEOUT_MIN, TIMEOUT_MAX, PRNG_CLASS.PARTICLES)
+                local spawn_left = prng:random_chance(2, PRNG_CLASS.PARTICLES)
                 if state.win_state == WIN_STATE.HUNDUN_WIN
                 and prng:random_chance(5, PRNG_CLASS.PARTICLES) then
-                    create_minigame_imp(y)
+                    create_minigame_imp(spawn_left, y)
                 else
-                    create_minigame_ufo(y)
+                    create_minigame_ufo(spawn_left, y)
                 end
             end
         else
@@ -208,7 +217,7 @@ local function init_minigame_ent_properties()
             if test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
                 self.flags = clr_flag(self.flags, ENT_FLAG.FACING_LEFT)
             end
-            update_offscreen_ent(self)
+            update_kill_right_offscreen(self)
         end)
         alien:set_post_damage(post_enemy_damage_minigame_handling)
     end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_ALIEN)
@@ -218,7 +227,7 @@ local function init_minigame_ent_properties()
                 if self.standing_on_uid ~= -1 then
                     self.velocityx = 0.08
                 end
-                update_offscreen_ent(self)
+                update_kill_right_offscreen(self)
             end)
         end
     end, SPAWN_TYPE.ANY, MASK.ITEM)
