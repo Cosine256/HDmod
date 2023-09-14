@@ -59,6 +59,10 @@ function module.create_ending_treasure(x, y, l, vx, vy)
     return ent.uid
 end
 
+local function show_indicator(base)
+    return math.sin(base.user_data.timeout*0.35) > 0
+end
+
 local function update_treasure(self)
     if not decorlib.CREDITS_SCROLLING then
         -- move the entity to the left until decorlib.CREDITS_SCROLL is true
@@ -76,6 +80,7 @@ local function update_treasure(self)
         else
             self.user_data.state = MINIGAME_INTRO_STATE.PROTECT_INDICATOR
             self.user_data.timeout = 150
+            self.user_data.indicator_sound_played = false
             message("PROTECT_INDICATOR")
         end
     elseif self.user_data.state == MINIGAME_INTRO_STATE.PROTECT_INDICATOR then
@@ -84,6 +89,21 @@ local function update_treasure(self)
         else
             self.user_data.state = MINIGAME_INTRO_STATE.FINISHED_MINIGAME_INTRO
             message("FINISHED_MINIGAME_INTRO")
+        end
+        if show_indicator(self) then
+            if not self.user_data.indicator_sound_played then
+                commonlib.play_vanilla_sound(VANILLA_SOUND.MENU_CHARSEL_QUICK_OPEN, self.uid, 0.75, false)
+                message("PLAY SOUND")
+                --ENEMIES_ANUBIS_WARN
+                --MENU_NAVI
+                --DEATHMATCH_DM_TIMER
+    -- local sound = get_sound(VANILLA_SOUND.MENU_NAVI)
+    -- local audio = sound:play(true)
+    -- audio:set_pause(false, SOUND_TYPE.SFX)
+                self.user_data.indicator_sound_played = true
+            end
+        else
+            self.user_data.indicator_sound_played = false
         end
     elseif self.user_data.state == MINIGAME_INTRO_STATE.FINISHED_MINIGAME_INTRO then
         -- SORRY NOTHING
@@ -108,33 +128,40 @@ function module.create_credits_treasure(x, y, l)
 
     base.user_data = {
         state = MINIGAME_INTRO_STATE.PRE_MINIGAME,
-        timeout = 0
+        timeout = 0,
+        indicator_sound_played = false
     }
     set_post_statemachine(base.uid, update_treasure)
-    
-    --[[
-        # TODO: Create a state-animated indicator using PRE_RENDER_DEPTH
-        - Toggle drawing it using states and timers
-        - if the screen changes
-        - or it doesn't and reaches a specific state
-            - clear the callback
-    ]]
-    set_callback(function(render_ctx, draw_depth)
-        if state.screen ~= SCREEN.INTRO
-        or state.screen == SCREEN.INTRO
-        and base.user_data.state == MINIGAME_INTRO_STATE.FINISHED_MINIGAME_INTRO then
+
+    set_callback(function(render_ctx)
+        if
+        state.screen ~= SCREEN.CREDITS
+        -- or (state.screen == SCREEN.CREDITS
+        -- and base.user_data.state == MINIGAME_INTRO_STATE.FINISHED_MINIGAME_INTRO)
+        then
             clear_callback()
-        else
-            if draw_depth == 44 -- die/transporter indicator entitie's draw depth
-            -- Render both text and indicator based on timeout
-            -- sine(timeout*0.25) > 0
-            then
-                -- Draw indicator at the same dimensions as the FX entity
-                -- TEXTURE.DATA_TEXTURES_HUD_0
-                -- Draw text offset
-            end
+        elseif state.screen == SCREEN.CREDITS
+        and base.user_data.state == MINIGAME_INTRO_STATE.PROTECT_INDICATOR
+        and show_indicator(base)
+        then
+            local bx, by, _ = get_render_position(base.uid)
+            -- Draw indicator at the same dimensions as the FX entity
+            bx = bx - 0.5
+            by = by + 5.5
+            local rect = Quad:new(AABB:new(bx, by, bx + 1.0, by - 1.0))
+            render_ctx:draw_world_texture(TEXTURE.DATA_TEXTURES_HUD_0, 3, 7, rect, Color:white(), WORLD_SHADER.TEXTURE_COLOR)
+
+            -- Draw text offset
+            ---@type TextRenderingInfo
+            local protect_text = TextRenderingInfo:new("PROTECT", 0.0025, 0.0025, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.ITALIC)
+            bx, by = screen_position(bx, by)
+            protect_text.x, protect_text.y = bx+0.065, by+0.2
+            render_ctx:draw_text(protect_text, Color:black())
+            protect_text:set_text("PROTECT", 0.0025, 0.0025, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.ITALIC)
+            protect_text.x, protect_text.y = protect_text.x-0.0035, protect_text.y+0.0035
+            render_ctx:draw_text(protect_text, Color:white())
         end
-    end, ON.RENDER_PRE_DRAW_DEPTH)
+    end, ON.RENDER_PRE_HUD)
 
     return base.uid
 end
