@@ -188,8 +188,8 @@ local function update_minigame(_)
         else
             spawn_timeout = spawn_timeout - 1
         end
-        -- if state.screen_credits.render_timer >= 240 then
-        if state.screen_credits.render_timer >= 20 then
+        if state.screen_credits.render_timer >= 240 then
+        -- if state.screen_credits.render_timer >= 20 then
             minigame_state = GAME_STATE.POST_GAME
         end
     -- elseif minigame_state == GAME_STATE.POST_GAME then
