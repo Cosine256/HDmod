@@ -37,7 +37,7 @@ local function get_team_total()
         local camel = get_entity(uid)
         total = total + camel.user_data.score
     end
-    return total
+    return math.floor(total)
 end
 
 local function add_to_score(player_uid)
@@ -188,7 +188,8 @@ local function update_minigame(_)
         else
             spawn_timeout = spawn_timeout - 1
         end
-        if state.screen_credits.render_timer >= 240 then
+        -- if state.screen_credits.render_timer >= 240 then
+        if state.screen_credits.render_timer >= 20 then
             minigame_state = GAME_STATE.POST_GAME
         end
     -- elseif minigame_state == GAME_STATE.POST_GAME then
@@ -343,6 +344,45 @@ function(render_ctx)
                 render_ctx:draw_text(hit_text, Color:white())
             end
         end
+    elseif minigame_state == GAME_STATE.POST_GAME then
+        --Draw team total background
+        local team_total_cx, team_total_cy = 0, 0.15
+
+        local src = Quad:new()
+        src.top_left_x = 0
+        src.top_left_y = 6/10
+        src.top_right_x = 6/10
+        src.top_right_y = 6/10
+        src.bottom_left_x = 0
+        src.bottom_left_y = 1
+        src.bottom_right_x = 6/10
+        src.bottom_right_y = 1
+        local w = (1/2)*3/2
+        local h = (1/2)/0.5625
+        local dest = Quad:new()
+        dest.top_left_x = -w/2
+        dest.top_left_y = h/2
+        dest.top_right_x = w/2
+        dest.top_right_y = h/2
+        dest.bottom_left_x = -w/2
+        dest.bottom_left_y = -h/2
+        dest.bottom_right_x = w/2
+        dest.bottom_right_y = -h/2
+        dest:offset(team_total_cx, team_total_cy)
+        render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_MENU_BASIC_0, src, dest, Color:white())
+
+        ---@type TextRenderingInfo
+        local totalscore_text = TextRenderingInfo:new("Total Score:", 0.0023, 0.0023, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
+        totalscore_text.x, totalscore_text.y = team_total_cx, team_total_cy+0.15
+        render_ctx:draw_text(totalscore_text, Color:black())
+        totalscore_text.x, totalscore_text.y = totalscore_text.x-0.0035, totalscore_text.y+0.0035
+        render_ctx:draw_text(totalscore_text, Color:white())
+        ---@type TextRenderingInfo
+        local totalscore_value = TextRenderingInfo:new(string.format(get_team_total()), 0.0025, 0.0025, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
+        totalscore_value.x, totalscore_value.y = team_total_cx, team_total_cy-0.155
+        render_ctx:draw_text(totalscore_value, Color:black())
+        totalscore_value.x, totalscore_value.y = totalscore_value.x-0.0035, totalscore_value.y+0.0035
+        render_ctx:draw_text(totalscore_value, Color:white())
     end
 end, ON.RENDER_PRE_HUD)
 
