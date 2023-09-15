@@ -222,6 +222,12 @@ local function init_minigame_ent_properties()
         end)
         alien:set_post_damage(post_enemy_damage_minigame_handling)
     end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_ALIEN)
+    local parachute_cb = set_post_entity_spawn(function(parachute)
+        if parachute.animation_frame == 57 then
+            -- message("GOLDEN PARACHUTE PREVENTED")
+            parachute.animation_frame = prng:random_int(44, 46, PRNG_CLASS.ENTITY_VARIATION)
+        end
+    end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_POWERUP_PARACHUTE)
     local item_cb = set_post_entity_spawn(function(item, spawn_flags)
         if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
             item:set_post_update_state_machine(function(self)
@@ -238,6 +244,7 @@ local function init_minigame_ent_properties()
         end
     end, SPAWN_TYPE.ANY, MASK.BG, ENT_TYPE.BG_LEVEL_BOMB_SOOT)
     set_callback(function ()
+        clear_callback(parachute_cb)
         clear_callback(alien_cb)
         clear_callback(item_cb)
         clear_callback(fx_cb)
