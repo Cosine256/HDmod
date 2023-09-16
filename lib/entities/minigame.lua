@@ -229,6 +229,13 @@ local function create_minigame_imp(spawn_left, y)
     entity:set_post_update_state_machine(spawn_left and update_kill_right_offscreen or update_kill_left_offscreen)
 end
 
+local function remove_all_minigame_ents()
+    for _, v in pairs(get_entities_by_type({ENT_TYPE.MONS_IMP, ENT_TYPE.MONS_UFO, ENT_TYPE.MONS_ALIEN, ENT_TYPE.ITEM_UFO_LASER_SHOT})) do
+        get_entity(v):destroy()
+        generate_world_particles(PARTICLEEMITTER.MERCHANT_APPEAR_POOF, v)
+    end
+end
+
 local function update_minigame(_)
     if minigame_state == GAME_STATE.GAME_LOAD then
         if timeout > 0 then
@@ -257,9 +264,13 @@ local function update_minigame(_)
         if state.screen_credits.render_timer >= 240 then
         -- if state.screen_credits.render_timer >= 20 then
             minigame_state = GAME_STATE.POST_GAME
+            timeout = 600
+            
+            remove_all_minigame_ents()
+            local sound = get_sound(VANILLA_SOUND.DEATHMATCH_DM_ITEM_SPAWN)
+            local audio = sound:play(true)
+            audio:set_pause(false, SOUND_TYPE.SFX)
         end
-    -- elseif minigame_state == GAME_STATE.POST_GAME then
-        -- # TODO: Program recap
     end
 end
 
@@ -345,137 +356,159 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
     camels = _camels
     get_entity(caveman1):set_pre_damage(pre_caveman_damage_minigame_handling)
     get_entity(caveman2):set_pre_damage(pre_caveman_damage_minigame_handling)
-end
-
-set_callback(
-    ---@param render_ctx VanillaRenderContext
-function(render_ctx)
-    if state.screen == SCREEN.CREDITS
-    and minigame_state == GAME_STATE.IN_GAME
-    or minigame_state == GAME_STATE.GAME_LOAD then
-        for c_i, camel_uid in ipairs(camels) do
-            local camel = get_entity(camel_uid)
-            if camel.user_data.state == 3 then -- MINIGAME_STATE.MINIGAME
-                --loop over the camels spawned, check their status
-                --shadow
-                local icon_offset_y = 0.045
-                local x, y = get_hud_position(c_i):center()
-                local src = Quad:new()
-                src.top_left_x = 0
-                src.top_left_y = 0
-                src.top_right_x = 1/2
-                src.top_right_y = 0
-                src.bottom_left_x = 0
-                src.bottom_left_y = 1/8
-                src.bottom_right_x = 1/2
-                src.bottom_right_y = 1/8
-                local w = (1/16)*4
-                local h = (1/16)/0.5625
-                local dest = Quad:new()
-                dest.top_left_x = -w/2
-                dest.top_left_y = h/2
-                dest.top_right_x = w/2
-                dest.top_right_y = h/2
-                dest.bottom_left_x = -w/2
-                dest.bottom_left_y = -h/2
-                dest.bottom_right_x = w/2
-                dest.bottom_right_y = -h/2
-                dest:offset(x, y-icon_offset_y)
-                render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_HUD_2, src, dest, Color:white())
+    
+    set_callback(
+        ---@param render_ctx VanillaRenderContext
+    function(render_ctx)
+        if state.screen == SCREEN.CREDITS then
+            if minigame_state == GAME_STATE.IN_GAME
+            or minigame_state == GAME_STATE.GAME_LOAD then
+                for c_i, camel_uid in ipairs(camels) do
+                    local camel = get_entity(camel_uid)
+                    if camel.user_data.state == 3 then -- MINIGAME_STATE.MINIGAME
+                        --loop over the camels spawned, check their status
+                        --shadow
+                        local icon_offset_y = 0.045
+                        local x, y = get_hud_position(c_i):center()
+                        local src = Quad:new()
+                        src.top_left_x = 0
+                        src.top_left_y = 0
+                        src.top_right_x = 1/2
+                        src.top_right_y = 0
+                        src.bottom_left_x = 0
+                        src.bottom_left_y = 1/8
+                        src.bottom_right_x = 1/2
+                        src.bottom_right_y = 1/8
+                        local w = (1/16)*4
+                        local h = (1/16)/0.5625
+                        local dest = Quad:new()
+                        dest.top_left_x = -w/2
+                        dest.top_left_y = h/2
+                        dest.top_right_x = w/2
+                        dest.top_right_y = h/2
+                        dest.bottom_left_x = -w/2
+                        dest.bottom_left_y = -h/2
+                        dest.bottom_right_x = w/2
+                        dest.bottom_right_y = -h/2
+                        dest:offset(x, y-icon_offset_y)
+                        render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_HUD_2, src, dest, Color:white())
+                
+                
+                        --cannon icon
+                        src.top_left_x = 0
+                        src.top_left_y = 0
+                        src.top_right_x = 1/2
+                        src.top_right_y = 0
+                        src.bottom_left_x = 0
+                        src.bottom_left_y = 1
+                        src.bottom_right_x = 1/2
+                        src.bottom_right_y = 1
+                        w = 1/16
+                        h = w/0.5625
+                        dest = Quad:new()
+                        dest.top_left_x = -w/2
+                        dest.top_left_y = h/2
+                        dest.top_right_x = w/2
+                        dest.top_right_y = h/2
+                        dest.bottom_left_x = -w/2
+                        dest.bottom_left_y = -h/2
+                        dest.bottom_right_x = w/2
+                        dest.bottom_right_y = -h/2
+                        dest:offset(x-0.055, y)
+                        render_ctx:draw_screen_texture(hud_texture_id, src, dest, Color:white())
+                
+                        --hit icon
+                        src.top_left_x = 1/2
+                        src.top_left_y = 0
+                        src.top_right_x = 1
+                        src.top_right_y = 0
+                        src.bottom_left_x = 1/2
+                        src.bottom_left_y = 1
+                        src.bottom_right_x = 1
+                        src.bottom_right_y = 1
+                        local w = 1/16
+                        local h = w/0.5625
+                        dest = Quad:new()
+                        dest.top_left_x = -w/2
+                        dest.top_left_y = h/2
+                        dest.top_right_x = w/2
+                        dest.top_right_y = h/2
+                        dest.bottom_left_x = -w/2
+                        dest.bottom_left_y = -h/2
+                        dest.bottom_right_x = w/2
+                        dest.bottom_right_y = -h/2
+                        dest:offset(x+0.02, y)
+                        render_ctx:draw_screen_texture(hud_texture_id, src, dest, Color:white())
+                
+                        local hit_text = TextRenderingInfo:new(string.format("x%s", math.floor(camel.user_data.score)), 0.0012, 0.0012, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.BOLD)
+                        hit_text.x, hit_text.y = x+0.04, y
+                        render_ctx:draw_text(hit_text, Color:white())
+                    end
+                end
+            elseif minigame_state == GAME_STATE.POST_GAME then
+                if timeout > 0 then
+                    timeout = timeout - 1
+                end
         
-        
-                --cannon icon
-                src.top_left_x = 0
-                src.top_left_y = 0
-                src.top_right_x = 1/2
-                src.top_right_y = 0
-                src.bottom_left_x = 0
-                src.bottom_left_y = 1
-                src.bottom_right_x = 1/2
-                src.bottom_right_y = 1
-                w = 1/16
-                h = w/0.5625
-                dest = Quad:new()
-                dest.top_left_x = -w/2
-                dest.top_left_y = h/2
-                dest.top_right_x = w/2
-                dest.top_right_y = h/2
-                dest.bottom_left_x = -w/2
-                dest.bottom_left_y = -h/2
-                dest.bottom_right_x = w/2
-                dest.bottom_right_y = -h/2
-                dest:offset(x-0.055, y)
-                render_ctx:draw_screen_texture(hud_texture_id, src, dest, Color:white())
-        
-                --hit icon
-                src.top_left_x = 1/2
-                src.top_left_y = 0
-                src.top_right_x = 1
-                src.top_right_y = 0
-                src.bottom_left_x = 1/2
-                src.bottom_left_y = 1
-                src.bottom_right_x = 1
-                src.bottom_right_y = 1
-                local w = 1/16
-                local h = w/0.5625
-                dest = Quad:new()
-                dest.top_left_x = -w/2
-                dest.top_left_y = h/2
-                dest.top_right_x = w/2
-                dest.top_right_y = h/2
-                dest.bottom_left_x = -w/2
-                dest.bottom_left_y = -h/2
-                dest.bottom_right_x = w/2
-                dest.bottom_right_y = -h/2
-                dest:offset(x+0.02, y)
-                render_ctx:draw_screen_texture(hud_texture_id, src, dest, Color:white())
-        
-                local hit_text = TextRenderingInfo:new(string.format("x%s", math.floor(camel.user_data.score)), 0.0012, 0.0012, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.BOLD)
-                hit_text.x, hit_text.y = x+0.04, y
-                render_ctx:draw_text(hit_text, Color:white())
+                if timeout == 300 then
+                    local sound = get_sound(VANILLA_SOUND.MENU_NAVI)
+                    local audio = sound:play(true)
+                    audio:set_pause(false, SOUND_TYPE.SFX)
+                end
+                if timeout <= 300 then
+                    --Draw team total background
+                    local team_total_cx, team_total_cy = 0, 0.15
+            
+                    local src = Quad:new()
+                    src.top_left_x = 0
+                    src.top_left_y = 6/10
+                    src.top_right_x = 6/10
+                    src.top_right_y = 6/10
+                    src.bottom_left_x = 0
+                    src.bottom_left_y = 1
+                    src.bottom_right_x = 6/10
+                    src.bottom_right_y = 1
+                    local w = (1/2)*3/2
+                    local h = (1/2)/0.5625
+                    local dest = Quad:new()
+                    dest.top_left_x = -w/2
+                    dest.top_left_y = h/2
+                    dest.top_right_x = w/2
+                    dest.top_right_y = h/2
+                    dest.bottom_left_x = -w/2
+                    dest.bottom_left_y = -h/2
+                    dest.bottom_right_x = w/2
+                    dest.bottom_right_y = -h/2
+                    dest:offset(team_total_cx, team_total_cy)
+                    render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_MENU_BASIC_0, src, dest, Color:white())
+            
+                    ---@type TextRenderingInfo
+                    local totalscore_text = TextRenderingInfo:new("Total Score:", 0.0023, 0.0023, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
+                    totalscore_text.x, totalscore_text.y = team_total_cx, team_total_cy+0.15
+                    render_ctx:draw_text(totalscore_text, Color:black())
+                    totalscore_text.x, totalscore_text.y = totalscore_text.x-0.0035, totalscore_text.y+0.0035
+                    render_ctx:draw_text(totalscore_text, Color:white())
+                    
+                    if timeout == 1 then
+                        local sound = get_sound(VANILLA_SOUND.UI_SECRET2)
+                        local audio = sound:play(true)
+                        audio:set_pause(false, SOUND_TYPE.SFX)
+                    end
+                    if timeout == 0 then
+                        ---@type TextRenderingInfo
+                        local totalscore_value = TextRenderingInfo:new(string.format(get_team_total()), 0.0025, 0.0025, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
+                        totalscore_value.x, totalscore_value.y = team_total_cx, team_total_cy-0.155
+                        render_ctx:draw_text(totalscore_value, Color:black())
+                        totalscore_value.x, totalscore_value.y = totalscore_value.x-0.0035, totalscore_value.y+0.0035
+                        render_ctx:draw_text(totalscore_value, Color:white())
+                    end
+                end
             end
+        else
+            clear_callback()
         end
-    elseif minigame_state == GAME_STATE.POST_GAME then
-        --Draw team total background
-        local team_total_cx, team_total_cy = 0, 0.15
-
-        local src = Quad:new()
-        src.top_left_x = 0
-        src.top_left_y = 6/10
-        src.top_right_x = 6/10
-        src.top_right_y = 6/10
-        src.bottom_left_x = 0
-        src.bottom_left_y = 1
-        src.bottom_right_x = 6/10
-        src.bottom_right_y = 1
-        local w = (1/2)*3/2
-        local h = (1/2)/0.5625
-        local dest = Quad:new()
-        dest.top_left_x = -w/2
-        dest.top_left_y = h/2
-        dest.top_right_x = w/2
-        dest.top_right_y = h/2
-        dest.bottom_left_x = -w/2
-        dest.bottom_left_y = -h/2
-        dest.bottom_right_x = w/2
-        dest.bottom_right_y = -h/2
-        dest:offset(team_total_cx, team_total_cy)
-        render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_MENU_BASIC_0, src, dest, Color:white())
-
-        ---@type TextRenderingInfo
-        local totalscore_text = TextRenderingInfo:new("Total Score:", 0.0023, 0.0023, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
-        totalscore_text.x, totalscore_text.y = team_total_cx, team_total_cy+0.15
-        render_ctx:draw_text(totalscore_text, Color:black())
-        totalscore_text.x, totalscore_text.y = totalscore_text.x-0.0035, totalscore_text.y+0.0035
-        render_ctx:draw_text(totalscore_text, Color:white())
-        ---@type TextRenderingInfo
-        local totalscore_value = TextRenderingInfo:new(string.format(get_team_total()), 0.0025, 0.0025, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
-        totalscore_value.x, totalscore_value.y = team_total_cx, team_total_cy-0.155
-        render_ctx:draw_text(totalscore_value, Color:black())
-        totalscore_value.x, totalscore_value.y = totalscore_value.x-0.0035, totalscore_value.y+0.0035
-        render_ctx:draw_text(totalscore_value, Color:white())
-    end
-end, ON.RENDER_PRE_HUD)
+    end, ON.RENDER_PRE_HUD)
+end
 
 function module.started_minigame()
     return minigame_state ~= GAME_STATE.PRE_GAME
