@@ -205,18 +205,25 @@ local function create_minigame_statemachine()
     entity:set_post_update_state_machine(update_minigame)
 end
 
-local alien_credits_type = EntityDB:new(get_type(ENT_TYPE.MONS_ALIEN))
-alien_credits_type.max_speed = 0.06
+local alien_type_moveright = EntityDB:new(get_type(ENT_TYPE.MONS_ALIEN))
+alien_type_moveright.max_speed = 0.06
+local alien_type_moveleft = EntityDB:new(get_type(ENT_TYPE.MONS_ALIEN))
+alien_type_moveleft.max_speed = 0.02
 
 local function init_minigame_ent_properties()
     local alien_cb = set_post_entity_spawn(function(alien)
-        alien.type = alien_credits_type
+        local x, _, _ = get_position(target_uid)
+        local ax, _, _ = get_position(alien.uid)
+        local move_left = x <= ax
+        alien.type = move_left and alien_type_moveleft or alien_type_moveright
         alien:set_post_update_state_machine(function(self)
             if self.standing_on_uid ~= -1 then
-                self.velocityx = 0.06
+                self.velocityx = move_left and 0.02 or 0.06
             end
-            if test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
+            if test_flag(self.flags, ENT_FLAG.FACING_LEFT) and not move_left then
                 self.flags = clr_flag(self.flags, ENT_FLAG.FACING_LEFT)
+            elseif not test_flag(self.flags, ENT_FLAG.FACING_LEFT) and move_left then
+                self.flags = set_flag(self.flags, ENT_FLAG.FACING_LEFT)
             end
             -- damage credits cavemen
             for _, v in ipairs(get_entities_by(ENT_TYPE.MONS_CAVEMAN, MASK.MONSTER, LAYER.FRONT)) do
