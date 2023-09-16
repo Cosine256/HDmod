@@ -233,7 +233,11 @@ local function init_minigame_ent_properties()
                     -- other_ent.invincibility_frames_timer = 30
                 end
             end
-            update_kill_right_offscreen(self)
+            if move_left then
+                update_kill_left_offscreen(self)
+            else
+                update_kill_right_offscreen(self)
+            end
         end)
         alien:set_post_damage(post_enemy_damage_minigame_handling)
     end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_ALIEN)
