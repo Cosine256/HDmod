@@ -105,7 +105,7 @@ local function pre_caveman_damage_minigame_handling(self, damage_dealer, damage_
         end
     end
     subtract_from_total_score(damage_amount*4, was_player and damage_dealer.last_owner_uid or nil)
-    self.invincibility_frames_timer = 30
+    self.invincibility_frames_timer = 45
     commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_CAVEMAN_TRIGGER, self.uid, 1, false)
     return false
 end
@@ -229,8 +229,7 @@ local function init_minigame_ent_properties()
             for _, v in ipairs(get_entities_by(ENT_TYPE.MONS_CAVEMAN, MASK.MONSTER, LAYER.FRONT)) do
                 local other_ent = get_entity(v)
                 if self:overlaps_with(other_ent) and other_ent.invincibility_frames_timer == 0 then
-                    other_ent:damage(self.uid, 1, 0, 0, 0, 30)
-                    -- other_ent.invincibility_frames_timer = 30
+                    other_ent:damage(self.uid, 1, 0, 0, 0, 45)
                 end
             end
             if move_left then
