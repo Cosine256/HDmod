@@ -125,87 +125,89 @@ local function post_enemy_damage_minigame_handling(self, damage_dealer, damage_a
     add_to_score(damage_dealer.last_owner_uid)
 end
 
-local type_amazon = get_type(ENT_TYPE.CHAR_AMAZON)
-local type_ana = get_type(ENT_TYPE.CHAR_ANA_SPELUNKY)
-local type_au = get_type(ENT_TYPE.CHAR_AU)
-local type_banda = get_type(ENT_TYPE.CHAR_BANDA)
-local type_classic = get_type(ENT_TYPE.CHAR_CLASSIC_GUY)
-local type_coco = get_type(ENT_TYPE.CHAR_COCO_VON_DIAMONDS)
-local type_colin = get_type(ENT_TYPE.CHAR_COLIN_NORTHWARD)
-local type_demi = get_type(ENT_TYPE.CHAR_DEMI_VON_DIAMONDS)
-local type_dirk = get_type(ENT_TYPE.CHAR_DIRK_YAMAOKA)
-local type_eggplant = get_type(ENT_TYPE.CHAR_EGGPLANT_CHILD)
-local type_green = get_type(ENT_TYPE.CHAR_GREEN_GIRL)
-local type_guy = get_type(ENT_TYPE.CHAR_GUY_SPELUNKY)
-local type_hired = get_type(ENT_TYPE.CHAR_HIREDHAND)
-local type_lise = get_type(ENT_TYPE.CHAR_LISE_SYSTEM)
-local type_manfred = get_type(ENT_TYPE.CHAR_MANFRED_TUNNEL)
-local type_margaret = get_type(ENT_TYPE.CHAR_MARGARET_TUNNEL)
-local type_otaku = get_type(ENT_TYPE.CHAR_OTAKU)
-local type_pilot = get_type(ENT_TYPE.CHAR_PILOT)
-local type_airyn = get_type(ENT_TYPE.CHAR_PRINCESS_AIRYN)
-local type_roffy = get_type(ENT_TYPE.CHAR_ROFFY_D_SLOTH)
-local type_tina = get_type(ENT_TYPE.CHAR_TINA_FLAN)
-local type_valerie = get_type(ENT_TYPE.CHAR_VALERIE_CRUMP)
+-- local type_amazon = get_type(ENT_TYPE.CHAR_AMAZON)
+-- local type_ana = get_type(ENT_TYPE.CHAR_ANA_SPELUNKY)
+-- local type_au = get_type(ENT_TYPE.CHAR_AU)
+-- local type_banda = get_type(ENT_TYPE.CHAR_BANDA)
+-- local type_classic = get_type(ENT_TYPE.CHAR_CLASSIC_GUY)
+-- local type_coco = get_type(ENT_TYPE.CHAR_COCO_VON_DIAMONDS)
+-- local type_colin = get_type(ENT_TYPE.CHAR_COLIN_NORTHWARD)
+-- local type_demi = get_type(ENT_TYPE.CHAR_DEMI_VON_DIAMONDS)
+-- local type_dirk = get_type(ENT_TYPE.CHAR_DIRK_YAMAOKA)
+-- local type_eggplant = get_type(ENT_TYPE.CHAR_EGGPLANT_CHILD)
+-- local type_green = get_type(ENT_TYPE.CHAR_GREEN_GIRL)
+-- local type_guy = get_type(ENT_TYPE.CHAR_GUY_SPELUNKY)
+-- local type_hired = get_type(ENT_TYPE.CHAR_HIREDHAND)
+-- local type_lise = get_type(ENT_TYPE.CHAR_LISE_SYSTEM)
+-- local type_manfred = get_type(ENT_TYPE.CHAR_MANFRED_TUNNEL)
+-- local type_margaret = get_type(ENT_TYPE.CHAR_MARGARET_TUNNEL)
+-- local type_otaku = get_type(ENT_TYPE.CHAR_OTAKU)
+-- local type_pilot = get_type(ENT_TYPE.CHAR_PILOT)
+-- local type_airyn = get_type(ENT_TYPE.CHAR_PRINCESS_AIRYN)
+-- local type_roffy = get_type(ENT_TYPE.CHAR_ROFFY_D_SLOTH)
+-- local type_tina = get_type(ENT_TYPE.CHAR_TINA_FLAN)
+-- local type_valerie = get_type(ENT_TYPE.CHAR_VALERIE_CRUMP)
 local function create_minigame_ufo(spawn_left, y)
     ---@type UFO
     local entity = get_entity(spawn_entity(ENT_TYPE.MONS_UFO, spawn_left and X_LEFT_LIMIT or X_RIGHT_LIMIT, y, LAYER.FRONT, 0, 0))
     entity:set_pre_update_state_machine(function(self)
-        type_amazon.id = 0
-        type_ana.id = 0
-        type_au.id = 0
-        type_banda.id = 0
-        type_classic.id = 0
-        type_coco.id = 0
-        type_colin.id = 0
-        type_demi.id = 0
-        type_dirk.id = 0
-        type_eggplant.id = 0
-        type_green.id = 0
-        type_guy.id = 0
-        type_hired.id = 0
-        type_lise.id = 0
-        type_manfred.id = 0
-        type_margaret.id = 0
-        type_otaku.id = 0
-        type_pilot.id = 0
-        type_airyn.id = 0
-        type_roffy.id = 0
-        type_tina.id = 0
-        type_valerie.id = 0
+        -- type_amazon.id = 0
+        -- type_ana.id = 0
+        -- type_au.id = 0
+        -- type_banda.id = 0
+        -- type_classic.id = 0
+        -- type_coco.id = 0
+        -- type_colin.id = 0
+        -- type_demi.id = 0
+        -- type_dirk.id = 0
+        -- type_eggplant.id = 0
+        -- type_green.id = 0
+        -- type_guy.id = 0
+        -- type_hired.id = 0
+        -- type_lise.id = 0
+        -- type_manfred.id = 0
+        -- type_margaret.id = 0
+        -- type_otaku.id = 0
+        -- type_pilot.id = 0
+        -- type_airyn.id = 0
+        -- type_roffy.id = 0
+        -- type_tina.id = 0
+        -- type_valerie.id = 0
         self.chased_target_uid = target_uid
         self.patrol_distance = 10*(spawn_left and 1 or -1)
         return false
     end)
     entity:set_post_update_state_machine(function (self)
-        type_amazon.id = ENT_TYPE.CHAR_AMAZON
-        type_ana.id = ENT_TYPE.CHAR_ANA_SPELUNKY
-        type_au.id = ENT_TYPE.CHAR_AU
-        type_banda.id = ENT_TYPE.CHAR_BANDA
-        type_classic.id = ENT_TYPE.CHAR_CLASSIC_GUY
-        type_coco.id = ENT_TYPE.CHAR_COCO_VON_DIAMONDS
-        type_colin.id = ENT_TYPE.CHAR_COLIN_NORTHWARD
-        type_demi.id = ENT_TYPE.CHAR_DEMI_VON_DIAMONDS
-        type_dirk.id = ENT_TYPE.CHAR_DIRK_YAMAOKA
-        type_eggplant.id = ENT_TYPE.CHAR_EGGPLANT_CHILD
-        type_green.id = ENT_TYPE.CHAR_GREEN_GIRL
-        type_guy.id = ENT_TYPE.CHAR_GUY_SPELUNKY
-        type_hired.id = ENT_TYPE.CHAR_HIREDHAND
-        type_lise.id = ENT_TYPE.CHAR_LISE_SYSTEM
-        type_manfred.id = ENT_TYPE.CHAR_MANFRED_TUNNEL
-        type_margaret.id = ENT_TYPE.CHAR_MARGARET_TUNNEL
-        type_otaku.id = ENT_TYPE.CHAR_OTAKU
-        type_pilot.id = ENT_TYPE.CHAR_PILOT
-        type_airyn.id = ENT_TYPE.CHAR_PRINCESS_AIRYN
-        type_roffy.id = ENT_TYPE.CHAR_ROFFY_D_SLOTH
-        type_tina.id = ENT_TYPE.CHAR_TINA_FLAN
-        type_valerie.id = ENT_TYPE.CHAR_VALERIE_CRUMP
+        -- type_amazon.id = ENT_TYPE.CHAR_AMAZON
+        -- type_ana.id = ENT_TYPE.CHAR_ANA_SPELUNKY
+        -- type_au.id = ENT_TYPE.CHAR_AU
+        -- type_banda.id = ENT_TYPE.CHAR_BANDA
+        -- type_classic.id = ENT_TYPE.CHAR_CLASSIC_GUY
+        -- type_coco.id = ENT_TYPE.CHAR_COCO_VON_DIAMONDS
+        -- type_colin.id = ENT_TYPE.CHAR_COLIN_NORTHWARD
+        -- type_demi.id = ENT_TYPE.CHAR_DEMI_VON_DIAMONDS
+        -- type_dirk.id = ENT_TYPE.CHAR_DIRK_YAMAOKA
+        -- type_eggplant.id = ENT_TYPE.CHAR_EGGPLANT_CHILD
+        -- type_green.id = ENT_TYPE.CHAR_GREEN_GIRL
+        -- type_guy.id = ENT_TYPE.CHAR_GUY_SPELUNKY
+        -- type_hired.id = ENT_TYPE.CHAR_HIREDHAND
+        -- type_lise.id = ENT_TYPE.CHAR_LISE_SYSTEM
+        -- type_manfred.id = ENT_TYPE.CHAR_MANFRED_TUNNEL
+        -- type_margaret.id = ENT_TYPE.CHAR_MARGARET_TUNNEL
+        -- type_otaku.id = ENT_TYPE.CHAR_OTAKU
+        -- type_pilot.id = ENT_TYPE.CHAR_PILOT
+        -- type_airyn.id = ENT_TYPE.CHAR_PRINCESS_AIRYN
+        -- type_roffy.id = ENT_TYPE.CHAR_ROFFY_D_SLOTH
+        -- type_tina.id = ENT_TYPE.CHAR_TINA_FLAN
+        -- type_valerie.id = ENT_TYPE.CHAR_VALERIE_CRUMP
+        -- self.chased_target_uid = target_uid
 
         if spawn_left then
             update_kill_right_offscreen(self)
         else
             update_kill_left_offscreen(self)
         end
+        return false
     end)
     if not spawn_left then
         entity.flags = set_flag(entity.flags, ENT_FLAG.FACING_LEFT)
