@@ -4,6 +4,7 @@ local IDOLTRAP_TRIGGER = false
 local IDOL_X = nil
 local IDOL_Y = nil
 local IDOL_UID = nil
+module.IDOL_OWNER = nil
 
 local IDOLTRAP_JUNGLE_ACTIVATETIME = 10
 local idoltrap_timeout = 0
@@ -62,7 +63,8 @@ function module.init()
 	IDOLTRAP_TRIGGER = false
 	IDOL_X = nil
 	IDOL_Y = nil
-	IDOL_UID = nil
+	IDOL_UID = -1
+    module.IDOL_OWNER = -1
 
 	idoltrap_timeout = IDOLTRAP_JUNGLE_ACTIVATETIME
 	idoltrap_blocks = {}
@@ -85,7 +87,7 @@ function module.create_crystalskull(x, y, l)
 end
 
 local function idol_disturbance()
-	if IDOL_UID ~= nil then
+	if IDOL_UID ~= -1 then
 		local x, y, _ = get_position(IDOL_UID)
         ---@type Idol
 		local _entity = get_entity(IDOL_UID)
@@ -180,7 +182,7 @@ end
 
 -- Idol trap activation
 set_callback(function()
-    if IDOLTRAP_TRIGGER == false and IDOL_UID ~= nil and idol_disturbance() then
+    if IDOLTRAP_TRIGGER == false and IDOL_UID ~= -1 and idol_disturbance() then
         IDOLTRAP_TRIGGER = true
         if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) == true then
             create_ghost_at_border()
@@ -222,8 +224,11 @@ set_callback(function()
                 end, 30)
             end
         end
-    elseif IDOLTRAP_TRIGGER == true and IDOL_UID ~= nil and state.theme == THEME.DWELLING then
-        boulderlib.onframe_ownership_crush_prevention()
+    elseif IDOLTRAP_TRIGGER == true and IDOL_UID ~= -1 and module.IDOL_OWNER == -1 and state.theme == THEME.DWELLING then
+        module.IDOL_OWNER = get_entity(IDOL_UID).last_owner_uid
+        if options.hd_debug_boulder_info == true then
+            message(string.format("SET IDOL OWNER %s", module.IDOL_OWNER))
+        end
     end
 end, ON.FRAME)
 
