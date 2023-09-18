@@ -2,6 +2,7 @@ local module = {}
 
 local surfacelayerlib = require('lib.entities.surface_layer')
 local palmtreelib = require('lib.entities.palmtree')
+local cloudslib = require('lib.entities.clouds')
 local decorlib = require('lib.gen.decor')
 
 local sky_hard_texture_id
@@ -116,6 +117,8 @@ function module.build_credits_surface()
     -- palmtreelib.create_palmtree_relative(30, 3, 2, depth, bg)
 
 
+    cloudslib.create_clouds(113.6)
+
     --back background
     depth = decorlib.SURFACE_BG_DEPTH.BACK_BACKGROUND
     surfacelayerlib.create_surface_layer_looping(113.6, depth, false)
@@ -166,6 +169,8 @@ function module.decorate_existing_surface()
             get_entity(sky_uids[1]):set_texture(sky_hard_texture_id)
         end
     end
+
+    cloudslib.create_clouds(103.6)
 
     -- prevent teetering animation in intro
     spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, 53, 99, LAYER.FRONT)
