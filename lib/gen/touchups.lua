@@ -451,6 +451,64 @@ set_post_entity_spawn(function(e)
 	e.inside = tospawn
 end, SPAWN_TYPE.ANY, MASK.ITEM, {ENT_TYPE.ITEM_CRATE, ENT_TYPE.ITEM_PRESENT})
 
+local HD_CRUST_ITEMS = {
+	ENT_TYPE.ITEM_PICKUP_ROPEPILE,
+	ENT_TYPE.ITEM_PICKUP_BOMBBAG,
+	ENT_TYPE.ITEM_PICKUP_BOMBBOX,
+	ENT_TYPE.ITEM_PICKUP_SPECTACLES,
+	ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
+	ENT_TYPE.ITEM_PICKUP_PITCHERSMITT,
+	ENT_TYPE.ITEM_PICKUP_SPRINGSHOES,
+	ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
+	ENT_TYPE.ITEM_PICKUP_PASTE,
+	ENT_TYPE.ITEM_PICKUP_COMPASS,
+	ENT_TYPE.ITEM_MATTOCK,
+	ENT_TYPE.ITEM_BOOMERANG,
+	ENT_TYPE.ITEM_MACHETE,
+	ENT_TYPE.ITEM_WEBGUN,
+	ENT_TYPE.ITEM_SHOTGUN,
+	ENT_TYPE.ITEM_FREEZERAY,
+	ENT_TYPE.ITEM_CAMERA,
+	ENT_TYPE.ITEM_TELEPORTER,
+	ENT_TYPE.ITEM_PICKUP_PARACHUTE,
+	ENT_TYPE.ITEM_CAPE,
+	ENT_TYPE.ITEM_JETPACK,
+}
+local HD_CRUST_ITEMS_NUM = #HD_CRUST_ITEMS
+
+local S2_EXCLUSIVE_CRUST_ITEMS = {
+	ENT_TYPE.ITEM_CROSSBOW,
+	ENT_TYPE.ITEM_TELEPORTER_BACKPACK,
+	ENT_TYPE.ITEM_HOVERPACK,
+	ENT_TYPE.ITEM_POWERPACK,
+}
+
+function module.replace_s2_crust_items()
+	local items = get_entities_by(S2_EXCLUSIVE_CRUST_ITEMS, MASK.ITEM, LAYER.FRONT)
+	local crust_items_visible = test_flag(state.special_visibility_flags, 1)
+	for _, uid in pairs(items) do
+		local ent = get_entity(uid)
+		if ent.overlay and ent.overlay.type.search_flags & MASK.FLOOR ~= 0 and not embedlib.script_embedded_item_uids[uid] then
+			local overlay = ent.overlay
+
+			removelib.remove_item_entities(uid)
+			ent:destroy()
+
+			local tospawn = HD_CRUST_ITEMS[prng:random_index(HD_CRUST_ITEMS_NUM, PRNG_CLASS.LEVEL_GEN)]
+			local spawned_uid = spawn_entity_over(tospawn, overlay.uid, 0, 0)
+			embedlib.embed_item(spawned_uid, overlay.uid, crust_items_visible)
+			messpect("embedded at", enum_get_name(ENT_TYPE, ent.type.id), enum_get_name(ENT_TYPE, tospawn), get_position(uid))
+		end
+	end
+end
+
+-- set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
+-- 	if get_type(get_entity_type(state.next_entity_uid-1)).search_flags & MASK.FLOOR ~= 0 then
+-- 		messpect("valid", x, y)
+-- 		-- return HD_CRUST_ITEMS[prng:random_index(HD_CRUST_ITEMS_NUM, PRNG_CLASS.LEVEL_GEN)]
+-- 	end
+-- end, SPAWN_TYPE.LEVEL_GEN, MASK.ITEM, s2_crust_items)
+
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE_METAL, x, y, l)
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_HORIZONTAL_FORCEFIELD)

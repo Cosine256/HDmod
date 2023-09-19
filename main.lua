@@ -62,6 +62,7 @@ set_callback(function()
 end, ON.TITLE)
 
 set_callback(function(room_gen_ctx)
+	embedlib.script_embedded_item_uids = {}
 	if state.screen == SCREEN.LEVEL then
 		-- state.level_flags = set_flag(state.level_flags, 18) --force dark level
 		-- message(F'ON.POST_ROOM_GENERATION - ON.LEVEL: {state.time_level}')
@@ -104,6 +105,8 @@ set_callback(function()
 				worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL
 			) then
 				tombstonelib.set_ash_tombstone()
+
+				touchupslib.replace_s2_crust_items()
 
 				backwalllib.set_backwall_bg()
 
