@@ -81,7 +81,6 @@ local function render_cloud(render_ctx, x)
     return x
 end
 
---WORKING
 set_callback(function(render_ctx, draw_depth)
     if state.screen == SCREEN.INTRO
     or state.screen == SCREEN.SCORES
