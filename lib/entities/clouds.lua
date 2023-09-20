@@ -27,44 +27,6 @@ local cloud1_x
 local cloud2_x
 local sun_uid
 
-local function set(ent)
-    ent.width = decorlib.SURFACE_BG_WIDTH
-    ent.height = 7.5
-    ent.hitboxx = 30
-    ent.hitboxy = 1.875
-    ent.tile_width = 4
-    ent.tile_height = 1
-    ent:set_draw_depth(decorlib.SURFACE_BG_DEPTH.CLOUDS)
-    ent:set_texture(state.win_state == WIN_STATE.HUNDUN_WIN and hard_texture_id or texture_id)
-    ent.animation_frame = 0
-end
-
-local function _create_cloud(y, x)
-    local ent = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_LAYER, 0, 0, LAYER.FRONT, 0, 0))
-    ent.relative_x, ent.relative_y = decorlib.SURFACE_BG_CENTER + x, y
-    set(ent)
-
-    ent:set_post_update_state_machine(
-        ---@param self Movable | Entity | BGSurfaceLayer
-        function (self)
-            if self.relative_x >= 93 then
-                self.relative_x = self.relative_x - 119.97
-            else
-                self.relative_x = self.relative_x + decorlib.get_surface_bg_speed(decorlib.SURFACE_BG_DEPTH.CLOUDS)
-            end
-        end
-    )
-    return ent
-end
-
--- clouds real world placement:
--- credits: y = 113.6(needs adjusting)
--- intro/scores: y = 103.6
-function module.create_clouds(y)
-    _create_cloud(y, decorlib.SURFACE_BG_WIDTH)
-    _create_cloud(y, 0)
-end
-
 local function init()
     cloud1_x = CLOUD1_X_INIT
     cloud2_x = CLOUD2_X_INIT
