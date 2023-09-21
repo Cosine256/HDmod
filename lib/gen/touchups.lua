@@ -568,4 +568,66 @@ state.level_gen.themes[THEME.EGGPLANT_WORLD]:set_pre_spawn_effects(function(them
 	return true
 end)
 
+local KALI_POWERUPS = {
+	ENT_TYPE.ITEM_POWERUP_COMPASS,
+	ENT_TYPE.ITEM_CAPE,
+	ENT_TYPE.ITEM_POWERUP_CLIMBING_GLOVES,
+	ENT_TYPE.ITEM_POWERUP_SPECTACLES,
+	ENT_TYPE.ITEM_POWERUP_PITCHERSMITT,
+	ENT_TYPE.ITEM_POWERUP_SPRING_SHOES,
+	ENT_TYPE.ITEM_POWERUP_SPIKE_SHOES,
+}
+local KALI_PICKUPS = {
+	ENT_TYPE.ITEM_PICKUP_COMPASS,
+	ENT_TYPE.ITEM_CAPE,
+	ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
+	ENT_TYPE.ITEM_PICKUP_SPECTACLES,
+	ENT_TYPE.ITEM_PICKUP_PITCHERSMITT,
+	ENT_TYPE.ITEM_PICKUP_SPRINGSHOES,
+	ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
+}
+local function get_grid_type_at(x, y, layer)
+	return get_entity_type(get_grid_entity_at(x, y, layer))
+end
+-- Replace skeleton key drop from altar, doesn't replace bomb bag drop since it would only drop if having skele, which shouldn't be possible with only HD drops
+set_pre_entity_spawn(function (entity_type, x, y, layer)
+	if (
+		get_grid_type_at(math.floor(x), y-1, layer) == ENT_TYPE.FLOOR_ALTAR or
+		get_grid_type_at(math.ceil(x), y-1, layer) == ENT_TYPE.FLOOR_ALTAR
+	) then
+		local has_paste = false
+		local has_jp = false
+		--Get the closest player, game gets player by ownership but doing so now might be quite difficult
+		local closest_player = players[1]
+		if players[2] then
+			local last_dist = math.huge
+			for _, player in ipairs(players) do
+				local xdist, ydist = (player.abs_x - x), (player.abs_y - y)
+				local dist = (xdist*xdist + ydist*ydist)
+				if dist < last_dist then
+					closest_player = player
+					last_dist = dist
+				end
+			end
+		end
+		if closest_player then
+			has_paste = closest_player:has_powerup(ENT_TYPE.ITEM_POWERUP_PASTE)
+			has_jp = closest_player:has_powerup(ENT_TYPE.ITEM_JETPACK)
+		end
+		if not has_paste then
+			return spawn(ENT_TYPE.ITEM_PICKUP_PASTE, x, y, layer, 0, 0)
+		end
+		for i, powerup_id in ipairs(KALI_POWERUPS) do
+			if not closest_player:has_powerup(powerup_id) and (powerup_id ~= ENT_TYPE.ITEM_CAPE or not has_jp) then -- and don't give cape if has jp
+				return spawn(KALI_PICKUPS[i], x, y, layer, 0, 0)
+			end
+		end
+		-- if player has all random powerups already
+		if not has_jp then
+			return spawn(ENT_TYPE.ITEM_JETPACK, x, y, layer, 0, 0)
+		end
+		return spawn(ENT_TYPE.ITEM_PICKUP_BOMBBOX, x, y, layer, 0, 0)
+	end
+end, SPAWN_TYPE.SYSTEMIC, MASK.ITEM, ENT_TYPE.ITEM_PICKUP_SKELETON_KEY)
+
 return module
