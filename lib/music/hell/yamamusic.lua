@@ -563,193 +563,73 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             id = "1p1_2p1",
             sound = create_sound("res/music/BGM_Yama_Tran_1P1_2P1.ogg"),
             length = 1894,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "2p1"
-            end
+            next_sound_id = "2p1"
         },
         {
             id = "1p1_2p2",
             sound = create_sound("res/music/BGM_Yama_Tran_1P1_2P2.ogg"),
             length = 1894,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "2p2"
-            end
+            next_sound_id = "2p2"
         },
         {
             id = "1p1_2p3",
             sound = create_sound("res/music/BGM_Yama_Tran_1P1_2P3.ogg"),
             length = 1894,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "2p3"
-            end
+            next_sound_id = "2p3"
         },
         {
             id = "2p1_3p1",
             sound = create_sound("res/music/BGM_Yama_Tran_2P1_3P1.ogg"),
             length = 1894,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "3p1"
-            end
+            next_sound_id = "3p1"
         },
         {
             id = "2p2_3p2",
             sound = create_sound("res/music/BGM_Yama_Tran_2P2_3P2.ogg"),
             length = 1894,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "3p2"
-            end
+            next_sound_id = "3p2"
         },
         {
             id = "2px_3p3",
             sound = create_sound("res/music/BGM_Yama_Tran_2PX_3P3.ogg"),
             length = 1894,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "3p3"
-            end
+            next_sound_id = "3p3"
         },
         {
             id = "3p1_3p2",
             sound = create_sound("res/music/BGM_Yama_Tran_3P1_3P2.ogg"),
             length = 947,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "3p2"
-            end
+            next_sound_id = "3p2"
         },
         {
             id = "3p1_3p3",
             sound = create_sound("res/music/BGM_Yama_Tran_3P1_3P3.ogg"),
             length = 947,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "3p3"
-            end
+            next_sound_id = "3p3"
         },
         {
             id = "3p1_4p1",
             sound = create_sound("res/music/BGM_Yama_Tran_3P1_4P1.ogg"),
             length = 947,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "4p1"
-            end
+            next_sound_id = "4p1"
         },
         {
             id = "3p2_4p2",
             sound = create_sound("res/music/BGM_Yama_Tran_3P2_4P2.ogg"),
             length = 947,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "4p2"
-            end
+            next_sound_id = "4p2"
         },
         {
             id = "3p2_4p3",
             sound = create_sound("res/music/BGM_Yama_Tran_3P2_4P3.ogg"),
             length = 947,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "4p3"
-            end
+            next_sound_id = "4p3"
         },
         {
             id = "3p3_4p3",
             sound = create_sound("res/music/BGM_Yama_Tran_3P3_4P3.ogg"),
             length = 947,
-            next_sound_id = function(ctx)
-                if isYamaDead() then
-                    if module.music_debug_print then
-                        print("[Yama Music Debug] King Yama is dead.")
-                    end
-
-                    return "postmortem"
-                end
-
-                return "4p3"
-            end
+            next_sound_id = "4p3"
         },
         {
             id = "postmortem",
