@@ -572,7 +572,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                return "3p1"
+                return "2p1"
             end
         },
         {
@@ -588,7 +588,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                return "3p1"
+                return "2p2"
             end
         },
         {
@@ -604,7 +604,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                return "3p1"
+                return "2p3"
             end
         },
         {
