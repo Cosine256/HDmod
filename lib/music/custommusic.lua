@@ -16,7 +16,8 @@ optionslib.register_option_bool("hd_debug_custom_title_music_disable", "Custom m
 local CUSTOM_LEVEL_MUSICS = {
     minesmusic.MINES_DARK_CUSTOM_MUSIC,
     minesmusic.MINES_CUSTOM_MUSIC,
-    hellmusic.HELL_CUSTOM_MUSIC
+    hellmusic.HELL_CUSTOM_MUSIC,
+    yamamusic.YAMA_CUTSCENE_CUSTOM_MUSIC
 }
 
 local WORM_LOOP_SOUND = create_sound("../../Extracted/soundbank/ogg/BGM_Frog_Belly.ogg")

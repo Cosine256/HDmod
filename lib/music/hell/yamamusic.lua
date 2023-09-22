@@ -38,6 +38,55 @@ local function isYamaPhaseTwo()
     return false
 end
 
+local function isYamaDead()
+    for _, v in ipairs(get_entities_by({ENT_TYPE.MONS_AMMIT}, MASK.MONSTER, LAYER.PLAYER)) do
+        local mons = get_entity(v)
+        if type(mons.user_data) == "table" then
+            if mons.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HEAD then
+                return false
+            end
+        end
+    end
+
+    return true
+end
+
+module.YAMA_CUTSCENE_CUSTOM_MUSIC = {
+    settings = {
+        base_volume = 0.5,
+        start_sound_id = "c1",
+        sounds = {
+            {
+                id = "c1",
+                sound = create_sound("res/music/BGM_Yama_C1.ogg"),
+                length = 2526,
+                next_sound_id = "c2"
+            },
+            {
+                id = "c2",
+                sound = create_sound("res/music/BGM_Yama_C2.ogg"),
+                length = 789,
+                next_sound_id = "c3"
+            },
+            {
+                id = "c3",
+                sound = create_sound("res/music/BGM_Yama_C3.ogg"),
+                length = 2526,
+                next_sound_id = "c4"
+            },
+            {
+                id = "c4",
+                sound = create_sound("res/music/BGM_Yama_C4.ogg"),
+                length = 789,
+                next_sound_id = "c1"
+            }
+        }
+    },
+    should_play = function()
+        return state.screen == SCREEN.LEVEL and feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA)
+    end
+}
+
 module.YAMA_BOSS_CUSTOM_MUSIC = {
     base_volume = 0.5,
     start_sound_id = "yama_intro",
@@ -69,14 +118,14 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
         {
             id = "1p1",
             sound = create_sound("res/music/BGM_Yama_1P1.ogg"),
-            length = 8210,
+            length = 6315,
             next_sound_id = function(ctx)
                 if isYamaPhaseTwo() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
 
-                    return "2p3"
+                    return "1p1_2p3"
                 end
 
                 if playerInRange(players[1].uid) then
@@ -84,10 +133,10 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
 
-                    return "2p2"
+                    return "1p1_2p2"
                 end
 
-                return "2p1"
+                return "1p1_2p1"
             end
         },
         {
@@ -110,7 +159,17 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             id = "1p3",
             sound = create_sound("res/music/BGM_Yama_1P3.ogg"),
             length = 8210,
-            next_sound_id = "2p3"
+            next_sound_id = function(ctx)
+                if isYamaDead() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] King Yama is dead.")
+                    end
+
+                    return "postmortem"
+                end
+
+                return "2p3"
+            end
         },
         {
             id = "2p1",
@@ -156,7 +215,17 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             id = "2p3",
             sound = create_sound("res/music/BGM_Yama_2P3.ogg"),
             length = 4736,
-            next_sound_id = "2px_3p3"
+            next_sound_id = function(ctx)
+                if isYamaDead() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] King Yama is dead.")
+                    end
+
+                    return "postmortem"
+                end
+
+                return "2px_3p3"
+            end
         },
         {
             id = "3p1",
@@ -202,7 +271,17 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             id = "3p3",
             sound = create_sound("res/music/BGM_Yama_3P3.ogg"),
             length = 5684,
-            next_sound_id = "3p3_4p3"
+            next_sound_id = function(ctx)
+                if isYamaDead() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] King Yama is dead.")
+                    end
+
+                    return "postmortem"
+                end
+
+                return "3p3_4p3"
+            end
         },
         {
             id = "4p1",
@@ -248,7 +327,17 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             id = "4p3",
             sound = create_sound("res/music/BGM_Yama_4P3.ogg"),
             length = 6631,
-            next_sound_id = "5p3"
+            next_sound_id = function(ctx)
+            if isYamaDead() then
+                if module.music_debug_print then
+                    print("[Yama Music Debug] King Yama is dead.")
+                end
+
+                return "postmortem"
+            end
+
+            return "5p3"
+        end
         },
         {
             id = "5p1",
@@ -294,7 +383,17 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             id = "5p3",
             sound = create_sound("res/music/BGM_Yama_5P3.ogg"),
             length = 6947,
-            next_sound_id = "6p3"
+            next_sound_id = function(ctx)
+                if isYamaDead() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] King Yama is dead.")
+                    end
+
+                    return "postmortem"
+                end
+
+                return "6p3"
+            end
         },
         {
             id = "6p1",
@@ -340,7 +439,35 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             id = "6p3",
             sound = create_sound("res/music/BGM_Yama_6P3.ogg"),
             length = 6631,
-            next_sound_id = "1p3"
+            next_sound_id = function(ctx)
+                if isYamaDead() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] King Yama is dead.")
+                    end
+
+                    return "postmortem"
+                end
+
+                return "1p3"
+            end
+        },
+        {
+            id = "1p1_2p1",
+            sound = create_sound("res/music/BGM_Yama_Tran_1P1_2P1.ogg"),
+            length = 1894,
+            next_sound_id = "3p1"
+        },
+        {
+            id = "1p1_2p2",
+            sound = create_sound("res/music/BGM_Yama_Tran_1P1_2P2.ogg"),
+            length = 1894,
+            next_sound_id = "3p1"
+        },
+        {
+            id = "1p1_2p3",
+            sound = create_sound("res/music/BGM_Yama_Tran_1P1_2P3.ogg"),
+            length = 1894,
+            next_sound_id = "3p1"
         },
         {
             id = "2p1_3p1",
@@ -358,7 +485,17 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             id = "2px_3p3",
             sound = create_sound("res/music/BGM_Yama_Tran_2PX_3P3.ogg"),
             length = 1894,
-            next_sound_id = "3p3"
+            next_sound_id = function(ctx)
+                if isYamaDead() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] King Yama is dead.")
+                    end
+
+                    return "postmortem"
+                end
+
+                return "3p3"
+            end
         },
         {
             id = "3p1_3p2",
@@ -394,7 +531,23 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             id = "3p3_4p3",
             sound = create_sound("res/music/BGM_Yama_Tran_3P3_4P3.ogg"),
             length = 947,
-            next_sound_id = "4p3"
+            next_sound_id = function(ctx)
+                if isYamaDead() then
+                    if module.music_debug_print then
+                        print("[Yama Music Debug] King Yama is dead.")
+                    end
+
+                    return "postmortem"
+                end
+
+                return "4p3"
+            end
+        },
+        {
+            id = "postmortem",
+            sound = create_sound("res/music/BGM_Yama_Postmortem.ogg"),
+            length = 25894,
+            next_sound_id = "postmortem"
         }
     }
 }
