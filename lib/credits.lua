@@ -94,6 +94,7 @@ set_callback(function ()
         end
         creditsballoonlib.create_creditsballoon(x, y+math.fmod(4, 2)*HEIGHT_OFFSET, LAYER.FRONT, 5, ENTER_TIMEOUT + 4*SPACING_TIMEOUT)
     end
+    --TEST BALLOON
     -- creditsballoonlib.create_creditsballoon(x, y, LAYER.FRONT, 0, 100)
 
 end, ON.CREDITS)
@@ -117,21 +118,9 @@ set_callback(function()
         if not normal_credits_end then
             -- stop loading next scene
             state.loading = 0
-            -- Dosn't work
-            -- if state.screen_credits.bg_music_info then
-            --     state.screen_credits.bg_music_info.playing = true
-            -- end
         end
     end
 
-    -- if state.screen == SCREEN.CREDITS
-    -- and state.loading == 0
-    -- and not normal_credits_end
-    -- then
-    --     if state.screen_credits.bg_music_info then
-    --         state.screen_credits.bg_music_info.playing = true
-    --     end
-    -- end
     if state.screen == SCREEN.SCORES
     and state.loading == 3
     then
