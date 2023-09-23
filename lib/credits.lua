@@ -111,13 +111,20 @@ set_callback(function()
         normal_credits_end = true
         for _, player in pairs(players) do
             local input = read_input(player.uid)
-            if test_flag(input, INPUT_FLAG.JUMP) then
+            if test_flag(input, INPUT_FLAG.JUMP)
+            or test_flag(input, INPUT_FLAG.UP) then
                 normal_credits_end = false
             end
         end
         if not normal_credits_end then
             -- stop loading next scene
             state.loading = 0
+        end
+        if test_flag(read_input(players[1].uid), INPUT_FLAG.JUMP) then
+            message(string.format("%s JUMP", state.loading))
+        end
+        if test_flag(read_input(players[1].uid), INPUT_FLAG.UP) then
+            message(string.format("%s UP", state.loading))
         end
     end
 
@@ -133,10 +140,10 @@ end, ON.LOADING)
 
 local function render_skip_text(render_ctx)
     ---@type TextRenderingInfo
-    local skip_text = TextRenderingInfo:new("Press     +     to skip", 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.RIGHT, VANILLA_FONT_STYLE.ITALIC)
+    local skip_text = TextRenderingInfo:new("Press \u{86} to skip", 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.RIGHT, VANILLA_FONT_STYLE.ITALIC)
     skip_text.x, skip_text.y = 0.95, 0.86
     render_ctx:draw_text(skip_text, Color:black())
-    skip_text:set_text("Press \u{8D}+\u{83} to skip", 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.RIGHT, VANILLA_FONT_STYLE.ITALIC)
+    skip_text:set_text("Press \u{86} to skip", 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.RIGHT, VANILLA_FONT_STYLE.ITALIC)
     skip_text.x, skip_text.y = skip_text.x-0.0035, skip_text.y+0.0035
     render_ctx:draw_text(skip_text, Color:yellow())
 end
