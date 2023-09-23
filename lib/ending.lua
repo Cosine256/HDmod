@@ -152,7 +152,7 @@ set_callback(function ()
     local particle_cb = set_post_entity_spawn(function(particle, spawn_flags)
         if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
             particle:set_pre_update_state_machine(function (self)
-                message(string.format("Rubble: %s", particle.uid))
+                -- message(string.format("Rubble: %s", particle.uid))
                 particle.animation_frame = hard_win and 16 or 0
                 clear_callback()
             end)
