@@ -26,7 +26,6 @@ module.INTRO_STATE = {
 }
 
 module.CAMEL_ANIMATIONS = {
-    CROUCH_LEAVE = {21, 20, 19, loop = false, frames = 3, frame_time = 6},
     PET_START = {29, loop = false, frames = 1, frame_time = 4},
 }
 local GUY_ANIMATIONS = {
@@ -44,13 +43,6 @@ end
 function module.set_crouching(guy)
     guy.user_data.state = module.GUY_WALKS.SITTING_CROUCH_ENTER
     animationlib.set_animation(guy.user_data, GUY_ANIMATIONS.MOUNTED_CROUCH_ENTER)
-end
-
----@param camel Rockdog | Mount | Entity | Movable | PowerupCapable
-function module.set_uncrouching(camel)
-    camel.user_data.state = module.INTRO_STATE.CROUCH_LEAVE
-    animationlib.set_animation(camel.user_data, module.CAMEL_ANIMATIONS.CROUCH_LEAVE)
-    -- message("SET CROUCH_LEAVE")
 end
 
 return module

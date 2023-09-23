@@ -206,20 +206,12 @@ local function camel_post_update_intro(camel)
             camel.user_data.state = introanimationslib.INTRO_STATE.CROUCHING
             animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.CROUCHING)
             -- message("SET CROUCHING")
-        else
-            camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
-            animationlib.update_timer(camel.user_data)
         end
+        camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
+        animationlib.update_timer(camel.user_data)
     elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCHING then
         camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
         animationlib.update_timer(camel.user_data)
-    elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCH_LEAVE then
-        if camel.user_data.animation_timer == 0 then -- if animation finished
-            camel.user_data.state = introanimationslib.INTRO_STATE.IDLE
-        else
-            camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
-            animationlib.update_timer(camel.user_data)
-        end
     elseif camel.user_data.state == introanimationslib.INTRO_STATE.PETTING then
         if camel.user_data.animation_state == introanimationslib.CAMEL_ANIMATIONS.PET_START
         and camel.user_data.animation_timer == 0 then
@@ -236,14 +228,11 @@ local function camel_post_update_intro(camel)
         end
         if camel.user_data.animation_state == CAMEL_ANIMATIONS.PET_END
         and camel.user_data.animation_timer == 0 then
-            --here's where you'd set it to IDLE_NOISES. Since the timeout would be too long to hear, I think
-            --that we might as well make only one noise when it gets pet.
-            camel.user_data.state = introanimationslib.INTRO_STATE.IDLE
+            camel.user_data.state = introanimationslib.INTRO_STATE.CROUCHING
+            animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.CROUCHING)
         end
-        if camel.user_data.state == introanimationslib.INTRO_STATE.PETTING then
-            camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
-            animationlib.update_timer(camel.user_data)
-        end
+        camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
+        animationlib.update_timer(camel.user_data)
     elseif camel.user_data.state == introanimationslib.INTRO_STATE.IDLE
     or camel.user_data.state == introanimationslib.INTRO_STATE.IDLE_CROUCH then
         -- SORRY NOTHING

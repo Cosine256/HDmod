@@ -28,8 +28,6 @@ local function update_intro_guy(guy)
 
             ---@type Rockdog | Mount | Entity | Movable | PowerupCapable
             local camel = get_entity(guy.user_data.camel_uid)
-            --maybe set the camel hitbox big
-            introanimationslib.set_uncrouching(camel)
             camel:remove_rider()
             --teleport to the camels position + goaloffx and goalloffy
             local x, y, _ = get_position(guy.user_data.camel_uid)
