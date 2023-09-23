@@ -284,10 +284,11 @@ set_callback(function ()
     local camel = get_entity(camellib.create_camel(25, 100, LAYER.FRONT))
     spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
     flip_entity(camel.uid)
-    camel.user_data.state = introanimationslib.INTRO_STATE.IDLE_CROUCH
+    camel.user_data.state = introanimationslib.INTRO_STATE.CROUCHING
+    animationlib.set_animation(camel.user_data, introanimationslib.CAMEL_ANIMATIONS.CROUCHING)
     camel:set_post_update_state_machine(function (self)
         if VOLCANO_DISAPPEAR then
-            self.user_data.state = introanimationslib.INTRO_STATE.IDLE_CROUCH_NOISES
+            self.user_data.state = introanimationslib.INTRO_STATE.CROUCH_NOISES
             self.user_data.timeout = 100
             clear_callback()
         end

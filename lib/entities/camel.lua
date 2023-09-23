@@ -52,7 +52,6 @@ local CAMEL_WALKING_STATE <const> = {
 
 local CAMEL_ANIMATIONS <const> = {
     CROUCH_ENTER = {19, 18, 17, loop = false, frames = 3, frame_time = 6},
-    CROUCHING = {19, loop = true, frames = 1, frame_time = 6},
     NOT_FAKE_WALKING = {0, loop = false, frames = 1, frame_time = 4},
     FAKE_WALKING = {8, 7, 6, 5, 4, 3, 2, 1, loop = true, frames = 8, frame_time = 6},
     PET = {30, loop = true, frames = 1, frame_time = 4},
@@ -163,11 +162,6 @@ local function camel_post_update(ent)
     elseif ent.animation_frame == 91 then
         ent.animation_frame = 28
     end
-
-    if ent.user_data.state == introanimationslib.INTRO_STATE.IDLE_CROUCH
-    or ent.user_data.state == introanimationslib.INTRO_STATE.IDLE_CROUCH_NOISES then
-        ent.animation_frame = 19
-    end
 end
 
 function module.set_camel_intro_walk_in(camel, _guy_uid)
@@ -204,7 +198,7 @@ local function camel_post_update_intro(camel)
     elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCH_ENTER then
         if camel.user_data.animation_timer == 0 then -- if animation finished
             camel.user_data.state = introanimationslib.INTRO_STATE.CROUCHING
-            animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.CROUCHING)
+            animationlib.set_animation(camel.user_data, introanimationslib.CAMEL_ANIMATIONS.CROUCHING)
             -- message("SET CROUCHING")
         end
         camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
@@ -229,21 +223,23 @@ local function camel_post_update_intro(camel)
         if camel.user_data.animation_state == CAMEL_ANIMATIONS.PET_END
         and camel.user_data.animation_timer == 0 then
             camel.user_data.state = introanimationslib.INTRO_STATE.CROUCHING
-            animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.CROUCHING)
+            animationlib.set_animation(camel.user_data, introanimationslib.CAMEL_ANIMATIONS.CROUCHING)
         end
         camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
         animationlib.update_timer(camel.user_data)
-    elseif camel.user_data.state == introanimationslib.INTRO_STATE.IDLE
-    or camel.user_data.state == introanimationslib.INTRO_STATE.IDLE_CROUCH then
-        -- SORRY NOTHING
-    elseif camel.user_data.state == introanimationslib.INTRO_STATE.IDLE_NOISES
-    or camel.user_data.state == introanimationslib.INTRO_STATE.IDLE_CROUCH_NOISES then
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.IDLE then
+        --SORRY NOTHING
+        --This state is here for testing purposes;
+        --Use this state outside of the cutscene or the minigame (places where we continuously animate it).
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCH_NOISES then
         if camel.user_data.timeout > 0 then
             camel.user_data.timeout = camel.user_data.timeout - 1
         else
             commonlib.play_custom_sound(idle_sound[prng:random_index(#idle_sound, PRNG_CLASS.FX)], camel.uid, 0.25, false)
             camel.user_data.timeout = 400
         end
+        camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
+        animationlib.update_timer(camel.user_data)
     end
     -- if camel.user_data.state ~= introanimationslib.INTRO_STATE.WALKING
     -- and camel.user_data.state ~= introanimationslib.INTRO_STATE.IDLE then

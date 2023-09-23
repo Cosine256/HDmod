@@ -20,13 +20,12 @@ module.INTRO_STATE = {
     CROUCH_LEAVE = 4,
     IDLE = 5,
     PETTING = 6,
-    IDLE_NOISES = 7,
-    IDLE_CROUCH = 8,
-    IDLE_CROUCH_NOISES = 9,
+    CROUCH_NOISES = 7,
 }
 
 module.CAMEL_ANIMATIONS = {
     PET_START = {29, loop = false, frames = 1, frame_time = 4},
+    CROUCHING = {19, loop = true, frames = 1, frame_time = 6},
 }
 local GUY_ANIMATIONS = {
     MOUNTED_CROUCH_ENTER = {124, 123, 122, loop = false, frames = 3, frame_time = 6},
