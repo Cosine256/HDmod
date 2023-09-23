@@ -119,10 +119,18 @@ end
 ---@param velocity_y any
 ---@param iframes any
 local function pre_caveman_damage_minigame_handling(self, damage_dealer, _damage_amount, stun_time, velocity_x, velocity_y, iframes)
-    -- message(string.format("caveman attacked by %s", damage_dealer.last_owner_uid))
-    if damage_dealer.type.id == ENT_TYPE.ITEM_BULLET then
+    if damage_dealer.type.id == ENT_TYPE.ITEM_BULLET
+    or damage_dealer.type.id == ENT_TYPE.MONS_UFO
+    or (damage_dealer.type.id == ENT_TYPE.FX_MODERNEXPLOSION
+    and self.invincibility_frames_timer ~= 0)
+    then
         return false
     end
+    -- if damage_dealer.type.id == ENT_TYPE.MONS_UFO
+    -- or damage_dealer.type.id == ENT_TYPE.FX_MODERNEXPLOSION then
+    --     local attacker_txt = damage_dealer.type.id == ENT_TYPE.MONS_UFO and "UFO" or "EXPLOSION"
+    --     message(string.format("caveman %s attacked by %s for %s while iframes at %s", self.uid, attacker_txt, _damage_amount, self.invincibility_frames_timer))
+    -- end
     local was_player = false
     for _, uid in pairs(camels) do
         ---@type Mount
