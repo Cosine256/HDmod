@@ -71,7 +71,7 @@ local function update_treasure(self)
     if self.user_data.state == MINIGAME_INTRO_STATE.PRE_MINIGAME then
         if minigamelib.started_minigame() then
             self.user_data.state = MINIGAME_INTRO_STATE.RUNNING_TO_CENTER
-            message("RUNNING_TO_CENTER")
+            -- message("RUNNING_TO_CENTER")
         end
     elseif self.user_data.state == MINIGAME_INTRO_STATE.RUNNING_TO_CENTER then
         local x, _, _ = get_position(self.uid)
@@ -81,19 +81,19 @@ local function update_treasure(self)
             self.user_data.state = MINIGAME_INTRO_STATE.PROTECT_INDICATOR
             self.user_data.timeout = 150
             self.user_data.indicator_sound_played = false
-            message("PROTECT_INDICATOR")
+            -- message("PROTECT_INDICATOR")
         end
     elseif self.user_data.state == MINIGAME_INTRO_STATE.PROTECT_INDICATOR then
         if self.user_data.timeout > 0 then
             self.user_data.timeout = self.user_data.timeout - 1
         else
             self.user_data.state = MINIGAME_INTRO_STATE.FINISHED_MINIGAME_INTRO
-            message("FINISHED_MINIGAME_INTRO")
+            -- message("FINISHED_MINIGAME_INTRO")
         end
         if show_indicator(self) then
             if not self.user_data.indicator_sound_played then
                 commonlib.play_vanilla_sound(VANILLA_SOUND.MENU_CHARSEL_QUICK_OPEN, self.uid, 0.75, false)
-                message("PLAY SOUND")
+                -- message("PLAY SOUND")
                 --ENEMIES_ANUBIS_WARN
                 --MENU_NAVI
                 --DEATHMATCH_DM_TIMER

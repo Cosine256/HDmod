@@ -120,12 +120,6 @@ set_callback(function()
             -- stop loading next scene
             state.loading = 0
         end
-        if test_flag(read_input(players[1].uid), INPUT_FLAG.JUMP) then
-            message(string.format("%s JUMP", state.loading))
-        end
-        if test_flag(read_input(players[1].uid), INPUT_FLAG.UP) then
-            message(string.format("%s UP", state.loading))
-        end
     end
 
     if state.screen == SCREEN.SCORES
