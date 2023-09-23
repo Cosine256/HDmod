@@ -20,6 +20,8 @@ module.INTRO_STATE = {
     CROUCH_LEAVE = 4,
     IDLE = 5,
     IDLE_NOISES = 6,
+    IDLE_CROUCH = 7,
+    IDLE_CROUCH_NOISES = 8,
 }
 
 local CAMEL_ANIMATIONS = {

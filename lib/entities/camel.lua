@@ -161,6 +161,11 @@ local function camel_post_update(ent)
     elseif ent.animation_frame == 91 then
         ent.animation_frame = 28
     end
+
+    if ent.user_data.state == introanimationslib.INTRO_STATE.IDLE_CROUCH
+    or ent.user_data.state == introanimationslib.INTRO_STATE.IDLE_CROUCH_NOISES then
+        ent.animation_frame = 19
+    end
 end
 
 function module.set_camel_intro_walk_in(camel, _guy_uid)
@@ -215,9 +220,11 @@ local function camel_post_update_intro(camel)
             camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
             animationlib.update_timer(camel.user_data)
         end
-    elseif camel.user_data.state == introanimationslib.INTRO_STATE.IDLE then
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.IDLE
+    or camel.user_data.state == introanimationslib.INTRO_STATE.IDLE_CROUCH then
         -- SORRY NOTHING
-    elseif camel.user_data.state == introanimationslib.INTRO_STATE.IDLE_NOISES then
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.IDLE_NOISES
+    or camel.user_data.state == introanimationslib.INTRO_STATE.IDLE_CROUCH_NOISES then
         if camel.user_data.timeout > 0 then
             camel.user_data.timeout = camel.user_data.timeout - 1
         else
