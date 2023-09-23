@@ -27,6 +27,7 @@ local spawn_timeout
 local target_uid
 ---@type integer[]
 local camels
+local hitmarks
 
 local X_LEFT_LIMIT = 3
 local X_RIGHT_LIMIT = 27
@@ -83,14 +84,24 @@ local function update_kill_right_offscreen(self)
     end
 end
 
+local function add_hitmarker(amount, damager_uid)
+    local x, y, _ = get_position(damager_uid)
+    hitmarks[#hitmarks+1] = {
+        amount = amount,
+        timeout = 100,
+        x = x,
+        y = y
+    }
+end
+
 ---@param self Movable
 ---@param damage_dealer Movable
----@param damage_amount any
+---@param _damage_amount any
 ---@param stun_time any
 ---@param velocity_x any
 ---@param velocity_y any
 ---@param iframes any
-local function pre_caveman_damage_minigame_handling(self, damage_dealer, damage_amount, stun_time, velocity_x, velocity_y, iframes)
+local function pre_caveman_damage_minigame_handling(self, damage_dealer, _damage_amount, stun_time, velocity_x, velocity_y, iframes)
     -- message(string.format("caveman attacked by %s", damage_dealer.last_owner_uid))
     if damage_dealer.type.id == ENT_TYPE.ITEM_BULLET then
         return false
@@ -104,7 +115,9 @@ local function pre_caveman_damage_minigame_handling(self, damage_dealer, damage_
             was_player = true
         end
     end
-    subtract_from_total_score(damage_amount*4, was_player and damage_dealer.last_owner_uid or nil)
+    local score_loss = _damage_amount*4
+    subtract_from_total_score(score_loss, was_player and damage_dealer.last_owner_uid or nil)
+    add_hitmarker(-score_loss, damage_dealer.uid)
     self.invincibility_frames_timer = 45
     commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_CAVEMAN_TRIGGER, self.uid, 1, false)
     return false
@@ -123,6 +136,7 @@ local function post_enemy_damage_minigame_handling(self, damage_dealer, damage_a
     end
     -- message(string.format("%s attacked by %s", self.uid, damage_dealer.last_owner_uid))
     add_to_score(damage_dealer.last_owner_uid)
+    add_hitmarker(damage_amount, damage_dealer.uid)
 end
 
 -- local type_amazon = get_type(ENT_TYPE.CHAR_AMAZON)
@@ -358,7 +372,8 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
     camels = _camels
     get_entity(caveman1):set_pre_damage(pre_caveman_damage_minigame_handling)
     get_entity(caveman2):set_pre_damage(pre_caveman_damage_minigame_handling)
-    
+    hitmarks = {}
+
     set_callback(
         ---@param render_ctx VanillaRenderContext
     function(render_ctx)
@@ -504,6 +519,26 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
                         totalscore_value.x, totalscore_value.y = totalscore_value.x-0.0035, totalscore_value.y+0.0035
                         render_ctx:draw_text(totalscore_value, Color:white())
                     end
+                end
+            end
+            for i=#hitmarks, 1, -1 do
+                local amount = hitmarks[i].amount
+                local color = amount >= 0 and Color:green() or Color:red()
+                local protect_text = TextRenderingInfo:new(string.format(amount), 0.0025, 0.0025, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
+
+                local ix = hitmarks[i].x
+                local iy = hitmarks[i].y + 0.5-1*(hitmarks[i].timeout/100)
+                protect_text.x, protect_text.y = screen_position(ix, iy)
+
+                render_ctx:draw_text(protect_text, Color:black())
+                protect_text:set_text(string.format(amount), 0.0025, 0.0025, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
+                protect_text.x, protect_text.y = protect_text.x-0.0035, protect_text.y+0.0035
+                render_ctx:draw_text(protect_text, color)
+
+                if hitmarks[i].timeout > 0 then
+                    hitmarks[i].timeout = hitmarks[i].timeout - 1
+                else
+                    table.remove(hitmarks, i)
                 end
             end
         else
