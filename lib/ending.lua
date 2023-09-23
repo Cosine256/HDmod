@@ -149,6 +149,19 @@ set_callback(function ()
         flip_entity(yang.uid)
     end
 
+    local particle_cb = set_post_entity_spawn(function(particle, spawn_flags)
+        if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+            particle:set_pre_update_state_machine(function (self)
+                message(string.format("Rubble: %s", particle.uid))
+                particle.animation_frame = hard_win and 16 or 0
+                clear_callback()
+            end)
+        end
+    end, SPAWN_TYPE.ANY, MASK.FX, ENT_TYPE.ITEM_RUBBLE)
+    set_callback(function ()
+        clear_callback(particle_cb)
+        clear_callback()
+    end, ON.SCORES)
 end, ON.WIN)
 
 set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
