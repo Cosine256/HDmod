@@ -1,8 +1,23 @@
 local validlib = require 'lib.spawning.valid'
 local module = {}
 
+---Remove the entities that an embed item may contain
+---Destroys crossbow arrows and move visible particles when destroying jetpack at first frame
+---@param embedded_item_uid integer
+function module.remove_item_entities(embedded_item_uid)
+	for _, item_uid in pairs(entity_get_items_by(embedded_item_uid, 0, MASK.ITEM)) do
+		local item = get_entity(item_uid) --[[@as FxJetpackFlame]]
+		if item.type.id == ENT_TYPE.FX_JETPACKFLAME then
+			item.particle_flame.offset_y = 10000.0
+			item.particle_smoke.offset_y = 10000.0
+		end
+		item:destroy()
+	end
+end
+
 function module.remove_embedded_at(x, y, l)
-	local entity_uids = get_entities_at({
+	local floor_uid = get_grid_entity_at(x, y, l)
+	local entity_uids = entity_get_items_by(floor_uid, {
 		ENT_TYPE.EMBED_GOLD,
 		ENT_TYPE.EMBED_GOLD_BIG,
 		ENT_TYPE.ITEM_RUBY,
@@ -35,10 +50,11 @@ function module.remove_embedded_at(x, y, l)
 		ENT_TYPE.ITEM_MATTOCK,
 		ENT_TYPE.ITEM_BOOMERANG,
 		ENT_TYPE.ITEM_MACHETE
-	}, 0, x, y, l, 0.5)
+	}, MASK.ITEM | MASK.DECORATION)
 	if #entity_uids ~= 0 then
 		-- message("Bye bye, embed! " .. x .. " " .. y)
 		local entity = get_entity(entity_uids[1])
+		module.remove_item_entities(entity.uid)
 		-- entity.flags = set_flag(entity.flags, ENT_FLAG.INVISIBLE)
 		entity.flags = set_flag(entity.flags, ENT_FLAG.DEAD)
 		-- move_entity(entity.uid, 1000, 0, 0, 0)

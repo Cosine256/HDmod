@@ -306,6 +306,12 @@ set_pre_entity_spawn(function (entity_type, x, y, layer, _, spawn_flags)
 	else
 		return
 	end
+	--little hack to know if it's gonna spawn inside a floor entity
+	local last_ent_x, last_ent_y = get_position(state.next_entity_uid-1)
+	if last_ent_x == x and last_ent_y == y and get_type(get_entity_type(state.next_entity_uid-1)).search_flags & MASK.FLOOR ~= 0 then
+		-- messpect("shop item inside floor", x, y, entity_type)
+		return
+	end
 	local custom_shop = get_custom_shop(rx, ry)
 	local shop_type = custom_shop == -1 and state.level_gen.shop_type or custom_shop
 	-- messpect(module.custom_shop, state.level_gen.shop_type, shop_type)

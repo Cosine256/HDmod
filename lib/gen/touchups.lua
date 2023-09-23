@@ -372,6 +372,143 @@ function module.onlevel_touchups()
 	onlevel_remove_cobwebs_on_pushblocks()
 end
 
+local present_entities = {
+	ENT_TYPE.ITEM_PICKUP_ROPEPILE,
+	ENT_TYPE.ITEM_PICKUP_BOMBBAG,
+	ENT_TYPE.ITEM_PICKUP_BOMBBOX,
+	ENT_TYPE.ITEM_PICKUP_SPECTACLES,
+	ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
+	ENT_TYPE.ITEM_PICKUP_PITCHERSMITT,
+	ENT_TYPE.ITEM_PICKUP_SPRINGSHOES,
+	ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
+	ENT_TYPE.ITEM_PICKUP_PASTE,
+	ENT_TYPE.ITEM_PICKUP_COMPASS,
+	ENT_TYPE.ITEM_MATTOCK,
+	ENT_TYPE.ITEM_BOOMERANG,
+	ENT_TYPE.ITEM_MACHETE,
+	ENT_TYPE.ITEM_WEBGUN,
+	ENT_TYPE.ITEM_SHOTGUN,
+	ENT_TYPE.ITEM_FREEZERAY,
+	ENT_TYPE.ITEM_CAMERA,
+	ENT_TYPE.ITEM_TELEPORTER,
+	ENT_TYPE.ITEM_PICKUP_PARACHUTE,
+	ENT_TYPE.ITEM_CAPE,
+	ENT_TYPE.ITEM_JETPACK,
+}
+local present_entities_num = #present_entities
+
+set_post_entity_spawn(function(e)
+	local tospawn
+	if e.type.id == ENT_TYPE.ITEM_PRESENT then
+		tospawn = present_entities[prng:random_index(present_entities_num, PRNG_CLASS.PROCEDURAL_SPAWNS)]
+	else
+		if prng:random_index(10000, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PLASMACANNON
+		elseif prng:random_index(500, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_JETPACK
+		elseif prng:random_index(200, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_FREEZERAY
+		elseif prng:random_index(200, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_CAPE
+		elseif prng:random_index(100, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_SHOTGUN
+		elseif prng:random_index(100, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_MATTOCK
+		elseif prng:random_index(100, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_TELEPORTER
+		elseif prng:random_index(90, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES
+		elseif prng:random_index(90, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_SPECTACLES
+		elseif prng:random_index(80, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_WEBGUN
+		elseif prng:random_index(80, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_CAMERA
+		elseif prng:random_index(80, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_PITCHERSMITT
+		elseif prng:random_index(60, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_PASTE
+		elseif prng:random_index(60, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_SPRINGSHOES
+		elseif prng:random_index(60, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_SPIKESHOES
+		elseif prng:random_index(60, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_BOOMERANG
+		elseif prng:random_index(40, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_MACHETE
+		elseif prng:random_index(40, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_BOMBBOX
+		elseif prng:random_index(20, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_COMPASS
+		elseif prng:random_index(10, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_PARACHUTE
+		elseif prng:random_index(2, PRNG_CLASS.PROCEDURAL_SPAWNS) == 1 then
+			tospawn = ENT_TYPE.ITEM_PICKUP_BOMBBAG
+		else
+			tospawn = ENT_TYPE.ITEM_PICKUP_ROPEPILE
+		end
+	end
+	e.inside = tospawn
+end, SPAWN_TYPE.ANY, MASK.ITEM, {ENT_TYPE.ITEM_CRATE, ENT_TYPE.ITEM_PRESENT})
+
+local HD_CRUST_ITEMS = {
+	ENT_TYPE.ITEM_PICKUP_ROPEPILE,
+	ENT_TYPE.ITEM_PICKUP_BOMBBAG,
+	ENT_TYPE.ITEM_PICKUP_BOMBBOX,
+	ENT_TYPE.ITEM_PICKUP_SPECTACLES,
+	ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
+	ENT_TYPE.ITEM_PICKUP_PITCHERSMITT,
+	ENT_TYPE.ITEM_PICKUP_SPRINGSHOES,
+	ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
+	ENT_TYPE.ITEM_PICKUP_PASTE,
+	ENT_TYPE.ITEM_PICKUP_COMPASS,
+	ENT_TYPE.ITEM_MATTOCK,
+	ENT_TYPE.ITEM_BOOMERANG,
+	ENT_TYPE.ITEM_MACHETE,
+	ENT_TYPE.ITEM_WEBGUN,
+	ENT_TYPE.ITEM_SHOTGUN,
+	ENT_TYPE.ITEM_FREEZERAY,
+	ENT_TYPE.ITEM_CAMERA,
+	ENT_TYPE.ITEM_TELEPORTER,
+	ENT_TYPE.ITEM_PICKUP_PARACHUTE,
+	ENT_TYPE.ITEM_CAPE,
+	ENT_TYPE.ITEM_JETPACK,
+}
+local HD_CRUST_ITEMS_NUM = #HD_CRUST_ITEMS
+
+local S2_EXCLUSIVE_CRUST_ITEMS = {
+	ENT_TYPE.ITEM_CROSSBOW,
+	ENT_TYPE.ITEM_TELEPORTER_BACKPACK,
+	ENT_TYPE.ITEM_HOVERPACK,
+	ENT_TYPE.ITEM_POWERPACK,
+}
+
+function module.replace_s2_crust_items()
+	local items = get_entities_by(S2_EXCLUSIVE_CRUST_ITEMS, MASK.ITEM, LAYER.FRONT)
+	local crust_items_visible = test_flag(state.special_visibility_flags, 1)
+	for _, uid in pairs(items) do
+		local ent = get_entity(uid)
+		if ent.overlay and ent.overlay.type.search_flags & MASK.FLOOR ~= 0 and not embedlib.script_embedded_item_uids[uid] then
+			local overlay = ent.overlay
+
+			removelib.remove_item_entities(uid)
+			ent:destroy()
+
+			local tospawn = HD_CRUST_ITEMS[prng:random_index(HD_CRUST_ITEMS_NUM, PRNG_CLASS.LEVEL_GEN)]
+			local spawned_uid = spawn_entity_over(tospawn, overlay.uid, 0, 0)
+			embedlib.embed_item(spawned_uid, overlay.uid, crust_items_visible)
+			messpect("embedded at", enum_get_name(ENT_TYPE, ent.type.id), enum_get_name(ENT_TYPE, tospawn), get_position(uid))
+		end
+	end
+end
+
+-- set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
+-- 	if get_type(get_entity_type(state.next_entity_uid-1)).search_flags & MASK.FLOOR ~= 0 then
+-- 		messpect("valid", x, y)
+-- 		-- return HD_CRUST_ITEMS[prng:random_index(HD_CRUST_ITEMS_NUM, PRNG_CLASS.LEVEL_GEN)]
+-- 	end
+-- end, SPAWN_TYPE.LEVEL_GEN, MASK.ITEM, s2_crust_items)
+
 set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 	return spawn_grid_entity(ENT_TYPE.FLOOR_BORDERTILE_METAL, x, y, l)
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.FLOOR_HORIZONTAL_FORCEFIELD)
@@ -430,5 +567,67 @@ state.level_gen.themes[THEME.EGGPLANT_WORLD]:set_pre_spawn_effects(function(them
 	state.level_gen.themes[THEME.DWELLING]:spawn_effects()
 	return true
 end)
+
+local KALI_POWERUPS = {
+	ENT_TYPE.ITEM_POWERUP_COMPASS,
+	ENT_TYPE.ITEM_CAPE,
+	ENT_TYPE.ITEM_POWERUP_CLIMBING_GLOVES,
+	ENT_TYPE.ITEM_POWERUP_SPECTACLES,
+	ENT_TYPE.ITEM_POWERUP_PITCHERSMITT,
+	ENT_TYPE.ITEM_POWERUP_SPRING_SHOES,
+	ENT_TYPE.ITEM_POWERUP_SPIKE_SHOES,
+}
+local KALI_PICKUPS = {
+	ENT_TYPE.ITEM_PICKUP_COMPASS,
+	ENT_TYPE.ITEM_CAPE,
+	ENT_TYPE.ITEM_PICKUP_CLIMBINGGLOVES,
+	ENT_TYPE.ITEM_PICKUP_SPECTACLES,
+	ENT_TYPE.ITEM_PICKUP_PITCHERSMITT,
+	ENT_TYPE.ITEM_PICKUP_SPRINGSHOES,
+	ENT_TYPE.ITEM_PICKUP_SPIKESHOES,
+}
+local function get_grid_type_at(x, y, layer)
+	return get_entity_type(get_grid_entity_at(x, y, layer))
+end
+-- Replace skeleton key drop from altar, doesn't replace bomb bag drop since it would only drop if having skele, which shouldn't be possible with only HD drops
+set_pre_entity_spawn(function (entity_type, x, y, layer)
+	if (
+		get_grid_type_at(math.floor(x), y-1, layer) == ENT_TYPE.FLOOR_ALTAR or
+		get_grid_type_at(math.ceil(x), y-1, layer) == ENT_TYPE.FLOOR_ALTAR
+	) then
+		local has_paste = false
+		local has_jp = false
+		--Get the closest player, game gets player by ownership but doing so now might be quite difficult
+		local closest_player = players[1]
+		if players[2] then
+			local last_dist = math.huge
+			for _, player in ipairs(players) do
+				local xdist, ydist = (player.abs_x - x), (player.abs_y - y)
+				local dist = (xdist*xdist + ydist*ydist)
+				if dist < last_dist then
+					closest_player = player
+					last_dist = dist
+				end
+			end
+		end
+		if closest_player then
+			has_paste = closest_player:has_powerup(ENT_TYPE.ITEM_POWERUP_PASTE)
+			has_jp = closest_player:has_powerup(ENT_TYPE.ITEM_JETPACK)
+		end
+		if not has_paste then
+			return spawn(ENT_TYPE.ITEM_PICKUP_PASTE, x, y, layer, 0, 0)
+		end
+		for i, powerup_id in ipairs(KALI_POWERUPS) do
+			if not closest_player:has_powerup(powerup_id) and (powerup_id ~= ENT_TYPE.ITEM_CAPE or not has_jp) then -- and don't give cape if has jp
+				return spawn(KALI_PICKUPS[i], x, y, layer, 0, 0)
+			end
+		end
+		-- if player has all random powerups already
+		if not has_jp then
+			return spawn(ENT_TYPE.ITEM_JETPACK, x, y, layer, 0, 0)
+		end
+		return spawn(ENT_TYPE.ITEM_PICKUP_BOMBBOX, x, y, layer, 0, 0)
+	end
+end, SPAWN_TYPE.SYSTEMIC, MASK.ITEM, ENT_TYPE.ITEM_PICKUP_SKELETON_KEY)
 
 return module
