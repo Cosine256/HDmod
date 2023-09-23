@@ -118,19 +118,24 @@ local function state_fly(self)
     udata.prev_velx = self.velocityx
 
     -- Enter attack state when a player is in range
-    for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-        local char = get_entity(v)
-        local dist = distance(char.uid, self.uid)
-        if dist <= 5 then
-            self.user_data.state = SCORPIONFLY_STATE.ATTACK
-            self.user_data.target = char
-            break
-        end
+    local player_uid = commonlib.get_closest_player_in_dist(self, 5)
+    if player_uid ~= -1 then
+        self.user_data.state = SCORPIONFLY_STATE.ATTACK
+        self.chased_target_uid = player_uid
     end
 end
+---@param self Scorpion
 local function state_chase(self)
-    -- I was originally going to do this using a bat but there's no way to get rid of their obnoxious bat noises!
-    local target = self.user_data.target
+    if self.target_selection_timer > 0 then
+        self.target_selection_timer = self.target_selection_timer - 1
+    else
+        local new_target = commonlib.get_closest_player_in_dist(self, math.huge)
+        if new_target ~= -1 then
+            self.chased_target_uid = new_target
+        end
+        self.target_selection_timer = 60
+    end
+    local target_uid = self.chased_target_uid
     -- No gravity 
     self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
 
@@ -141,6 +146,7 @@ local function state_chase(self)
     self.lock_input_timer = 5
 
     -- Move towards chased target
+    local target = get_entity(target_uid)
     if target ~= nil then
         local dist = distance(target.uid, self.uid)
         local tx, ty, _ = get_position(target.uid)
@@ -286,10 +292,10 @@ end
 ---@field flying_state FLYING_STATE
 ---@field flying_timer integer
 ---@field prev_velx number
----@field target integer
 ---@field bee_uid integer
 
 local function scorpionfly_set(self)
+    self.target_selection_timer = 60
     -- This custom type awards the player 6 favor like in HD
     self.type = MONS_SCORPIONFLY_FLYING
     self.offsety = 0.0
@@ -307,8 +313,6 @@ local function scorpionfly_set(self)
         flying_state = FLYING_STATE.IDLE;
         flying_timer = 0;
         prev_velx = 0.0;
-
-        target = nil;
 
         -- Bee for the sound effects
         bee_uid = spawn(ENT_TYPE.MONS_BEE, self.x, self.y, self.layer, 0, 0);
