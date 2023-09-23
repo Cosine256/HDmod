@@ -27,23 +27,11 @@ local cloud1_x
 local cloud2_x
 local sun_uid
 
-local function init()
+function module.init(_sun_uid)
     cloud1_x = CLOUD1_X_INIT
     cloud2_x = CLOUD2_X_INIT
-    sun_uid = -1
-    for _, uid in pairs(get_entities_by_type(ENT_TYPE.BG_SURFACE_NEBULA)) do
-        sun_uid = uid
-    end
+    sun_uid = _sun_uid
 end
-
-set_callback(function ()
-    if state.screen == SCREEN.INTRO
-    or state.screen == SCREEN.SCORES
-    or state.screen == SCREEN.CREDITS
-    then
-        init()
-    end
-end, ON.POST_LEVEL_GENERATION)
 
 local function render_cloud(render_ctx, x)
     local src = Quad:new()
