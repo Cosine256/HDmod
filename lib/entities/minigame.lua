@@ -333,6 +333,8 @@ local alien_type_moveleft = EntityDB:new(get_type(ENT_TYPE.MONS_ALIEN))
 alien_type_moveleft.max_speed = 0.02
 local ufo_laser_type = EntityDB:new(get_type(ENT_TYPE.ITEM_UFO_LASER_SHOT))
 ufo_laser_type.damage = 2
+local explosion_modern_type = EntityDB:new(get_type(ENT_TYPE.FX_MODERNEXPLOSION))
+explosion_modern_type.damage = 5
 
 local function init_minigame_ent_properties()
     local alien_cb = set_post_entity_spawn(function(alien)
@@ -383,7 +385,12 @@ local function init_minigame_ent_properties()
             end)
         end
     end, SPAWN_TYPE.ANY, MASK.ITEM)
-    local fx_cb = set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
+    local explosion_cb = set_post_entity_spawn(function(explosion, spawn_flags)
+        if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+            explosion.type = explosion_modern_type
+        end
+    end, SPAWN_TYPE.ANY, MASK.EXPLOSION, ENT_TYPE.FX_MODERNEXPLOSION)
+    local soot_cb = set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
         if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
             return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
         end
@@ -392,7 +399,8 @@ local function init_minigame_ent_properties()
         clear_callback(parachute_cb)
         clear_callback(alien_cb)
         clear_callback(item_cb)
-        clear_callback(fx_cb)
+        clear_callback(explosion_cb)
+        clear_callback(soot_cb)
         clear_callback()
     end, ON.CAMP)
 end
