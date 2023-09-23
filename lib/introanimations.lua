@@ -19,17 +19,26 @@ module.INTRO_STATE = {
     CROUCHING = 3,
     CROUCH_LEAVE = 4,
     IDLE = 5,
-    IDLE_NOISES = 6,
-    IDLE_CROUCH = 7,
-    IDLE_CROUCH_NOISES = 8,
+    PETTING = 6,
+    IDLE_NOISES = 7,
+    IDLE_CROUCH = 8,
+    IDLE_CROUCH_NOISES = 9,
 }
 
-local CAMEL_ANIMATIONS = {
+module.CAMEL_ANIMATIONS = {
     CROUCH_LEAVE = {21, 20, 19, loop = false, frames = 3, frame_time = 6},
+    PET_START = {29, loop = false, frames = 1, frame_time = 4},
 }
 local GUY_ANIMATIONS = {
     MOUNTED_CROUCH_ENTER = {124, 123, 122, loop = false, frames = 3, frame_time = 6},
 }
+
+---@param camel Rockdog | Mount | Entity | Movable | PowerupCapable
+function module.set_petting(camel)
+    camel.user_data.state = module.INTRO_STATE.PETTING
+    animationlib.set_animation(camel.user_data, module.CAMEL_ANIMATIONS.PET_START)
+    camel.user_data.timeout = 116
+end
 
 ---@param guy Entity | Movable | Player
 function module.set_crouching(guy)
@@ -40,7 +49,7 @@ end
 ---@param camel Rockdog | Mount | Entity | Movable | PowerupCapable
 function module.set_uncrouching(camel)
     camel.user_data.state = module.INTRO_STATE.CROUCH_LEAVE
-    animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.CROUCH_LEAVE)
+    animationlib.set_animation(camel.user_data, module.CAMEL_ANIMATIONS.CROUCH_LEAVE)
     -- message("SET CROUCH_LEAVE")
 end
 

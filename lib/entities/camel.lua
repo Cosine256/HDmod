@@ -54,7 +54,9 @@ local CAMEL_ANIMATIONS <const> = {
     CROUCH_ENTER = {19, 18, 17, loop = false, frames = 3, frame_time = 6},
     CROUCHING = {19, loop = true, frames = 1, frame_time = 6},
     NOT_FAKE_WALKING = {0, loop = false, frames = 1, frame_time = 4},
-    FAKE_WALKING = {8, 7, 6, 5, 4, 3, 2, 1, loop = true, frames = 8, frame_time = 6}
+    FAKE_WALKING = {8, 7, 6, 5, 4, 3, 2, 1, loop = true, frames = 8, frame_time = 6},
+    PET = {30, loop = true, frames = 1, frame_time = 4},
+    PET_END = {29, loop = false, frames = 1, frame_time = 4},
 }
 local CANNON_ANIMATIONS <const> = {
   STARTUP = {0, loop = false, frames = 1, frame_time = 60},
@@ -213,10 +215,32 @@ local function camel_post_update_intro(camel)
         animationlib.update_timer(camel.user_data)
     elseif camel.user_data.state == introanimationslib.INTRO_STATE.CROUCH_LEAVE then
         if camel.user_data.animation_timer == 0 then -- if animation finished
-            camel.user_data.state = introanimationslib.INTRO_STATE.IDLE_NOISES
-            -- message("SET IDLE_NOISES")
-            camel.user_data.timeout = 200
+            camel.user_data.state = introanimationslib.INTRO_STATE.IDLE
         else
+            camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
+            animationlib.update_timer(camel.user_data)
+        end
+    elseif camel.user_data.state == introanimationslib.INTRO_STATE.PETTING then
+        if camel.user_data.animation_state == introanimationslib.CAMEL_ANIMATIONS.PET_START
+        and camel.user_data.animation_timer == 0 then
+            animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.PET)
+            commonlib.play_custom_sound(idle_sound[prng:random_index(#idle_sound, PRNG_CLASS.FX)], camel.uid, 0.25, false)
+        end
+        if camel.user_data.animation_state == CAMEL_ANIMATIONS.PET then
+            --recieve pet and timeout
+            if camel.user_data.timeout > 0 then
+                camel.user_data.timeout = camel.user_data.timeout - 1
+            else
+                animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.PET_END)
+            end
+        end
+        if camel.user_data.animation_state == CAMEL_ANIMATIONS.PET_END
+        and camel.user_data.animation_timer == 0 then
+            --here's where you'd set it to IDLE_NOISES. Since the timeout would be too long to hear, I think
+            --that we might as well make only one noise when it gets pet.
+            camel.user_data.state = introanimationslib.INTRO_STATE.IDLE
+        end
+        if camel.user_data.state == introanimationslib.INTRO_STATE.PETTING then
             camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
             animationlib.update_timer(camel.user_data)
         end

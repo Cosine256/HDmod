@@ -65,6 +65,10 @@ local function update_intro_guy(guy)
             guy.flags = set_flag(guy.flags, ENT_FLAG.FACING_LEFT)
             animationlib.set_animation(guy.user_data, GUY_ANIMATIONS.PET_START)
             guy.user_data.timeout = 100
+
+            ---@type Rockdog | Mount | Entity | Movable | PowerupCapable
+            local camel = get_entity(guy.user_data.camel_uid)
+            introanimationslib.set_petting(camel)
         end
     elseif guy.user_data.state == introanimationslib.GUY_WALKS.PETTING then
         if guy.user_data.animation_state == GUY_ANIMATIONS.PET_START
