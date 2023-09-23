@@ -63,6 +63,30 @@ local function show_indicator(base)
     return math.sin(base.user_data.timeout*0.35) > 0
 end
 
+local function get_treasure_sway_values(timer)
+    local x, y, angle, weave
+    weave = math.sin((math.pi*.5)*math.cos(2*math.pi*(timer/60)+math.pi*.5))
+    angle = -.025*weave
+    x = weave*0.075
+    y = 2.5750+.075*(.5*math.sin((math.pi*.5)*math.cos(4*math.pi*(timer/60)+math.pi*3))+.5)
+    -- message(string.format("%s, %s, %s", x, y, angle))
+    return x, y, angle
+end
+
+local function sway_treasure(self)
+    --get offset and angle
+    local treasure = get_entity(self.user_data.treasure_uid)
+    -- get_treasure_sway_values(self.user_data.sway_timer)
+    treasure.x, treasure.y, treasure.angle = get_treasure_sway_values(self.user_data.sway_timer)
+
+    --update timer
+    self.user_data.sway_timer =
+        self.user_data.sway_timer > 1
+        and self.user_data.sway_timer - 1
+        -- apply the same animation rate as the cavemen so it swings with their animation
+        or 10*6
+end
+
 local function update_treasure(self)
     if not decorlib.CREDITS_SCROLLING then
         -- move the entity to the left until decorlib.CREDITS_SCROLL is true
@@ -108,6 +132,8 @@ local function update_treasure(self)
     elseif self.user_data.state == MINIGAME_INTRO_STATE.FINISHED_MINIGAME_INTRO then
         -- SORRY NOTHING
     end
+
+    sway_treasure(self)
 end
 
 function module.create_credits_treasure(x, y, l)
@@ -123,12 +149,12 @@ function module.create_credits_treasure(x, y, l)
     -- spawn the cavemen and treasure offset from rock base
     local treasure = get_entity(module.create_ending_treasure(x, _y+2.65, l, 0, 0))
     attach_entity(base.uid, treasure.uid)
-    -- # TODO: move treasure in a sine-wave **use yama's phase 2 as an example
-    -- probably will do this via states inside treasure.user_data
 
     base.user_data = {
         state = MINIGAME_INTRO_STATE.PRE_MINIGAME,
         timeout = 0,
+        sway_timer = 60,
+        treasure_uid = treasure.uid,
         indicator_sound_played = false
     }
     set_post_statemachine(base.uid, update_treasure)
