@@ -115,7 +115,8 @@ local function pre_caveman_damage_minigame_handling(self, damage_dealer, _damage
             was_player = true
         end
     end
-    local score_loss = _damage_amount*4
+    local score_loss_multiplier = 4
+    local score_loss = _damage_amount*score_loss_multiplier
     subtract_from_total_score(score_loss, was_player and damage_dealer.last_owner_uid or nil)
     add_hitmarker(-score_loss, damage_dealer.uid)
     self.invincibility_frames_timer = 45
@@ -130,13 +131,16 @@ end
 ---@param velocity_x any
 ---@param velocity_y any
 ---@param iframes any
-local function post_enemy_damage_minigame_handling(self, damage_dealer, damage_amount, stun_time, velocity_x, velocity_y, iframes)
+local function pre_enemy_damage_minigame_handling(self, damage_dealer, damage_amount, stun_time, velocity_x, velocity_y, iframes)
     if damage_dealer.type.id == ENT_TYPE.MOUNT_ROCKDOG then
         damage_dealer.last_owner_uid = damage_dealer.rider_uid
     end
+    if self.type.id == ENT_TYPE.MONS_UFO and self.move_state == 4 then
+        return
+    end
     -- message(string.format("%s attacked by %s", self.uid, damage_dealer.last_owner_uid))
     add_to_score(damage_dealer.last_owner_uid)
-    add_hitmarker(damage_amount, damage_dealer.uid)
+    add_hitmarker(1, damage_dealer.uid)
 end
 
 -- local type_amazon = get_type(ENT_TYPE.CHAR_AMAZON)
@@ -226,7 +230,7 @@ local function create_minigame_ufo(spawn_left, y)
     if not spawn_left then
         entity.flags = set_flag(entity.flags, ENT_FLAG.FACING_LEFT)
     end
-    entity:set_post_damage(post_enemy_damage_minigame_handling)
+    entity:set_pre_damage(pre_enemy_damage_minigame_handling)
     -- entity:set_pre_update_state_machine(function (self)
     --     ---@type UFO
     --     if self.t then
@@ -302,6 +306,8 @@ local alien_type_moveright = EntityDB:new(get_type(ENT_TYPE.MONS_ALIEN))
 alien_type_moveright.max_speed = 0.06
 local alien_type_moveleft = EntityDB:new(get_type(ENT_TYPE.MONS_ALIEN))
 alien_type_moveleft.max_speed = 0.02
+local ufo_laser_type = EntityDB:new(get_type(ENT_TYPE.ITEM_UFO_LASER_SHOT))
+ufo_laser_type.damage = 2
 
 local function init_minigame_ent_properties()
     local alien_cb = set_post_entity_spawn(function(alien)
@@ -331,7 +337,7 @@ local function init_minigame_ent_properties()
                 update_kill_right_offscreen(self)
             end
         end)
-        alien:set_post_damage(post_enemy_damage_minigame_handling)
+        alien:set_pre_damage(pre_enemy_damage_minigame_handling)
     end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_ALIEN)
     local parachute_cb = set_post_entity_spawn(function(parachute)
         if parachute.animation_frame == 57 then
@@ -341,6 +347,9 @@ local function init_minigame_ent_properties()
     end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_POWERUP_PARACHUTE)
     local item_cb = set_post_entity_spawn(function(item, spawn_flags)
         if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+            if item.type.id == ENT_TYPE.ITEM_UFO_LASER_SHOT then
+                item.type = ufo_laser_type
+            end
             item:set_post_update_state_machine(function(self)
                 if self.standing_on_uid ~= -1 then
                     self.velocityx = 0.08
@@ -523,17 +532,19 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
             end
             for i=#hitmarks, 1, -1 do
                 local amount = hitmarks[i].amount
-                local color = amount >= 0 and Color:green() or Color:red()
-                local protect_text = TextRenderingInfo:new(string.format(amount), 0.0025, 0.0025, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
+                local is_positive = amount >= 0
+                local color = is_positive and Color:green() or Color:red()
+                amount = string.format(is_positive and "+%s" or "%s", amount)
+                local hitmark_text = TextRenderingInfo:new(amount, 0.0025, 0.0025, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
 
                 local ix = hitmarks[i].x
                 local iy = hitmarks[i].y + 0.5-1*(hitmarks[i].timeout/100)
-                protect_text.x, protect_text.y = screen_position(ix, iy)
+                hitmark_text.x, hitmark_text.y = screen_position(ix, iy)
 
-                render_ctx:draw_text(protect_text, Color:black())
-                protect_text:set_text(string.format(amount), 0.0025, 0.0025, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
-                protect_text.x, protect_text.y = protect_text.x-0.0035, protect_text.y+0.0035
-                render_ctx:draw_text(protect_text, color)
+                render_ctx:draw_text(hitmark_text, Color:black())
+                hitmark_text:set_text(amount, 0.0025, 0.0025, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
+                hitmark_text.x, hitmark_text.y = hitmark_text.x-0.0035, hitmark_text.y+0.0035
+                render_ctx:draw_text(hitmark_text, color)
 
                 if hitmarks[i].timeout > 0 then
                     hitmarks[i].timeout = hitmarks[i].timeout - 1
