@@ -1,7 +1,7 @@
 local module = {}
 
 local hud_texture_id
-local finaltotal_texture_id
+local total_texture_id
 do
     local hud_texture_def = TextureDefinition:new()
     hud_texture_def.width = 128
@@ -10,13 +10,22 @@ do
     hud_texture_def.tile_height = 64
     hud_texture_def.texture_path = "res/cannon_hud.png"
     hud_texture_id = define_texture(hud_texture_def)
-    local finaltotal_texture_def = TextureDefinition:new()
-    finaltotal_texture_def.width = 768
-    finaltotal_texture_def.height = 512
-    finaltotal_texture_def.tile_width = 768
-    finaltotal_texture_def.tile_height = 512
-    finaltotal_texture_def.texture_path = "res/minigame_total.png"
-    finaltotal_texture_id = define_texture(finaltotal_texture_def)
+
+    local total_texture_def = TextureDefinition:new()
+    total_texture_def.width = 768
+    total_texture_def.height = 512
+    total_texture_def.tile_width = 768
+    total_texture_def.tile_height = 512
+    total_texture_def.texture_path = "res/minigame_total.png"
+    total_texture_id = define_texture(total_texture_def)
+
+    local total_team_texture_def = TextureDefinition:new()
+    total_team_texture_def.width = 384
+    total_team_texture_def.height = 192
+    total_team_texture_def.tile_width = 384
+    total_team_texture_def.tile_height = 192
+    total_team_texture_def.texture_path = "res/minigame_teamtotal.png"
+    total_team_texture_id = define_texture(total_team_texture_def)
 end
 
 local GAME_STATE <const> = {
@@ -397,10 +406,13 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
         if state.screen == SCREEN.CREDITS then
             if minigame_state == GAME_STATE.IN_GAME
             or minigame_state == GAME_STATE.GAME_LOAD then
+                local num_of_engaged = 0
                 for c_i, camel_uid in ipairs(camels) do
                     local camel = get_entity(camel_uid)
+                    --loop over the camels spawned, check if they are engaged in the MINIGAME state
                     if camel.user_data.state == 3 then -- MINIGAME_STATE.MINIGAME
-                        --loop over the camels spawned, check their status
+                        num_of_engaged = num_of_engaged + 1
+
                         --shadow
                         local icon_offset_y = 0.045
                         local x, y = get_hud_position(c_i):center()
@@ -479,6 +491,44 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
                         render_ctx:draw_text(hit_text, Color:white())
                     end
                 end
+                --draw team total hud counter
+                if num_of_engaged > 1 then
+                    --bg
+                    local x, y = 0.45, 0.82
+                    local src = Quad:new()
+                    src.top_left_x = 0
+                    src.top_left_y = 0
+                    src.top_right_x = 1
+                    src.top_right_y = 0
+                    src.bottom_left_x = 0
+                    src.bottom_left_y = 1
+                    src.bottom_right_x = 1
+                    src.bottom_right_y = 1
+                    local w = (1/6)*2
+                    local h = (1/6)/0.5625
+                    local dest = Quad:new()
+                    dest.top_left_x = -w/2
+                    dest.top_left_y = h/2
+                    dest.top_right_x = w/2
+                    dest.top_right_y = h/2
+                    dest.bottom_left_x = -w/2
+                    dest.bottom_left_y = -h/2
+                    dest.bottom_right_x = w/2
+                    dest.bottom_right_y = -h/2
+                    dest:offset(x, y)
+                    render_ctx:draw_screen_texture(total_team_texture_id, src, dest, Color:white())
+
+                    ---@type TextRenderingInfo
+                    local skip_text = TextRenderingInfo:new("Team Total:", 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.NORMAL)
+                    y = y+0.025
+                    skip_text.x, skip_text.y = x, y
+                    render_ctx:draw_text(skip_text, Color:black())
+                    
+                    ---@type TextRenderingInfo
+                    local totalscore_value = TextRenderingInfo:new(string.format(get_team_total()), 0.001, 0.001, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.NORMAL)
+                    totalscore_value.x, totalscore_value.y = x, y-0.065
+                    render_ctx:draw_text(totalscore_value, Color:black())
+                end
             elseif minigame_state == GAME_STATE.POST_GAME then
                 if timeout > 0 then
                     timeout = timeout - 1
@@ -490,7 +540,7 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
                     audio:set_pause(false, SOUND_TYPE.SFX)
                 end
                 if timeout <= 300 then
-                    --Draw team total background
+                    --Draw final total background
                     local team_total_cx, team_total_cy = 0, 0.15
             
                     local src = Quad:new()
@@ -514,10 +564,10 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
                     dest.bottom_right_x = w/2
                     dest.bottom_right_y = -h/2
                     dest:offset(team_total_cx, team_total_cy)
-                    render_ctx:draw_screen_texture(finaltotal_texture_id, src, dest, Color:white())
+                    render_ctx:draw_screen_texture(total_texture_id, src, dest, Color:white())
             
                     ---@type TextRenderingInfo
-                    local totalscore_text = TextRenderingInfo:new("Total Score:", 0.0023, 0.0023, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
+                    local totalscore_text = TextRenderingInfo:new("Final Score:", 0.0023, 0.0023, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
                     totalscore_text.x, totalscore_text.y = team_total_cx, team_total_cy+0.15
                     render_ctx:draw_text(totalscore_text, Color:black())
                     totalscore_text.x, totalscore_text.y = totalscore_text.x-0.0035, totalscore_text.y+0.0035
