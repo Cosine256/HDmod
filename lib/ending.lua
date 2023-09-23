@@ -297,6 +297,10 @@ set_callback(function ()
         if state.screen == SCREEN.RECAP then
             state.screen_next = SCREEN.CREDITS
             state:force_current_theme(state.win_state == WIN_STATE.HUNDUN_WIN and THEME.HUNDUN or THEME.TIAMAT)
+            state.fadevalue = 0
+            state.fadeout = 0
+            state.fadein = 0
+            state.loading_black_screen_timer = 0
         end
         if state.screen == SCREEN.CREDITS then
             state.screen_next = SCREEN.CAMP
