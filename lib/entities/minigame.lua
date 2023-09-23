@@ -1,6 +1,7 @@
 local module = {}
 
 local hud_texture_id
+local finaltotal_texture_id
 do
     local hud_texture_def = TextureDefinition:new()
     hud_texture_def.width = 128
@@ -9,6 +10,13 @@ do
     hud_texture_def.tile_height = 64
     hud_texture_def.texture_path = "res/cannon_hud.png"
     hud_texture_id = define_texture(hud_texture_def)
+    local finaltotal_texture_def = TextureDefinition:new()
+    finaltotal_texture_def.width = 768
+    finaltotal_texture_def.height = 512
+    finaltotal_texture_def.tile_width = 768
+    finaltotal_texture_def.tile_height = 512
+    finaltotal_texture_def.texture_path = "res/minigame_total.png"
+    finaltotal_texture_id = define_texture(finaltotal_texture_def)
 end
 
 local GAME_STATE <const> = {
@@ -282,7 +290,7 @@ local function update_minigame(_)
             spawn_timeout = spawn_timeout - 1
         end
         if state.screen_credits.render_timer >= 240 then
-        -- if state.screen_credits.render_timer >= 20 then
+        -- if state.screen_credits.render_timer >= 20 then -- UNCOMMENT TO TEST END OF MINIGAME
             minigame_state = GAME_STATE.POST_GAME
             timeout = 600
             
@@ -487,12 +495,12 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
             
                     local src = Quad:new()
                     src.top_left_x = 0
-                    src.top_left_y = 6/10
-                    src.top_right_x = 6/10
-                    src.top_right_y = 6/10
+                    src.top_left_y = 0
+                    src.top_right_x = 1
+                    src.top_right_y = 0
                     src.bottom_left_x = 0
                     src.bottom_left_y = 1
-                    src.bottom_right_x = 6/10
+                    src.bottom_right_x = 1
                     src.bottom_right_y = 1
                     local w = (1/2)*3/2
                     local h = (1/2)/0.5625
@@ -506,7 +514,7 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
                     dest.bottom_right_x = w/2
                     dest.bottom_right_y = -h/2
                     dest:offset(team_total_cx, team_total_cy)
-                    render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_MENU_BASIC_0, src, dest, Color:white())
+                    render_ctx:draw_screen_texture(finaltotal_texture_id, src, dest, Color:white())
             
                     ---@type TextRenderingInfo
                     local totalscore_text = TextRenderingInfo:new("Total Score:", 0.0023, 0.0023, VANILLA_TEXT_ALIGNMENT.CENTER, VANILLA_FONT_STYLE.BOLD)
