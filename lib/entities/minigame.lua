@@ -119,7 +119,7 @@ end
 ---@param velocity_y any
 ---@param iframes any
 local function pre_caveman_damage_minigame_handling(self, damage_dealer, _damage_amount, stun_time, velocity_x, velocity_y, iframes)
-    if damage_dealer.type.id == ENT_TYPE.ITEM_BULLET
+    if damage_dealer.type.id == ENT_TYPE.ITEM_LASERTRAP_SHOT
     or damage_dealer.type.id == ENT_TYPE.MONS_UFO
     or (damage_dealer.type.id == ENT_TYPE.FX_MODERNEXPLOSION
     and self.invincibility_frames_timer ~= 0)

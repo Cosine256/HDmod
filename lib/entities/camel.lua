@@ -25,6 +25,7 @@ do
 	cannon_texture_id = define_texture(cannon_texture_def)
 end
 
+local cannon_sound_fire = create_sound('res/sounds/camel_cannon_shoot.wav')
 local idle_sound = {
     create_sound('res/sounds/camel1.wav'),
     create_sound('res/sounds/camel2.wav'),
@@ -271,16 +272,16 @@ local function shoot_gun(ent, rider_uid)
     --[[down
         angle: 1.570796326795 or -4.712388980385
     ]]
-    local gap = 0.25--1
+    local gap = 0.5--1
     local vel_magnitude = 0.3
 
     local x, y, l = get_position(ent.uid)
     local x_i, y_i = -1*math.cos(ent.angle), -1*math.sin(ent.angle)
     -- message(string.format("cos: %s, sin: %s, ang: %s", x_i, y_i, ent.angle))
-    local projectile = get_entity(spawn(ENT_TYPE.ITEM_BULLET, x+(gap*x_i), y+(gap*y_i), l, vel_magnitude*x_i, vel_magnitude*y_i))
-    -- projectile.angle = ent.angle
+    local projectile = get_entity(spawn(ENT_TYPE.ITEM_LASERTRAP_SHOT, x+(gap*x_i), y+(gap*y_i), l, vel_magnitude*x_i, vel_magnitude*y_i))
+    projectile.angle = ent.angle
     projectile.last_owner_uid = rider_uid
-    commonlib.play_vanilla_sound(VANILLA_SOUND.ITEMS_WEBGUN, ent.uid, 1, false)
+    commonlib.play_custom_sound(cannon_sound_fire, ent.uid, 1, false)
 end
 
 ---camel
