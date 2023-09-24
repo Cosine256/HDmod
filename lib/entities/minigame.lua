@@ -441,8 +441,8 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
                         src.bottom_left_y = 1/8
                         src.bottom_right_x = 1/2
                         src.bottom_right_y = 1/8
-                        local w = (1/16)*4
-                        local h = (1/16)/0.5625
+                        local w = (1/13.5)*4
+                        local h = (1/13.5)/0.5625
                         local dest = Quad:new()
                         dest.top_left_x = -w/2
                         dest.top_left_y = h/2
@@ -454,7 +454,29 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
                         dest.bottom_right_y = -h/2
                         dest:offset(x, y-icon_offset_y)
                         render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_HUD_2, src, dest, Color:white())
-                
+
+                        --player heart
+                        src.top_left_x = 0
+                        src.top_left_y = 3/8
+                        src.top_right_x = 1/8
+                        src.top_right_y = 3/8
+                        src.bottom_left_x = 0
+                        src.bottom_left_y = 1/2
+                        src.bottom_right_x = 1/8
+                        src.bottom_right_y = 1/2
+                        w = 1/12
+                        h = w/0.5625
+                        dest = Quad:new()
+                        dest.top_left_x = -w/2
+                        dest.top_left_y = h/2
+                        dest.top_right_x = w/2
+                        dest.top_right_y = h/2
+                        dest.bottom_left_x = -w/2
+                        dest.bottom_left_y = -h/2
+                        dest.bottom_right_x = w/2
+                        dest.bottom_right_y = -h/2
+                        dest:offset(x-0.1, y)
+                        render_ctx:draw_screen_texture(TEXTURE.DATA_TEXTURES_HUD_2, src, dest, get_entity(camel.rider_uid):get_heart_color())
                 
                         --cannon icon
                         src.top_left_x = 0
@@ -476,7 +498,7 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
                         dest.bottom_left_y = -h/2
                         dest.bottom_right_x = w/2
                         dest.bottom_right_y = -h/2
-                        dest:offset(x-0.055, y)
+                        dest:offset(x-0.045, y-0.0075)
                         render_ctx:draw_screen_texture(hud_texture_id, src, dest, Color:white())
                 
                         --hit icon
@@ -499,11 +521,11 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
                         dest.bottom_left_y = -h/2
                         dest.bottom_right_x = w/2
                         dest.bottom_right_y = -h/2
-                        dest:offset(x+0.02, y)
+                        dest:offset(x+0.02, y-0.0075)
                         render_ctx:draw_screen_texture(hud_texture_id, src, dest, Color:white())
                 
-                        local hit_text = TextRenderingInfo:new(string.format("x%s", math.floor(camel.user_data.score)), 0.0012, 0.0012, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.BOLD)
-                        hit_text.x, hit_text.y = x+0.04, y
+                        local hit_text = TextRenderingInfo:new(string.format("x%s", math.floor(camel.user_data.score)), 0.0009, 0.0009, VANILLA_TEXT_ALIGNMENT.LEFT, VANILLA_FONT_STYLE.BOLD)
+                        hit_text.x, hit_text.y = x+0.04, y-0.04
                         render_ctx:draw_text(hit_text, Color:white())
                     end
                 end
