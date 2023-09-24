@@ -557,8 +557,8 @@ function module.init(_target_uid, _camels, caveman1, caveman2)
                 end
                 if timeout <= 300 then
                     --Draw final total background
-                    local team_total_cx, team_total_cy = 0, 0.15
-            
+                    local team_total_cx, team_total_cy = 0, 0.35
+
                     local src = Quad:new()
                     src.top_left_x = 0
                     src.top_left_y = 0
