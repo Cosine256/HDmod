@@ -315,6 +315,7 @@ end
 ---@field prev_velx number
 ---@field bee_uid integer
 
+---@param self Scorpion
 local function scorpionfly_set(self)
     self.target_selection_timer = 60
     -- This custom type awards the player 6 favor like in HD
@@ -355,7 +356,7 @@ local function scorpionfly_set(self)
     -- Custom gibs
     self:set_pre_kill(function(self)
         local sx, sy, sl = get_position(self.uid)
-        -- Make our own rubble and blood
+        -- Make our own rubble
         -- TODO no idea how to color rubble right, the values I tweaked in OL dont transfer to these values
         local rubble = get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, sx, sy, sl, -0.05, 0.015))
         rubble.color:set_rgba(255, 80, 20, 255)
@@ -363,15 +364,12 @@ local function scorpionfly_set(self)
         local rubble = get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, sx, sy, sl, 0.05, 0.015))
         rubble.color:set_rgba(255, 80, 20, 255)
         rubble.animation_frame = 39
-        -- Defeat sfx
-        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_DAMAGED, self.uid, 1, false)
-        audio:set_volume(1)
-        audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, 2)
-        -- Spawn a spider for the blood
-        local spider = get_entity(spawn(ENT_TYPE.MONS_SPIDER, sx, sy, sl, 0, 0))
-        spider:kill(true, nil)
-        -- move original entity OOB
-        self.x = -900
+        local bee = get_entity(self.user_data.bee_uid)
+        if bee then
+            bee:destroy()
+        end
+        -- Destroy now to prevent vanilla spawned rubble, still plays sound, spawns other particles and blood
+        self:destroy()
     end)
 end
 
