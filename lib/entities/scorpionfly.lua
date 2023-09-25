@@ -60,14 +60,21 @@ local SCORPIONFLY_STATE = {
     FLY = 2;
     SCORPION = 3;
 }
+---@param self Scorpion
+local function stop_scorpion_behiavor(self)
+    self:set_behavior(9)
+    self.jump_cooldown_timer = 100
+    self.lock_input_timer = 5
+    self.state = 9
+    self.last_state = 9
+    self.move_state = 0
+end
 
 ---@param self Scorpion
 local function state_fly(self)
     -- No gravity 
     self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
-    self.state = 9
-    self.last_state = 9
-    self.move_state = 0
+    stop_scorpion_behiavor(self)
     local udata = self.user_data --[[@as ScorpFlyData]]
 
     if udata.flying_state == FLYING_STATE.IDLE then
@@ -139,11 +146,7 @@ local function state_chase(self)
     -- No gravity 
     self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
 
-    -- Remove the scorpions own AI
-    self.jump_cooldown_timer = 100
-    self.move_state = 30
-    self.state = 30
-    self.lock_input_timer = 5
+    stop_scorpion_behiavor(self)
 
     -- Move towards chased target
     local target = get_entity(target_uid)
@@ -181,13 +184,15 @@ local function state_chase(self)
         if math.abs(abs_y) < 0.02 then
             movey = 0
         end
-        move_entity(self.uid, sx-movex, sy-movey, 0, 0)
+        self.velocityx, self.velocityy = -movex, -movey
         -- Face direction moving
-        if abs_x > 0 and not test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
-            flip_entity(self.uid)         
-        end
-        if abs_x < 0 and test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
-            flip_entity(self.uid)         
+        if not test_flag(self.more_flags, 9) then --if not stuck in smth (web or honey, flag 8 is reset on statemachine, so only 9 works)
+            if abs_x > 0 and not test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
+                flip_entity(self.uid)
+            end
+            if abs_x < 0 and test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
+                flip_entity(self.uid)
+            end
         end
     end
 end
@@ -227,10 +232,10 @@ local function state_scorpion(self)
 end
 
 local function become_scorpion(self, _, amount)
-    self.type = MONS_SCORPIONFLY
-    self.offsety = MONS_SCORPIONFLY.offsety
     local d = self.user_data
     if amount - self.health ~= 0 then
+        self.type = MONS_SCORPIONFLY
+        self.offsety = MONS_SCORPIONFLY.offsety
         -- Change state
         d.state = SCORPIONFLY_STATE.SCORPION
         -- Change gravity flag and restore state info
@@ -252,6 +257,22 @@ end
 ---@param self Scorpion
 local function scorpionfly_update(self)
     local d = self.user_data
+    if self.frozen_timer > 0 then
+        self.type = MONS_SCORPIONFLY -- Change friction to normal if flying
+        self.animation_frame = d.animation_frame
+        if d.bee_uid ~= -1 then
+            -- pause the sound
+            move_entity(d.bee_uid, self.abs_x, 1000.0, 0, 0)
+        end
+        return
+    elseif d.state ~= SCORPIONFLY_STATE.SCORPION then -- if flying
+        if self.stun_timer > 0 then -- If hit by camera flash
+            become_scorpion(self, nil, 0)
+            self.velocityx = 0.0
+        else
+            self.type = MONS_SCORPIONFLY_FLYING
+        end
+    end
     -- ANIMATION
     -- Increase animation timer
     d.animation_timer = d.animation_timer + 1
