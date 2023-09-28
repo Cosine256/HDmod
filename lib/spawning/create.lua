@@ -44,7 +44,7 @@ function module.create_yama(x, y, l)-- 20, 117 = 22.5 117.5
 end
 
 function module.create_anubis(x, y, l)
-	get_entity(spawn_entity(ENT_TYPE.MONS_ANUBIS, x, y, l, 0, 0)).move_state = 5
+	get_entity(spawn_entity(ENT_TYPE.MONS_ANUBIS, x+0.5, y-0.5, l, 0, 0)).move_state = 5
 end
 
 function module.create_succubus(x, y, l) end

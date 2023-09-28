@@ -1,3 +1,4 @@
+local roomdeflib = require "lib.gen.roomdef"
 local module = {}
 
 local debug_valid_spaces
@@ -78,6 +79,15 @@ module.hideyhole_items_to_keep = {ENT_TYPE.ITEM_CURSEDPOT, ENT_TYPE.ITEM_LOCKEDC
 
 local valid_floors = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE, ENT_TYPE.FLOOR_ICE}
 
+local TEMPLE_PATH_EXIT_ROOMS = {
+	roomdeflib.HD_SUBCHUNKID.EXIT,
+	roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP,
+	roomdeflib.HD_SUBCHUNKID.PATH,
+	roomdeflib.HD_SUBCHUNKID.PATH_DROP,
+	roomdeflib.HD_SUBCHUNKID.PATH_DROP_NOTOP,
+	roomdeflib.HD_SUBCHUNKID.PATH_NOTOP
+}
+
 local function is_liquid_at(x, y)
 	local lvlcode = locatelib.get_levelcode_at_gpos(x, y)
 	return lvlcode == "w" or
@@ -100,7 +110,7 @@ end
 local function check_empty_space(origin_x, origin_y, layer, width, height)
 	for y = origin_y, origin_y+1-height, -1 do
 		for x = origin_x, origin_x+width-1 do
-			if get_grid_entity_at(x, y, layer) ~= -1 then
+			if get_grid_entity_at(x, y, layer) ~= -1 or is_liquid_at(x, y) then
 				return false
 			end
 		end
@@ -311,8 +321,8 @@ end
 function module.is_valid_anubis_spawn(x, y, l)
 	local cx, cy = x+.5, y-.5
 	local w, h = 2, 2
-    local entity_uids = get_entities_overlapping_hitbox(
-		0, MASK.FLOOR,
+	local entity_uids = get_entities_overlapping_hitbox(
+		0, MASK.ACTIVEFLOOR,
 		AABB:new(
 			cx-(w/2),
 			cy+(h/2),
@@ -321,9 +331,18 @@ function module.is_valid_anubis_spawn(x, y, l)
 		),
 		l
 	)
+	-- local rx, ry = get_room_index(x, y)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
 	return (
-		#entity_uids == 0
-		and detect_entrance_room_template(x, y, l) == false
+		check_empty_space(x, y, l, 2, 2)
+		and #entity_uids == 0
+		and commonlib.has(TEMPLE_PATH_EXIT_ROOMS, _subchunk_id)
+		-- and detect_entrance_room_template(x, y, l) == false
+		-- and detect_shop_room_template(x, y, l) == false
+		-- and get_room_template(rx, ry, l) ~= ROOM_TEMPLATE.VAULT
+		and locatelib.get_levelcode_at_gpos(x, y-1) ~= "&" -- Prevent from spawing on lava fountain
+		and locatelib.get_levelcode_at_gpos(x+1, y-1) ~= "&"
 	)
 end
 
