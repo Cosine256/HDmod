@@ -238,14 +238,6 @@ module.MINES_CUSTOM_MUSIC = {
                 sound = create_sound("res/music/BGM_Mines_Adventure_intro.ogg"),
                 length = 10250,
                 next_sound_id = function(ctx)
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
                     return pick_random({ "intro_a", "intro_b" })
                 end
             },
@@ -253,33 +245,13 @@ module.MINES_CUSTOM_MUSIC = {
                 id = "intro_a",
                 sound = create_sound("res/music/BGM_Mines_Intro_A.ogg"),
                 length = 10000,
-                next_sound_id = function(ctx)
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    return "explore_a"
-                end
+                next_sound_id = "explore_a"
             },
             {
                 id = "intro_b",
                 sound = create_sound("res/music/BGM_Mines_Intro_B.ogg"),
                 length = 10000,
-                next_sound_id = function(ctx)
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    return "explore_a"
-                end
+                next_sound_id = "explore_a"
             },
             {
                 id = "explore_a",
