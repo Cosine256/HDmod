@@ -47,6 +47,8 @@ do
     sky_hard_texture_id = define_texture(sky_hard_texture_def)
 end
 
+local outside_lavalaunch_sound = create_sound('res/sounds/explosion_outside.wav')
+
 local VOLCANO_DISAPPEAR_TIME = 7
 local VOLCANO_DISAPPEAR
 
@@ -155,7 +157,9 @@ local function create_volcano_effects()
 
     entity:set_post_update_state_machine(function (self)
         if timeout == 0 then -- erupt
-            commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_EXPLOSION, self.uid, 0.003, false)
+            local audio = outside_lavalaunch_sound:play(false)
+            audio:set_volume(1)
+            audio:set_pause(false, SOUND_TYPE.SFX)
             -- local lava_sound = commonlib.play_vanilla_sound(VANILLA_SOUND.LIQUIDS_LAVA_STREAM_LOOP, entity.uid, 0.4, true)
             state.camera.shake_amplitude = 3
             state.camera.shake_multiplier_x = 3

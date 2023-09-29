@@ -32,6 +32,8 @@ do
     hell_transition_texture_id = define_texture(hell_transition_texture_def)
 end
 
+local inside_lavalaunch_sound = create_sound('res/sounds/explosion_inside.wav')
+
 set_callback(function ()
     player_items = {}
     for _, p in pairs(players) do
@@ -265,7 +267,7 @@ set_post_entity_spawn(function(ent)
                             -- message("SHAKE")
                         end
                         if TIMEOUT_WIN == TIMEOUT_FLOW_START then
-                            commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_EXPLOSION, lavastream_sndsrc.uid, 0.5, false)
+                            commonlib.play_custom_sound(inside_lavalaunch_sound, lavastream_sndsrc.uid, 0.5, false)
                             state.camera.shake_multiplier_x = 0.35
                             state.camera.shake_multiplier_y = 0.35
                             -- message("SHAKIER")
