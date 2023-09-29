@@ -119,7 +119,14 @@ function module.create_door_exit_to_hell(x, y, l)
 	local door_target = spawn(ENT_TYPE.FLOOR_DOOR_EGGPLANT_WORLD, x, y, l, 0, 0)
 	set_door_target(door_target, 5, 1, THEME.VOLCANA)
 	
-	if botdlib.HAS_BOOKOFDEAD == true then
+	local locked_for_demo = not (5 <= demolib.DEMO_MAX_WORLD or options.hd_debug_demo_enable_all_worlds)
+	if locked_for_demo then
+		local construction_sign = get_entity(spawn_entity(ENT_TYPE.ITEM_CONSTRUCTION_SIGN, x, y, l, 0, 0))
+		construction_sign:set_draw_depth(40)
+		construction_sign.flags = set_flag(construction_sign.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
+	end
+
+	if botdlib.HAS_BOOKOFDEAD == true and not locked_for_demo then
 		local helldoor_e = get_entity(door_target)
 		helldoor_e.flags = set_flag(helldoor_e.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
 		helldoor_e.flags = clr_flag(helldoor_e.flags, ENT_FLAG.LOCKED)
