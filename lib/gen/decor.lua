@@ -3,6 +3,7 @@ treelib = require 'lib.entities.tree'
 gargoylelib = require 'lib.entities.gargoyle'
 touchupslib = require 'lib.gen.touchups'
 shopslib = require 'lib.entities.shops'
+local minesdecolib = require 'lib.entities.mines_deco'
 
 local module = {}
 
@@ -45,6 +46,7 @@ local function add_decorations()
     treelib.onlevel_decorate_haunted()
     gargoylelib.add_gargoyles_to_hc()
     shopslib.add_shop_decorations()
+    minesdecolib.add_mines_decorations()
 end
 
 local function remove_decorations()

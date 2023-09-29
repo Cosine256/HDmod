@@ -5,6 +5,7 @@ local INDENT = 5
 local dev_sections = {}
 local registered_options = {}
 local warp_reset_run = false
+local warp_increase_lvl_count = true
 local entity_spawners = {}
 local entity_spawner_choice_string
 local entity_spawner_section_open = false
@@ -103,15 +104,17 @@ module.register_dev_section("Debug Options", function(ctx)
     draw_registered_options(ctx, true)
 end)
 
-local function reset_run()
+local function warp_effects()
     if warp_reset_run then
         state.quest_flags = set_flag(state.quest_flags, QUEST_FLAG.RESET)
+    elseif warp_increase_lvl_count then
+        state.level_count = state.level_count + 1
     end
 end
 
 local function draw_warp_button(ctx, name, world, level, theme, world_state)
     if ctx:win_button(name) then
-        reset_run()
+        warp_effects()
         worldlib.HD_WORLDSTATE_STATE = world_state or worldlib.HD_WORLDSTATE_STATUS.NORMAL
         -- TODO: These warps can get redirected by flagslib.onloading_levelrules.
 		feelingslib.set_preset_feelings = nil
@@ -121,7 +124,7 @@ end
 
 local function draw_feeling_button(ctx, name, world, level, theme, cb)
     if ctx:win_button(name) then
-        reset_run()
+        warp_effects()
         worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
         -- TODO: These warps can get redirected by flagslib.onloading_levelrules.
         feelingslib.set_preset_feelings = cb
@@ -131,7 +134,7 @@ end
 
 local function draw_win_button(ctx, name, win_state)
     if ctx:win_button(name) then
-        reset_run()
+        warp_effects()
         worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
         warp(4, 4, THEME.OLMEC)
         state.screen_next = SCREEN.WIN
@@ -341,6 +344,8 @@ module.register_dev_section("Warps", function(ctx)
     end)
 
     warp_reset_run = ctx:win_check("Reset run", warp_reset_run)
+    warp_increase_lvl_count = ctx:win_check("Increase level count", warp_increase_lvl_count)
+    
 end)
 
 -- Calculates the selected entity spawner position, or returns nil if the position can't be determined.

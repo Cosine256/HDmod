@@ -58,70 +58,52 @@ local function anubis2_redskeleton_attack(ent)
         local tx, ty, tl = get_position(ent.chased_target_uid)
         tx = math.floor(tx)
         ty = math.floor(ty)
-        local used_spawns = {} -- table that contains coordinates of spawns we've already used
-        for i=1, 4 do
-            local failsafe = 0 -- In the incredibly rare event the game can't find a place for a skeleton, we need to stop an infinite loop from occuring
-            -- Choose a random tile within a random range
-            local rx = math.random(-4, 4)
-            local ry = math.random(-2, 2)
-            -- Choose a random tile
-            local tile = get_entity(get_grid_entity_at(tx+rx, ty+ry, tl))
-            while tile ~= true do
-                -- Re-roll until we find a tile that meets our requirements
-                rx = math.random(-5, 5)
-                ry = math.random(-4, 4)
-                tile = get_entity(get_grid_entity_at(tx+rx, ty+ry, tl))
+        local valid_spawns = {}
+        for x = -5, 5 do
+            for y = -4, 4 do
+                local dest_x, dest_y = tx+x, ty+y
+                local tile = get_entity(get_grid_entity_at(dest_x, dest_y, tl))
                 -- Found a tile, now see if the space above it is free
-                if tile ~= nil then
-                    if get_entity(get_grid_entity_at(tx+rx, ty+ry+1, tl)) == nil then
-                        tile = true
+                if tile ~= nil and test_flag(tile.flags, ENT_FLAG.SOLID) then
+                    local floor_at = get_entity(get_grid_entity_at(dest_x, dest_y+1, tl))
+                    if floor_at == nil or not test_flag(floor_at.flags, ENT_FLAG.SOLID) then
                         -- Check if there's maybe an activefloor or something grid entity won't find
-                        local pf = get_entities_at(0, MASK.FLOOR | MASK.ACTIVEFLOOR, tx+rx, ty+ry+1, tl, 0.5)[1]
-                        if pf ~= nil then
-                            local f = get_entity(pf)
-                            if test_flag(f.flags, ENT_FLAG.SOLID) then
-                                tile = nil
-                            end
-                        end
-                        -- Check if we're trying to spawn entities on the roof of the level
-                        _, ceiling, _, _ = get_bounds()
-                        if ty+ry+1 >= ceiling then
-                            tile = nil
-                        end
-                        -- Did we already use this spawn? if so, DON'T USE IT!!
-                        local used = false
-                        for _, cord in ipairs(used_spawns) do
-                            if tx+rx == cord[1] and ty+ry+1 == cord[2] then
-                                used = true
-                                break
-                            end
-                        end
-                        if used then 
-                            tile = nil 
-                        end
-                        -- Add to the table of already used spawns
-                        if tile ~= nil then
-                            table.insert(used_spawns, {tx+rx, ty+ry+1})
+                        local activefloor_uid = get_entities_at(0, MASK.ACTIVEFLOOR, dest_x, dest_y+1, tl, 0.5)[1]
+                        local _, ceiling, _, _ = get_bounds()
+                        if (
+                            (activefloor_uid == nil or not test_flag(get_entity_flags(activefloor_uid), ENT_FLAG.SOLID)) and
+                            dest_y+1 < ceiling and
+                            get_entities_overlapping_hitbox(0, MASK.PLAYER, AABB:new(dest_x-0.4, dest_y+1.45, dest_x+0.4, dest_y+0.55), tl)[1] == nil
+                        ) then
+                            table.insert(valid_spawns, {dest_x, dest_y})
                         end
                     end
                 end
-                failsafe = failsafe + 1
-                if failsafe >= 300 then
-                    tile = true
+            end
+        end
+        local valid_spawn_num = #valid_spawns
+        -- Limit amount of red skeletons to the amount of valid spawns if less than 4
+        for i=1, math.min(4, valid_spawn_num) do
+            local spot_idx = prng:random_index(valid_spawn_num, PRNG_CLASS.PROCEDURAL_SPAWNS)
+            local dest_x, dest_y = table.unpack(valid_spawns[spot_idx])
+            local source_uid = spawn(ENT_TYPE.FX_ANUBIS_SPECIAL_SHOT_RETICULE, dest_x, dest_y+1, tl, 0, 0)
+            local source = get_entity(source_uid)
+            source:set_texture(TEXTURE.DATA_TEXTURES_FX_SMALL3_0)
+            source.animation_frame = 32
+            commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_NECROMANCER_SPAWN, source_uid, 1, false)
+            set_timeout(function()
+                local uid = spawn(ENT_TYPE.MONS_REDSKELETON, dest_x, dest_y+1, tl, 0, 0)
+                if get_entities_overlapping_hitbox(0, MASK.ACTIVEFLOOR, AABB:new(dest_x-0.15, dest_y+1.25, dest_x+0.15, dest_y+0.75), tl)[1] then
+                    kill_entity(uid)
                 end
-            end
-            if failsafe <= 300 then
-                -- Spawn a skelly right above the now located tile
-                local source = get_entity(spawn(ENT_TYPE.FX_ANUBIS_SPECIAL_SHOT_RETICULE, tx+rx, ty+ry+1, tl, 0, 0))
-                source:set_texture(TEXTURE.DATA_TEXTURES_FX_SMALL3_0)
-                source.animation_frame = 32
-                commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_NECROMANCER_SPAWN, source.uid, 1, false)
-                set_timeout(function()
-                    spawn(ENT_TYPE.MONS_REDSKELETON, tx+rx, ty+ry+1, tl, 0, 0)
-                    commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_SORCERESS_ATK, source.uid, 1, false)
-                    generate_world_particles(PARTICLEEMITTER.NECROMANCER_SUMMON, source.uid)
-                end, 45)
-            end
+                commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_SORCERESS_ATK, source_uid, 1, false)
+                generate_world_particles(PARTICLEEMITTER.NECROMANCER_SUMMON, source_uid)
+            end, 45)
+
+            --Unordered remove from table
+            valid_spawns[spot_idx] = valid_spawns[valid_spawn_num]
+            valid_spawns[valid_spawn_num] = nil
+            valid_spawn_num = valid_spawn_num - 1
         end
     end
 end
@@ -137,7 +119,14 @@ local ANIMATION_INFO = {
         speed = 5;
     };
 }
+---@param ent Monster
 local function anubis2_update(ent)
+    if ent.frozen_timer > 0 then
+        ent.flags = set_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS)
+        return
+    else
+        ent.flags = clr_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS)
+    end
     --- ANIMATION
     -- Increase animation timer
     ent.user_data.animation_timer = ent.user_data.animation_timer + 1
@@ -167,6 +156,7 @@ local function anubis2_update(ent)
     -- Contact damage after fully spawning in
     if ent.user_data.fadein_timer == 60 then
         ent.flags = clr_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+        ent.flags = clr_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
     end
     -- State
     if ent.user_data.state == 0 then
@@ -195,12 +185,29 @@ local function anubis2_update(ent)
             anubis2_redskeleton_attack(ent)
         end
     end
+    local colliding_olmec = get_entity(
+      get_entities_overlapping_hitbox(
+        ENT_TYPE.ACTIVEFLOOR_OLMEC,
+        MASK.ACTIVEFLOOR,
+        get_hitbox(ent.uid),
+        ent.layer
+      )[1]
+    ) --[[@as Movable]]
+    if colliding_olmec and ent.exit_invincibility_timer == 0 and (
+        colliding_olmec.state == 1 and colliding_olmec.move_state == 4 and colliding_olmec.velocityy < -0.2
+    ) then
+        ent:damage(colliding_olmec.uid, 2, 0, 0, 0, 10)
+        ent.exit_invincibility_timer = 11
+    end
 end
 
+-- Fix anubis2 interaction with ropes
+local custom_anubis2_type = EntityDB:new(ENT_TYPE.MONS_ANUBIS2)
+custom_anubis2_type.id = ENT_TYPE.MONS_ANUBIS
+
 local function anubis2_set(uid)
-    ---@type Movable
-    local ent = get_entity(uid)
-    local x, y, l = get_position(ent.uid)
+    local ent = get_entity(uid) --[[@as Movable]]
+    ent.type = custom_anubis2_type
     -- Set health
     ent.health = 20
     -- user_data
@@ -222,11 +229,17 @@ local function anubis2_set(uid)
     ent:set_draw_depth(7)
     ent.flags = clr_flag(ent.flags, ENT_FLAG.COLLIDES_WALLS)
     ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_PLAYER)
+    ent.flags = set_flag(ent.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
     ent:set_behavior(3)
     module.anubis2_killed = false
     ent:set_pre_kill(function()
         -- Stops Anubis2 from spawning at the start of every level if he's killed
         module.anubis2_killed = true
+    end)
+    ent:set_pre_damage(function (_, damage_dealer)
+        if damage_dealer and damage_dealer.type.search_flags & MASK.LAVA ~= 0 then
+            return false
+        end
     end)
 end
 
@@ -238,12 +251,13 @@ function module.create_anubis2(x, y, l)
     set_post_statemachine(anubis2.uid, anubis2_update)
     return anubis2
 end
-set_callback(function()
-    -- Whenever a new run is started, clear this so anubis doesnt follow you between runs
-    module.anubis2_killed = true
-end, ON.START)
+
 -- If Anubis2 wasn't killed, make him follow between levels
 set_callback(function()
+    if state.level_count == 0 then
+        -- Whenever a new run is started, clear this so anubis doesnt follow you between runs
+        module.anubis2_killed = true
+    end
     if module.anubis2_killed == false then
         -- Find the first alive player
         local alivep = nil
@@ -255,13 +269,9 @@ set_callback(function()
         end
         if alivep ~= nil then
             local x, y, l = get_position(alivep.uid)
-            set_timeout(function()
-                -- warning
-                if alivep ~= nil then
-                    x, y, l = get_position(alivep.uid)
-                    module.create_anubis2(x, y, l)
-                end
-            end, 30)
+            set_timeout(function ()
+                module.create_anubis2(x, y+2, l)
+            end, 1)
         end
     end
 end, ON.LEVEL)

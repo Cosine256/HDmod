@@ -4,6 +4,7 @@ local surfacelayerlib = require('lib.entities.surface_layer')
 local palmtreelib = require('lib.entities.palmtree')
 local cloudslib = require('lib.entities.clouds')
 local decorlib = require('lib.gen.decor')
+local minesdecolib = require('lib.entities.mines_deco')
 
 local sky_hard_texture_id
 do
@@ -179,7 +180,14 @@ function module.decorate_existing_surface()
     -- fix gap needed in camp for last two players on rope
     get_entity(spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, 50, 99, LAYER.FRONT)):fix_decorations(true,true)
 
+
     palmtreelib.create_palmtree(30, 100, 1, decorlib.SURFACE_BG_DEPTH.FOREGROUND)
+
+    minesdecolib.create_cutscene_support_bg(42, 100, true)
+    minesdecolib.create_support_at_floor_uid(get_grid_entity_at(43, 99, LAYER.FRONT))
+    minesdecolib.create_cutscene_support_bg(44, 100, true)
+    minesdecolib.create_cutscene_support_bg(49, 100)
+    minesdecolib.create_support_at_floor_uid(get_grid_entity_at(51, 99, LAYER.FRONT))
 
     for _, uid in pairs(get_entities_by_type(TO_DECORATE)) do
         ---@type BGSurfaceLayer
