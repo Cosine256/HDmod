@@ -103,8 +103,6 @@ local function hawkman_set(uid)
         drop(ent.uid, held_item.uid)
         held_item:destroy()
     end
-    --prevent picking up items
-    ent.holding_uid = ent.uid
 end
 
 local function hawkman_update(ent)
