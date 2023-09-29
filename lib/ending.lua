@@ -1,12 +1,25 @@
-local surfacelib = require('lib.surface')
-local camellib = require('lib.entities.camel')
 local ladderlib = require('lib.entities.ladder')
 local endingplatformlib = require('lib.entities.endingplatform')
 local endingtreasurelib = require('lib.entities.endingtreasure')
+local unlockslib = require('lib.unlocks')
 
+---@type integer[]
+local player_items = {}
 local chest
 ---@type Rockdog | Mount | Entity | Movable | PowerupCapable
-local camel
+local lavastream
+local lavastream_sndsrc
+local snd_fireloop
+local snd_rumbleloop
+local snd_fireloop_vol
+
+local TIMEOUT_EJECT_TIME = 55
+local TIMEOUT_SHAKE_TIME = 100
+local TIMEOUT_FLOW_START = 165
+local TIMEOUT_PLATFORM_BUFFER = 35
+local TIMEOUT_END_TIME = 300
+
+local TIMEOUT_WIN
 
 local hell_transition_texture_id
 do
@@ -19,8 +32,60 @@ do
     hell_transition_texture_id = define_texture(hell_transition_texture_def)
 end
 
+local inside_lavalaunch_sound = create_sound('res/sounds/explosion_inside.wav')
+
 set_callback(function ()
+    player_items = {}
+    for _, p in pairs(players) do
+        local holding = get_entity(p.holding_uid)
+        if holding then
+            -- Prevent item from getting dropped
+            holding.flags = set_flag(holding.flags, ENT_FLAG.NO_GRAVITY)
+            player_items[p.inventory.player_slot] = holding.type.id
+        end
+    end
+
     local hard_win = state.win_state == WIN_STATE.HUNDUN_WIN
+
+    -- spawn imposter lava
+    lavastream = spawn_impostor_lake(
+        AABB:new(34.5,98.5,40.5,85.5),
+        LAYER.FRONT, ENT_TYPE.LIQUID_IMPOSTOR_LAVA, 1.0
+    )
+    lavastream_sndsrc = get_entity(spawn_entity(ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK, 37.5, 98, LAYER.FRONT, 0, 0))
+    lavastream_sndsrc.flags = set_flag(lavastream_sndsrc.flags, ENT_FLAG.PASSES_THROUGH_EVERYTHING)
+    lavastream_sndsrc.flags = set_flag(lavastream_sndsrc.flags, ENT_FLAG.INVISIBLE)
+    lavastream_sndsrc.flags = set_flag(lavastream_sndsrc.flags, ENT_FLAG.NO_GRAVITY)
+    --Move y of soundsrc from 100 -> 105
+    lavastream_sndsrc:set_post_update_state_machine(function (self)
+        if TIMEOUT_WIN >= TIMEOUT_FLOW_START then
+            lavastream_sndsrc.y = lavastream_sndsrc.y + 0.1
+        end
+        if lavastream_sndsrc.y > 105 then
+            clear_callback()
+        end
+    end)
+
+    -- fire sound effects for the stream
+    snd_fireloop = commonlib.play_vanilla_sound(VANILLA_SOUND.ENEMIES_FIREBUG_ATK_LOOP, lavastream_sndsrc.uid, 1, true)
+    snd_rumbleloop = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, lavastream_sndsrc.uid, 1, true)
+    lavastream_sndsrc:set_post_update_state_machine(function()
+        if snd_fireloop then
+            commonlib.update_sound_volume(snd_fireloop, lavastream_sndsrc.uid, snd_fireloop_vol)
+        end
+        if snd_rumbleloop then
+            commonlib.update_sound_volume(snd_rumbleloop, lavastream_sndsrc.uid, snd_fireloop_vol)
+        end
+    end)
+    set_callback(function()
+        if snd_fireloop then
+            snd_fireloop:stop()
+        end
+        if snd_rumbleloop then
+            snd_rumbleloop:stop()
+        end
+        clear_callback()
+    end, ON.SCORES)
 
     chest = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 42.5, 105.4, LAYER.FRONT))
     chest:set_draw_depth(31)
@@ -78,6 +143,27 @@ set_callback(function ()
         endingplatformlib.create_endingplatform(x, 103, LAYER.FRONT)
     end
 
+    local character = 193 + unlockslib.HD_UNLOCKS[hard_win and unlockslib.HD_UNLOCK_ID.YAMA or unlockslib.HD_UNLOCK_ID.OLMEC_WIN].unlock_id
+    set_ending_unlock(character)
+    state.end_spaceship_character = character -- Setting this allows ending SCREEN.WIN early without a crash!
+    if hard_win then
+        local yang = get_entity(spawn_entity_snapped_to_floor(ENT_TYPE.CHAR_CLASSIC_GUY, 40, 104, LAYER.FRONT))
+        flip_entity(yang.uid)
+    end
+
+    local particle_cb = set_post_entity_spawn(function(particle, spawn_flags)
+        if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+            particle:set_pre_update_state_machine(function (self)
+                -- message(string.format("Rubble: %s", particle.uid))
+                particle.animation_frame = hard_win and 16 or 0
+                clear_callback()
+            end)
+        end
+    end, SPAWN_TYPE.ANY, MASK.FX, ENT_TYPE.ITEM_RUBBLE)
+    set_callback(function ()
+        clear_callback(particle_cb)
+        clear_callback()
+    end, ON.SCORES)
 end, ON.WIN)
 
 set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
@@ -90,24 +176,37 @@ end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_PARENTSSHIP, ENT_TYPE.ITEM_OLMECSH
 
 local function end_winscene()
     -- message("ENDING WINSCENE!")
-    ---@type TreasureHook | Entity | Movable
-    local hook = get_entity(spawn_entity(ENT_TYPE.ITEM_EGGSHIP_HOOK, 42.5, 117, LAYER.FRONT, 0, 0))
-    spawn_entity_snapped_to_floor(ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN, 42.5, 117, LAYER.FRONT)
+    state.loading = 1
+    state.fadevalue = 0
+    state.fadeout = 20--40
+    state.fadein = 20--40
+    state.loading_black_screen_timer = 20--40
 end
 
 -- burst open treasure chest
-local function eject_ending_treasure()
+local function eject_treasure()
+    commonlib.play_vanilla_sound(VANILLA_SOUND.CUTSCENE_BIG_TREASURE_OPEN, chest.uid, 1, false)
     -- set the ending treasure chest to the open texture
     chest.animation_frame = 8
     -- particle effects
-    -- create_ending_treasure
-    endingtreasurelib.create_ending_treasure(42.5, 105.75, LAYER.FRONT, -0.0735, 0.2, state.win_state == WIN_STATE.HUNDUN_WIN)
-    -- if hard ending, spawn coins as well
+    for i = 1, 10 do
+        local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE, 42+prng:random_float(PRNG_CLASS.PARTICLES)*2, 105.75+prng:random_float(PRNG_CLASS.PARTICLES)*3, LAYER.FRONT, 0.06-prng:random_float(PRNG_CLASS.PARTICLES)*0.12, 0.3+prng:random_float(PRNG_CLASS.PARTICLES)*.1))
+        rubble.animation_frame = i >= 5 and 20 or 67
+    end
+    endingtreasurelib.create_ending_treasure(42.5, 105.75, LAYER.FRONT, -0.0735, 0.2)
+    -- if hard ending, spawn coins with velocity as it bounces
 end
 
-local function raise_platform()
-    -- move and spawn lava in a convincing way to have it 'push' the platform up
-    -- move the ending platforms up
+local function vibrate_chest()
+    chest.x = chest.x + math.cos(TIMEOUT_WIN)/50
+    chest.y = chest.y + math.cos(TIMEOUT_WIN)/50
+end
+
+-- move lava in a convincing way to have it 'push' the platform up
+local function flow_lava()
+    if lavastream.y < 103.5 then
+        lavastream.y = lavastream.y + 0.1045
+    end
 end
 
 -- In the vanilla game, a win is triggered by the player's state machine when the player finishes entering a win door. Emulate this behavior in the Olmec and Yama levels.
@@ -137,13 +236,14 @@ set_post_entity_spawn(function(ent)
             -- message("YOU WINNED")
             ent.flags = clr_flag(ent.flags, ENT_FLAG.STUNNABLE)
             local reached_center = false
+            TIMEOUT_WIN = 0
             ent:set_post_update_state_machine(
                 ---@param self Movable | Entity | Player
                 function (self)
                     local x, _, _ = get_position(ent.uid)
                     -- continue walking until you get to the center of the platform
                     if x > 34.5 and x < 37.4 then
-                        -- don't trip
+                        -- don't trip (Don't even trip, dog)
                         if self.velocityy >= 0.090 then
                             self.velocityy = 0
                         end
@@ -151,18 +251,44 @@ set_post_entity_spawn(function(ent)
                         ent.velocityx = 0.072--0.105 is ana's intro walking speed
                     elseif x >= 37.4 and not reached_center then
                         reached_center = true
-                        eject_ending_treasure()
+                    end
+                    if reached_center then
+                        if TIMEOUT_WIN >= 0 then
+                            TIMEOUT_WIN = TIMEOUT_WIN + 1
+                        end
+                        if TIMEOUT_WIN < TIMEOUT_EJECT_TIME then
+                            vibrate_chest()
+                        end
+                        if TIMEOUT_WIN == TIMEOUT_EJECT_TIME then
+                            eject_treasure()
+                        end
+                        if TIMEOUT_WIN == TIMEOUT_SHAKE_TIME then
+                            commonlib.shake_camera(200, 480, 1, 1, 1, false)
+                            -- message("SHAKE")
+                        end
+                        if TIMEOUT_WIN == TIMEOUT_FLOW_START then
+                            commonlib.play_custom_sound(inside_lavalaunch_sound, lavastream_sndsrc.uid, 0.5, false)
+                            state.camera.shake_multiplier_x = 0.35
+                            state.camera.shake_multiplier_y = 0.35
+                            -- message("SHAKIER")
+                            snd_fireloop_vol = 1
+                        end
+                        if TIMEOUT_WIN >= TIMEOUT_FLOW_START then
+                            flow_lava()
+                        end
+                        if TIMEOUT_WIN == TIMEOUT_FLOW_START + TIMEOUT_PLATFORM_BUFFER then
+                            endingplatformlib.raise_platform()
+                        end
+                        if TIMEOUT_WIN == TIMEOUT_END_TIME then
+                            end_winscene()
+                        end
                     end
                 end
             )
-        elseif ent.y > 90 then
+        elseif ent.y > 105 then
             --otherwise this is the ship character.
             --spawns typically around 32.4, 111
             -- message(string.format("ship character %s at: %s %s", ent.uid, ent.x, ent.y))
-
-            --trigger ending the scene (otherwise ending it sooner crashes the scores screen)
-            local triggered_end_winscene = false
-            local timeout_win = 100
 
             --lock the ship character where it spawns
             local x, y = ent.x, ent.y
@@ -172,82 +298,38 @@ set_post_entity_spawn(function(ent)
                 function (self)
                     self.x = x
                     self.y = y
-                    
-                    if timeout_win > 0 then
-                        timeout_win = timeout_win - 1
-                    elseif not triggered_end_winscene then
-                        triggered_end_winscene = true
-                        end_winscene()
-                    end
                 end
             )
         end
     end
 end, SPAWN_TYPE.ANY, MASK.PLAYER)
 
-
-
 set_callback(function ()
-    surfacelib.decorate_surface()
-    
-	state.camera.bounds_top = 109.6640
-	-- state.camera.bounds_bottom = 
-	-- state.camera.bounds_left = 
-	-- state.camera.bounds_right = 
-
-	state.camera.adjusted_focus_x = 17.00
-	state.camera.adjusted_focus_y = 100.050
-end, ON.SCORES)
-
-
-
-set_callback(function ()
-    surfacelib.build_credits_surface()
-    spawn_player(1, 23, 111)
-
-    camel = get_entity(camellib.create_camel_credits(23, 111, LAYER.FRONT))
-    spawn_entity_over(ENT_TYPE.FX_EGGSHIP_SHADOW, camel.uid, 0, 0)
-
-    local player = get_entity(players[1].uid)
-    carry(camel.uid, player.uid)
-end, ON.CREDITS)
+    if state.loading == 2 then
+        if state.screen == SCREEN.WIN then
+            state.screen_next = SCREEN.SCORES
+        end
+        if state.screen == SCREEN.RECAP then
+            state.screen_next = SCREEN.CREDITS
+            state:force_current_theme(state.win_state == WIN_STATE.HUNDUN_WIN and THEME.HUNDUN or THEME.TIAMAT)
+            state.fadevalue = 0
+            state.fadeout = 0
+            state.fadein = 0
+            state.loading_black_screen_timer = 0
+        end
+        if state.screen == SCREEN.CREDITS then
+            state.screen_next = SCREEN.CAMP
+        end
+    end
+end, ON.PRE_UPDATE)
 
 set_callback(function()
-    -- prevent fading out of the credits screen (when pressing jump or credits end)
-    if state.screen == SCREEN.CREDITS
-    and state.loading == 1
-    then
-        local normal_credits_end = true
-        for _, player in pairs(players) do
-            local input = read_input(player.uid)
-            if test_flag(input, INPUT_FLAG.JUMP) then
-                normal_credits_end = false
-            end
-        end
-        if not normal_credits_end then
-            -- stop loading next scene
-            state.loading = 0
+    if state.screen == SCREEN.SCORES then
+        for slot, item_type in pairs(player_items) do
+            state.items.player_inventory[slot].held_item = item_type
         end
     end
-end, ON.LOADING)
-
-set_pre_entity_spawn(function (entity_type, x, y, layer, overlay_entity, spawn_flags)
-	if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, layer, 0, 0) end
-end, SPAWN_TYPE.ANY, 0,
-    ENT_TYPE.ITEM_MINIGAME_SHIP,
-    ENT_TYPE.ITEM_MINIGAME_UFO,
-    ENT_TYPE.ITEM_MINIGAME_BROKEN_ASTEROID,
-    ENT_TYPE.ITEM_MINIGAME_ASTEROID,
-    ENT_TYPE.BG_SURFACE_MOVING_STAR,
-    ENT_TYPE.ITEM_MINIGAME_ASTEROID_BG
-)
-
-set_post_entity_spawn(function (entity)
-	if state.screen == SCREEN.SCORES then
-        endingtreasurelib.set_ending_treasure_texture(entity, state.win_state == WIN_STATE.HUNDUN_WIN)
-    end
-end, SPAWN_TYPE.ANY, MASK.ITEM, ENT_TYPE.ITEM_ENDINGTREASURE_TIAMAT, ENT_TYPE.ITEM_ENDINGTREASURE_HUNDUN)
-
+end, ON.PRE_LEVEL_GENERATION)
 
 local theme_win = CustomTheme:new(100, THEME.OLMEC)
 theme_win:override(THEME_OVERRIDE.SPAWN_EFFECTS, THEME.DWELLING)

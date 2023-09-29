@@ -315,4 +315,21 @@ function module.is_standable_floor_at(x, y, layer)
   return is_activefloor_at(x, y, layer)
 end
 
+---Gets the closest player inside a distance (max_dist) from the player, returns -1 if no player found
+---@param ent Entity
+---@param max_dist number
+---@return integer
+function module.get_closest_player_in_dist(ent, max_dist)
+    local player_uid = -1
+    local last_dist = max_dist
+    for _, p_uid in ipairs(get_entities_by(0, MASK.PLAYER, ent.layer)) do
+        local dist = distance(p_uid, ent.uid)
+        if dist <= last_dist then
+            player_uid = p_uid
+            last_dist = dist
+        end
+    end
+    return player_uid
+end
+
 return module

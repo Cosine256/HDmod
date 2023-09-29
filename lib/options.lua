@@ -142,6 +142,18 @@ local function draw_win_button(ctx, name, win_state)
     end
 end
 
+local function draw_credits_button(ctx, name, win_state)
+    if ctx:win_button(name) then
+        reset_run()
+        worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
+        warp(1, 1, 1)
+        -- # TODO: Fix warping from the main menu. It loads in without the player.
+        state.screen = SCREEN.RECAP
+        state.screen_next = SCREEN.CREDITS
+        state.win_state = win_state
+    end
+end
+
 ---@param ctx GuiDrawContext
 module.register_dev_section("Warps", function(ctx)
     draw_warp_button(ctx, "Camp", 1, 1, THEME.BASE_CAMP)
@@ -203,6 +215,10 @@ module.register_dev_section("Warps", function(ctx)
     draw_win_button(ctx, "Normal Win", WIN_STATE.TIAMAT_WIN)
     ctx:win_inline()
     draw_win_button(ctx, "Hard Win", WIN_STATE.HUNDUN_WIN)
+
+    draw_credits_button(ctx, "Normal Credits", WIN_STATE.TIAMAT_WIN)
+    ctx:win_inline()
+    draw_credits_button(ctx, "Hard Credits", WIN_STATE.HUNDUN_WIN)
 
     draw_warp_button(ctx, "Test 1", 1, 1, THEME.DWELLING, worldlib.HD_WORLDSTATE_STATUS.TESTING)
     ctx:win_inline()

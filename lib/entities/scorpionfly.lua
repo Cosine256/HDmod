@@ -15,6 +15,8 @@ end
 -- Create a custom entity with the sacrafice value in HD
 local MONS_SCORPIONFLY = EntityDB:new(ENT_TYPE.MONS_SCORPION)
 MONS_SCORPIONFLY.sacrifice_value = 6
+local MONS_SCORPIONFLY_FLYING = EntityDB:new(MONS_SCORPIONFLY)
+MONS_SCORPIONFLY_FLYING.friction = 0.0
 
 -- Animations
 local ANIMATION_INFO = {
@@ -45,63 +47,109 @@ local ANIMATION_INFO = {
     };
 }
 
+---@enum FLYING_STATE
+local FLYING_STATE = {
+    IDLE = 1,
+    MOVING = 2,
+    CONSTANT_MOVE = 3,
+}
 -- State enum
+---@enum SCORPIONFLY_STATE
 local SCORPIONFLY_STATE = {
     ATTACK = 1;
     FLY = 2;
     SCORPION = 3;
 }
+---@param self Scorpion
+local function stop_scorpion_behiavor(self)
+    self:set_behavior(9)
+    self.jump_cooldown_timer = 100
+    self.lock_input_timer = 5
+    self.state = 9
+    self.last_state = 9
+    self.move_state = 0
+end
 
+---@param self Scorpion
 local function state_fly(self)
     -- No gravity 
     self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
+    stop_scorpion_behiavor(self)
+    local udata = self.user_data --[[@as ScorpFlyData]]
 
-    -- Position the scorpion around the mosquito
-    if get_entity(self.user_data.mosquito.uid) ~= nil then
-        local sx, sy, sl = get_position(self.user_data.mosquito.uid)
-        move_entity(self.uid, sx, sy, 0, 0)
-    end
-
-    -- Remove the scorpions own AI
-    self.jump_cooldown_timer = 100
-    self.move_state = 30
-    self.state = 30
-    self.lock_input_timer = 5
-
-    -- Scorpion faces the direction the mosqutio is moving
-    if test_flag(self.flags, ENT_FLAG.FACING_LEFT) and not test_flag(self.user_data.mosquito.flags, ENT_FLAG.FACING_LEFT) then
-        flip_entity(self.uid)       
-    end
-    if not test_flag(self.flags, ENT_FLAG.FACING_LEFT) and test_flag(self.user_data.mosquito.flags, ENT_FLAG.FACING_LEFT) then
-        flip_entity(self.uid)       
-    end
-
-    -- Enter attack state when a player is in range
-    for _, v in ipairs(get_entities_by({0}, MASK.PLAYER, self.layer)) do
-        local char = get_entity(v)
-        local dist = distance(char.uid, self.uid)
-        if dist <= 5 then
-            self.user_data.state = SCORPIONFLY_STATE.ATTACK
-            self.user_data.target = char
-            -- Kill the mosqutio since its no longer needed and we can't re-enter this state
-            self.user_data.mosquito:destroy()
-            break
+    if udata.flying_state == FLYING_STATE.IDLE then
+        if udata.flying_timer > 0 then
+            udata.flying_timer = udata.flying_timer - 1
+        else
+            if prng:random_chance(3, PRNG_CLASS.AI) then
+                udata.flying_state = FLYING_STATE.CONSTANT_MOVE
+                udata.flying_timer = 12
+            else
+                udata.flying_state = FLYING_STATE.MOVING
+                udata.flying_timer = prng:random_int(10, 30, PRNG_CLASS.AI) --[[@as integer]]
+            end
+            -- Between -0.05 and 0.05
+            self.velocityx = prng:random_float(PRNG_CLASS.AI)*0.1-0.05
+            self.velocityy = prng:random_float(PRNG_CLASS.AI)*0.1-0.05
+        end
+    elseif udata.flying_state == FLYING_STATE.MOVING then
+        -- If stopped by a wall
+        if self.velocityx == 0.0 and math.abs(udata.prev_velx) > 0.002 then
+            self.velocityx = udata.prev_velx * -0.25
+        end
+        self.velocityx = self.velocityx + (.0005 * (self.velocityx > 0 and -1.0 or 1.0))
+        self.velocityy = self.velocityy + (.0005 * (self.velocityy > 0 and -1.0 or 1.0))
+        local stop_x, stop_y = math.abs(self.velocityx) <= 0.00075, math.abs(self.velocityy) <= 0.00075
+        if stop_x then
+            self.velocityx = 0.0
+        end
+        if stop_y then
+            self.velocityy = 0.0
+        end
+        if stop_x and stop_y then
+            udata.flying_state = FLYING_STATE.IDLE
+        end
+    elseif udata.flying_state == FLYING_STATE.CONSTANT_MOVE then
+        if udata.flying_timer > 0 then
+            udata.flying_timer = udata.flying_timer - 1
+        else
+            udata.flying_timer = prng:random_int(50, 100, PRNG_CLASS.AI) --[[@as integer]]
+            udata.flying_state = FLYING_STATE.MOVING
         end
     end
+    if self.velocityx > 0.0 then
+        self.flags = clr_flag(self.flags, ENT_FLAG.FACING_LEFT)
+    elseif self.velocityx < 0.0 then
+        self.flags = set_flag(self.flags, ENT_FLAG.FACING_LEFT)
+    end
+    udata.prev_velx = self.velocityx
+
+    -- Enter attack state when a player is in range
+    local player_uid = commonlib.get_closest_player_in_dist(self, 5)
+    if player_uid ~= -1 then
+        self.user_data.state = SCORPIONFLY_STATE.ATTACK
+        self.chased_target_uid = player_uid
+    end
 end
+---@param self Scorpion
 local function state_chase(self)
-    -- I was originally going to do this using a bat but there's no way to get rid of their obnoxious bat noises!
-    local target = self.user_data.target
+    if self.target_selection_timer > 0 then
+        self.target_selection_timer = self.target_selection_timer - 1
+    else
+        local new_target = commonlib.get_closest_player_in_dist(self, math.huge)
+        if new_target ~= -1 then
+            self.chased_target_uid = new_target
+        end
+        self.target_selection_timer = 60
+    end
+    local target_uid = self.chased_target_uid
     -- No gravity 
     self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
 
-    -- Remove the scorpions own AI
-    self.jump_cooldown_timer = 100
-    self.move_state = 30
-    self.state = 30
-    self.lock_input_timer = 5
+    stop_scorpion_behiavor(self)
 
     -- Move towards chased target
+    local target = get_entity(target_uid)
     if target ~= nil then
         local dist = distance(target.uid, self.uid)
         local tx, ty, _ = get_position(target.uid)
@@ -136,13 +184,15 @@ local function state_chase(self)
         if math.abs(abs_y) < 0.02 then
             movey = 0
         end
-        move_entity(self.uid, sx-movex, sy-movey, 0, 0)
+        self.velocityx, self.velocityy = -movex, -movey
         -- Face direction moving
-        if abs_x > 0 and not test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
-            flip_entity(self.uid)         
-        end
-        if abs_x < 0 and test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
-            flip_entity(self.uid)         
+        if not test_flag(self.more_flags, 9) then --if not stuck in smth (web or honey, flag 8 is reset on statemachine, so only 9 works)
+            if abs_x > 0 and not test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
+                flip_entity(self.uid)
+            end
+            if abs_x < 0 and test_flag(self.flags, ENT_FLAG.FACING_LEFT) then
+                flip_entity(self.uid)
+            end
         end
     end
 end
@@ -182,8 +232,10 @@ local function state_scorpion(self)
 end
 
 local function become_scorpion(self, _, amount)
+    local d = self.user_data
     if amount - self.health ~= 0 then
-        local d = self.user_data
+        self.type = MONS_SCORPIONFLY
+        self.offsety = MONS_SCORPIONFLY.offsety
         -- Change state
         d.state = SCORPIONFLY_STATE.SCORPION
         -- Change gravity flag and restore state info
@@ -193,51 +245,82 @@ local function become_scorpion(self, _, amount)
         self.move_state = 0
         self.state = 1
         self.lock_input_timer = 0
-
-        -- Kill the extra entities used
-        if get_entity(d.bee.uid) ~= nil then
-            d.bee:destroy()
-        end
+    end
+    local bee = get_entity(d.bee_uid)
+    -- Kill the extra entities used
+    if bee ~= nil then
+        bee:destroy()
+        d.bee_uid = -1
     end
 end
 
+---@param self Scorpion
 local function scorpionfly_update(self)
+    local d = self.user_data
+    if self.frozen_timer > 0 then
+        self.type = MONS_SCORPIONFLY -- Change friction to normal if flying
+        self.animation_frame = d.animation_frame
+        if d.bee_uid ~= -1 then
+            -- pause the sound
+            move_entity(d.bee_uid, self.abs_x, 1000.0, 0, 0)
+        end
+        return
+    elseif d.state ~= SCORPIONFLY_STATE.SCORPION then -- if flying
+        if self.stun_timer > 0 then -- If hit by camera flash
+            become_scorpion(self, nil, 0)
+            self.velocityx = 0.0
+        else
+            self.type = MONS_SCORPIONFLY_FLYING
+        end
+    end
     -- ANIMATION
     -- Increase animation timer
-    self.user_data.animation_timer = self.user_data.animation_timer + 1
+    d.animation_timer = d.animation_timer + 1
     --- Animate the entity and reset the timer
-    if self.user_data.animation_timer >= self.user_data.animation_info.speed then
-        self.user_data.animation_timer = 1
+    if d.animation_timer >= d.animation_info.speed then
+        d.animation_timer = 1
         -- Advance the animation
-        self.user_data.animation_frame = self.user_data.animation_frame + 1
+        d.animation_frame = d.animation_frame + 1
         -- Loop if the animation has reached the end
-        if self.user_data.animation_frame > self.user_data.animation_info.finish then
-            self.user_data.animation_frame = self.user_data.animation_info.start
+        if d.animation_frame > d.animation_info.finish then
+            d.animation_frame = d.animation_info.start
         end
     end
     -- Change the actual animation frame
-    self.animation_frame = self.user_data.animation_frame
+    self.animation_frame = d.animation_frame
 
     -- Place the bee on the scorpionfly for the bees sound effects
-    if self.user_data.bee.type.id == ENT_TYPE.MONS_BEE then
-        self.user_data.bee.x = self.x
-        self.user_data.bee.y = self.y
+    if d.bee_uid ~= -1 then
+        move_entity(d.bee_uid, self.abs_x, self.abs_y, 0, 0)
     end
 
     -- STATEMACHINE
-    local d = self.user_data
     if d.state == SCORPIONFLY_STATE.FLY then
         state_fly(self)
     elseif d.state == SCORPIONFLY_STATE.ATTACK then
-        state_chase(self)        
+        state_chase(self)
     elseif d.state == SCORPIONFLY_STATE.SCORPION then
         state_scorpion(self)
     end
 end
 
+---@class ScorpFlyData
+---@field ent_type ENT_TYPE
+---@field animation_timer integer
+---@field animation_frame integer
+---@field animation_info integer
+---@field state SCORPIONFLY_STATE
+---@field flying_state FLYING_STATE
+---@field flying_timer integer
+---@field prev_velx number
+---@field bee_uid integer
+
+---@param self Scorpion
 local function scorpionfly_set(self)
+    self.target_selection_timer = 60
     -- This custom type awards the player 6 favor like in HD
-    self.type = MONS_SCORPIONFLY
+    self.type = MONS_SCORPIONFLY_FLYING
+    self.offsety = 0.0
     -- Userdata stuff
     self.user_data = {
         ent_type = HD_ENT_TYPE.MONS_SCORPIONFLY;
@@ -249,27 +332,18 @@ local function scorpionfly_set(self)
 
         -- AI 
         state = SCORPIONFLY_STATE.FLY;
-        previous_state = SCORPIONFLY_STATE.FLY;
+        flying_state = FLYING_STATE.IDLE;
+        flying_timer = 0;
+        prev_velx = 0.0;
 
-        target = nil;
-
-        -- We use the mosquito for its wandering behavior
-        mosquito = get_entity(spawn(ENT_TYPE.MONS_MOSQUITO, self.x, self.y, self.layer, 0, 0));
         -- Bee for the sound effects
-        bee = get_entity(spawn(ENT_TYPE.MONS_BEE, self.x, self.y, self.layer, 0, 0));
+        bee_uid = spawn(ENT_TYPE.MONS_BEE, self.x, self.y, self.layer, 0, 0);
     };
     self.user_data.animation_frame = self.user_data.animation_info.start
-    -- Make the mosquito inactive
-    self.user_data.mosquito.flags = set_flag(self.user_data.mosquito.flags, ENT_FLAG.INVISIBLE)
-    self.user_data.mosquito.flags = set_flag(self.user_data.mosquito.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
     -- Same for the bee
-    self.user_data.bee.flags = set_flag(self.user_data.bee.flags, ENT_FLAG.INVISIBLE)
-    self.user_data.bee.flags = set_flag(self.user_data.bee.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
-    -- Remove the mosquito sounds
-    self.user_data.mosquito:set_post_update_state_machine(function(mosq)
-        -- Remove the Mosquitos sound
-        mosq.sound.playing = false
-    end)
+    local bee = get_entity(self.user_data.bee_uid)
+    bee.flags = set_flag(bee.flags, ENT_FLAG.INVISIBLE)
+    bee.flags = set_flag(bee.flags, ENT_FLAG.PASSES_THROUGH_OBJECTS)
     -- No gravity since this starts as a flying entity
     self.flags = set_flag(self.flags, ENT_FLAG.NO_GRAVITY)
     self:set_texture(scorpionfly_texture_id)
@@ -282,7 +356,7 @@ local function scorpionfly_set(self)
     -- Custom gibs
     self:set_pre_kill(function(self)
         local sx, sy, sl = get_position(self.uid)
-        -- Make our own rubble and blood
+        -- Make our own rubble
         -- TODO no idea how to color rubble right, the values I tweaked in OL dont transfer to these values
         local rubble = get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, sx, sy, sl, -0.05, 0.015))
         rubble.color:set_rgba(255, 80, 20, 255)
@@ -290,15 +364,12 @@ local function scorpionfly_set(self)
         local rubble = get_entity(spawn(ENT_TYPE.ITEM_RUBBLE, sx, sy, sl, 0.05, 0.015))
         rubble.color:set_rgba(255, 80, 20, 255)
         rubble.animation_frame = 39
-        -- Defeat sfx
-        local audio = commonlib.play_vanilla_sound(VANILLA_SOUND.SHARED_DAMAGED, self.uid, 1, false)
-        audio:set_volume(1)
-        audio:set_parameter(VANILLA_SOUND_PARAM.COLLISION_MATERIAL, 2)
-        -- Spawn a spider for the blood
-        local spider = get_entity(spawn(ENT_TYPE.MONS_SPIDER, sx, sy, sl, 0, 0))
-        spider:kill(true, nil)
-        -- move original entity OOB
-        self.x = -900
+        local bee = get_entity(self.user_data.bee_uid)
+        if bee then
+            bee:destroy()
+        end
+        -- Destroy now to prevent vanilla spawned rubble, still plays sound, spawns other particles and blood
+        self:destroy()
     end)
 end
 
