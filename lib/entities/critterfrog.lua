@@ -71,6 +71,7 @@ local function critterfrog_update(ent)
     if ent.user_data.state == CRITTERFROG_STATE.IDLE then
         if ent.user_data.action_timer > 0
         and not ent.overlay
+        and ent.standing_on_uid ~= -1
         then
             ent.user_data.action_timer = ent.user_data.action_timer - 1
         end
@@ -80,6 +81,7 @@ local function critterfrog_update(ent)
         if ent.user_data.action_timer == 0
         and target_uid
         and not ent.overlay
+        and ent.standing_on_uid ~= -1
         then
             ent.user_data.state = CRITTERFROG_STATE.JUMP
             --when jumping, change facing to match chased uid
