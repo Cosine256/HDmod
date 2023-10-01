@@ -23,9 +23,10 @@ function module.build_credits_surface()
     end
 
     local sky = get_entity(spawn_entity(ENT_TYPE.BG_SPACE, 27.5, 123.50, LAYER.FRONT, 0, 0))-- intro's is high enough to see the white part
-    local sun = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_NEBULA, 14, 115, LAYER.FRONT, 0, 0))
     sky:set_draw_depth(decorlib.SURFACE_BG_DEPTH.SKY)
+    local sun = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_NEBULA, 14, 115, LAYER.FRONT, 0, 0))
     sun:set_draw_depth(decorlib.SURFACE_BG_DEPTH.SUN)
+    sun.rendering_info.shader = state.win_state == WIN_STATE.HUNDUN_WIN and WORLD_SHADER.TEXTURE_COLOR or WORLD_SHADER.TEXTURE_ALPHA_COLOR
     sun.width = 9
     sun.height = 4.5
     sun.relative_x, sun.relative_y = 0, 0
@@ -163,6 +164,7 @@ function module.decorate_existing_surface()
     sun.width = 9
     sun.height = 4.5
     sun:set_draw_depth(decorlib.SURFACE_BG_DEPTH.SUN)
+    sun.rendering_info.shader = state.win_state == WIN_STATE.HUNDUN_WIN and WORLD_SHADER.TEXTURE_COLOR or WORLD_SHADER.TEXTURE_ALPHA_COLOR
 
     if state.win_state == WIN_STATE.HUNDUN_WIN then
         sun:set_texture(TEXTURE.DATA_TEXTURES_BG_DUAT2_0)
