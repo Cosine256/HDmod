@@ -100,28 +100,28 @@ function module.create_palmtree_relative(offset_x, offset_y, animation_frame, de
         self.x = overlay.x + offset_x
         self.y = overlay.y + offset_y
     end)
-    debug_add_deco(overlay.uid, palmtree.uid, offset_x, offset_y, DEBUG_RGB_GREEN)
+    -- debug_add_deco(overlay.uid, palmtree.uid, offset_x, offset_y, DEBUG_RGB_GREEN)
 end
 
-set_callback(function(draw_ctx)
-    if debug_relative_deco and #debug_relative_deco > 0 then
-        for _, debug_attr in pairs(debug_relative_deco) do
-            local overlay = get_entity(debug_attr.overlay_uid)
-            if get_entity(debug_attr.uid) and overlay then
-                -- local x, y, _ = get_render_position(debug_attr.uid)--doesn't work
-                local ox, oy = overlay.x+debug_attr.offx, overlay.y+debug_attr.offy
-                local x, y, _ = screen_position(ox, oy)
-                draw_ctx:draw_text(
-                    x, y, 25,
-                    string.format("%s on %s: offset %s, %s", debug_attr.overlay_uid, debug_attr.uid, debug_attr.offx, debug_attr.offy),
-                    debug_attr.color
-                )
-                -- if state.pause == 0 then
-                --     message(string.format("%s on %s: offset %s, %s applied off: %s, %s", debug_attr.overlay_uid, debug_attr.uid, debug_attr.offx, debug_attr.offy, ox, oy))
-                -- end
-            end
-        end
-    end
-end, ON.GUIFRAME)
+-- set_callback(function(draw_ctx)
+--     if debug_relative_deco and #debug_relative_deco > 0 then
+--         for _, debug_attr in pairs(debug_relative_deco) do
+--             local overlay = get_entity(debug_attr.overlay_uid)
+--             if get_entity(debug_attr.uid) and overlay then
+--                 -- local x, y, _ = get_render_position(debug_attr.uid)--doesn't work
+--                 local ox, oy = overlay.x+debug_attr.offx, overlay.y+debug_attr.offy
+--                 local x, y, _ = screen_position(ox, oy)
+--                 draw_ctx:draw_text(
+--                     x, y, 25,
+--                     string.format("%s on %s: offset %s, %s", debug_attr.overlay_uid, debug_attr.uid, debug_attr.offx, debug_attr.offy),
+--                     debug_attr.color
+--                 )
+--                 -- if state.pause == 0 then
+--                 --     message(string.format("%s on %s: offset %s, %s applied off: %s, %s", debug_attr.overlay_uid, debug_attr.uid, debug_attr.offx, debug_attr.offy, ox, oy))
+--                 -- end
+--             end
+--         end
+--     end
+-- end, ON.GUIFRAME)
 
 return module
