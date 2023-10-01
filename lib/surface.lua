@@ -40,6 +40,7 @@ function module.build_credits_surface()
         end
     )
     cloudslib.init(sun.uid)
+    palmtreelib.debug_init()
 
     local depth
     local bg
@@ -175,6 +176,7 @@ function module.decorate_existing_surface()
     end
 
     cloudslib.init(sun.uid)
+    palmtreelib.debug_init()
 
     -- prevent teetering animation in intro
     spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, 53, 99, LAYER.FRONT)

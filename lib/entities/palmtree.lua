@@ -43,6 +43,22 @@ do
     night_layered_texture_id = define_texture(night_layered_texture_def)
 end
 
+local debug_relative_deco
+local DEBUG_RGB_GREEN = rgba(153, 196, 19, 170)
+
+function module.debug_init()
+	debug_relative_deco = {}
+end
+
+local function debug_add_deco(overlay_uid, uid, offx, offy, color)
+	debug_relative_deco[#debug_relative_deco+1] = {}
+	debug_relative_deco[#debug_relative_deco].uid = uid
+	debug_relative_deco[#debug_relative_deco].overlay_uid = overlay_uid
+	debug_relative_deco[#debug_relative_deco].offx = offx
+	debug_relative_deco[#debug_relative_deco].offy = offy
+	debug_relative_deco[#debug_relative_deco].color = color
+end
+
 function module.create_palmtree(relative_x, relative_y, animation_frame, depth, flipped)
     local flipped = flipped or false
     local size = 1
@@ -79,10 +95,33 @@ end
 function module.create_palmtree_relative(offset_x, offset_y, animation_frame, depth, overlay, flipped)
     --spawn a palmtree offset from those coordinates
     --every frame, update the palmtree with the offset applied to the overlay's coordinates
-    get_entity(module.create_palmtree(overlay.relative_x+offset_x, overlay.relative_y+offset_y, animation_frame, depth, flipped)):set_post_update_state_machine(function (self)
+    local palmtree = get_entity(module.create_palmtree(overlay.relative_x+offset_x, overlay.relative_y+offset_y, animation_frame, depth, flipped))
+    palmtree:set_post_update_state_machine(function (self)
         self.x = overlay.x + offset_x
         self.y = overlay.y + offset_y
     end)
+    debug_add_deco(overlay.uid, palmtree.uid, offset_x, offset_y, DEBUG_RGB_GREEN)
 end
+
+set_callback(function(draw_ctx)
+    if debug_relative_deco and #debug_relative_deco > 0 then
+        for _, debug_attr in pairs(debug_relative_deco) do
+            local overlay = get_entity(debug_attr.overlay_uid)
+            if get_entity(debug_attr.uid) and overlay then
+                -- local x, y, _ = get_render_position(debug_attr.uid)--doesn't work
+                local ox, oy = overlay.x+debug_attr.offx, overlay.y+debug_attr.offy
+                local x, y, _ = screen_position(ox, oy)
+                draw_ctx:draw_text(
+                    x, y, 25,
+                    string.format("%s on %s: offset %s, %s", debug_attr.overlay_uid, debug_attr.uid, debug_attr.offx, debug_attr.offy),
+                    debug_attr.color
+                )
+                -- if state.pause == 0 then
+                --     message(string.format("%s on %s: offset %s, %s applied off: %s, %s", debug_attr.overlay_uid, debug_attr.uid, debug_attr.offx, debug_attr.offy, ox, oy))
+                -- end
+            end
+        end
+    end
+end, ON.GUIFRAME)
 
 return module
