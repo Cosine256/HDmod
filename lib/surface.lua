@@ -23,9 +23,10 @@ function module.build_credits_surface()
     end
 
     local sky = get_entity(spawn_entity(ENT_TYPE.BG_SPACE, 27.5, 123.50, LAYER.FRONT, 0, 0))-- intro's is high enough to see the white part
-    local sun = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_NEBULA, 14, 115, LAYER.FRONT, 0, 0))
     sky:set_draw_depth(decorlib.SURFACE_BG_DEPTH.SKY)
+    local sun = get_entity(spawn_entity(ENT_TYPE.BG_SURFACE_NEBULA, 14, 115, LAYER.FRONT, 0, 0))
     sun:set_draw_depth(decorlib.SURFACE_BG_DEPTH.SUN)
+    sun.rendering_info.shader = state.win_state == WIN_STATE.HUNDUN_WIN and WORLD_SHADER.TEXTURE_COLOR or WORLD_SHADER.TEXTURE_ALPHA_COLOR
     sun.width = 9
     sun.height = 4.5
     sun.relative_x, sun.relative_y = 0, 0
@@ -39,6 +40,7 @@ function module.build_credits_surface()
         end
     )
     cloudslib.init(sun.uid)
+    palmtreelib.debug_init()
 
     local depth
     local bg
@@ -99,14 +101,14 @@ function module.build_credits_surface()
     -- palmtreelib.create_palmtree_relative(-30, 3, 2, depth, bg)
     palmtreelib.create_palmtree_relative(-27, 0.8, 2, depth, bg, true)
     palmtreelib.create_palmtree_relative(-20, 1.6, 2, depth, bg)
-    palmtreelib.create_palmtree_relative(-7, 1.6, 0, depth, bg)
-    palmtreelib.create_palmtree_relative(-8, 1.6, 1, depth, bg)
+    palmtreelib.create_palmtree_relative(-6, 1.5, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(-7, 1.5, 1, depth, bg)
     palmtreelib.create_palmtree_relative(-1, 0.6, 0, depth, bg)
-    palmtreelib.create_palmtree_relative(3, 0.8, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(3, 0.7, 0, depth, bg)
     palmtreelib.create_palmtree_relative(10, 0.8, 1, depth, bg, true)
-    palmtreelib.create_palmtree_relative(17, 1.0, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(17, 0.85, 0, depth, bg)
     palmtreelib.create_palmtree_relative(22, 0.8, 2, depth, bg, true)
-    palmtreelib.create_palmtree_relative(28, 1.2, 0, depth, bg, true)
+    palmtreelib.create_palmtree_relative(28, 1.1, 0, depth, bg, true)
     -- palmtreelib.create_palmtree_relative(30, 3, 2, depth, bg)
 
     bg = surfacelayerlib.create_surface_layer_looping(112.6, depth, true)
@@ -114,8 +116,8 @@ function module.build_credits_surface()
     palmtreelib.create_palmtree_relative(-25, 0.6, 1, depth, bg, true)
     palmtreelib.create_palmtree_relative(-20, 1.0, 0, depth, bg)
     palmtreelib.create_palmtree_relative(-10, 1.0, 1, depth, bg, true)
-    palmtreelib.create_palmtree_relative(2, 1.2, 2, depth, bg, true)
-    palmtreelib.create_palmtree_relative(0, 1.2, 0, depth, bg)
+    palmtreelib.create_palmtree_relative(2, 0.75, 2, depth, bg, true)
+    palmtreelib.create_palmtree_relative(0, 1, 0, depth, bg)
     palmtreelib.create_palmtree_relative(13, 1.2, 1, depth, bg)
     palmtreelib.create_palmtree_relative(25, 1.2, 0, depth, bg)
     -- palmtreelib.create_palmtree_relative(30, 3, 2, depth, bg)
@@ -163,6 +165,7 @@ function module.decorate_existing_surface()
     sun.width = 9
     sun.height = 4.5
     sun:set_draw_depth(decorlib.SURFACE_BG_DEPTH.SUN)
+    sun.rendering_info.shader = state.win_state == WIN_STATE.HUNDUN_WIN and WORLD_SHADER.TEXTURE_COLOR or WORLD_SHADER.TEXTURE_ALPHA_COLOR
 
     if state.win_state == WIN_STATE.HUNDUN_WIN then
         sun:set_texture(TEXTURE.DATA_TEXTURES_BG_DUAT2_0)
@@ -173,6 +176,7 @@ function module.decorate_existing_surface()
     end
 
     cloudslib.init(sun.uid)
+    palmtreelib.debug_init()
 
     -- prevent teetering animation in intro
     spawn_grid_entity(ENT_TYPE.FLOOR_GENERIC, 53, 99, LAYER.FRONT)
@@ -207,7 +211,7 @@ function module.decorate_existing_surface()
             elseif bg.animation_frame == 2 then
                 --mid-background
                 depth = decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND
-                palmtreelib.create_palmtree_relative(-8, 1.6, 1, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
+                palmtreelib.create_palmtree_relative(-8, 1.5, 1, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg)
                 palmtreelib.create_palmtree_relative(-3, 1, 0, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
                 palmtreelib.create_palmtree_relative(3.1, 0.8, 2, decorlib.SURFACE_BG_DEPTH.MID_BACKGROUND, bg, true)
             end

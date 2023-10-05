@@ -113,7 +113,8 @@ function module.create_support_bg(x, y, l)
     support.width = 1
     support.height = 2
     support:set_draw_depth(43)
-    if prng:random_chance(7, PRNG_CLASS.LEVEL_DECO) then -- # TODO: Check real chance in Ghidra
+    if test_flag(state.level_flags, 18) == false
+    and prng:random_chance(7, PRNG_CLASS.LEVEL_DECO) then -- # TODO: Check real chance in Ghidra
         local lantern = get_entity(spawn_entity(ENT_TYPE.MIDBG_STYLEDDECORATION, x, y+0.5, l, 0, 0))
         lantern:set_texture(lantern_texture_id)
         lantern.animation_frame = 0
