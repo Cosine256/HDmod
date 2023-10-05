@@ -48,6 +48,7 @@ do
 end
 
 local outside_lavalaunch_sound = create_sound('res/sounds/explosion_outside.wav')
+local outside_prelaunch_sound = create_sound('res/sounds/pre_eruption.wav')
 
 local VOLCANO_DISAPPEAR_TIME = 7
 local VOLCANO_DISAPPEAR
@@ -147,13 +148,14 @@ local function create_volcano_effects()
     local smoke_timeout = 0
 
     local wind_sound = get_sound(VANILLA_SOUND.CUTSCENE_EGGSHIP_AMB_LOOP):play()
-
     set_callback(function()
         if wind_sound then
             wind_sound:stop()
         end
         clear_callback()
     end, ON.RECAP)
+
+    local prelaunch_sound = outside_prelaunch_sound:play()
 
     local launch_sound = outside_lavalaunch_sound:play(true)
     entity:set_post_update_state_machine(function (self)
