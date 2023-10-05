@@ -211,7 +211,7 @@ local function camel_post_update_intro(camel)
         if camel.user_data.animation_state == introanimationslib.CAMEL_ANIMATIONS.PET_START
         and camel.user_data.animation_timer == 0 then
             animationlib.set_animation(camel.user_data, CAMEL_ANIMATIONS.PET)
-            commonlib.play_custom_sound(idle_sound[prng:random_index(#idle_sound, PRNG_CLASS.FX)], camel.uid, 0.25, false)
+            commonlib.play_custom_sound(idle_sound[prng:random_index(#idle_sound, PRNG_CLASS.FX)], camel.uid, 0.65, false)
         end
         if camel.user_data.animation_state == CAMEL_ANIMATIONS.PET then
             --recieve pet and timeout
@@ -236,7 +236,7 @@ local function camel_post_update_intro(camel)
         if camel.user_data.timeout > 0 then
             camel.user_data.timeout = camel.user_data.timeout - 1
         else
-            commonlib.play_custom_sound(idle_sound[prng:random_index(#idle_sound, PRNG_CLASS.FX)], camel.uid, 0.25, false)
+            commonlib.play_custom_sound(idle_sound[prng:random_index(#idle_sound, PRNG_CLASS.FX)], camel.uid, 0.65, false)
             camel.user_data.timeout = 400
         end
         camel.animation_frame = animationlib.get_animation_frame(camel.user_data)
