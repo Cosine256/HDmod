@@ -48,6 +48,7 @@ do
 end
 
 local outside_lavalaunch_sound = create_sound('res/sounds/explosion_outside.wav')
+local outside_prelaunch_sound = create_sound('res/sounds/pre_eruption.wav')
 
 local VOLCANO_DISAPPEAR_TIME = 7
 local VOLCANO_DISAPPEAR
@@ -147,7 +148,6 @@ local function create_volcano_effects()
     local smoke_timeout = 0
 
     local wind_sound = get_sound(VANILLA_SOUND.CUTSCENE_EGGSHIP_AMB_LOOP):play()
-
     set_callback(function()
         if wind_sound then
             wind_sound:stop()
@@ -155,11 +155,13 @@ local function create_volcano_effects()
         clear_callback()
     end, ON.RECAP)
 
+    local prelaunch_sound = outside_prelaunch_sound:play()
+
+    local launch_sound = outside_lavalaunch_sound:play(true)
     entity:set_post_update_state_machine(function (self)
         if timeout == 0 then -- erupt
-            local audio = outside_lavalaunch_sound:play(false)
-            audio:set_volume(1)
-            audio:set_pause(false, SOUND_TYPE.SFX)
+            launch_sound:set_volume(1)
+            launch_sound:set_pause(false, SOUND_TYPE.SFX)
             -- local lava_sound = commonlib.play_vanilla_sound(VANILLA_SOUND.LIQUIDS_LAVA_STREAM_LOOP, entity.uid, 0.4, true)
             state.camera.shake_amplitude = 3
             state.camera.shake_multiplier_x = 3
@@ -172,9 +174,8 @@ local function create_volcano_effects()
             -- make camera shake less when switching away from volcano scene
             -- this is actually very annoying, but still leaving it here uncommented.
             -- commonlib.shake_camera(230, 230, 1, 1, 1, false)
-            if rumble_sound ~= nil then
-                rumble_sound:stop()
-            end
+            rumble_sound:set_volume(0.1)
+            launch_sound:set_volume(0.25)
         end
 
         if not VOLCANO_DISAPPEAR then
