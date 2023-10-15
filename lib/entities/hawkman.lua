@@ -81,7 +81,6 @@ end
 local function hawkman_set(uid)
     ---@type Movable
     local ent = get_entity(uid)
-    local x, y, l = get_position(uid)
 
     ent:set_texture(hawkman_texture_id)
 
