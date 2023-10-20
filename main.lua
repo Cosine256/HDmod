@@ -94,6 +94,13 @@ set_callback(function(room_gen_ctx)
 	end
 end, ON.POST_ROOM_GENERATION)
 
+--On post_spawn_traps because it's after borders spawned, maybe could work anyway if checking for out of bounds
+for _, theme in pairs(THEME) do
+	if not commonlib.has({THEME.ARENA, THEME.BASE_CAMP}, theme) then
+		state.level_gen.themes[theme]:set_post_spawn_traps(spawndeflib.handle_trap_spawns)
+	end
+end
+
 set_callback(function()
 	if state.screen == SCREEN.LEVEL then
 
