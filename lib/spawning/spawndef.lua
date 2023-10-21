@@ -30,7 +30,22 @@ local crushtraplib = require 'lib.entities.crushtrap'
 local critterfroglib = require 'lib.entities.critterfrog'
 
 local module = {}
+---@class CustomSpawnInfo
+---@field create fun(x: integer, y: integer, layer: LAYER)
+---@field is_valid fun(x: integer, y: integer, layer: LAYER): boolean
 
+---@type table<PROCEDURAL_CHANCE, CustomSpawnInfo>
+local trap_spawns = {}
+
+---Define a procedural spawn that must spawn before floor decorations are spawned, mostly traps that replace floors
+local function define_trap_proc_spawn(name, create_fun, is_valid_fun)
+    local chance_id = define_procedural_spawn(name, create_fun, is_valid_fun)
+    trap_spawns[chance_id] = {
+        create = create_fun,
+        is_valid = is_valid_fun
+    }
+    return chance_id
+end
 
 --[[
 	Extra spawns use the prefix `global_spawn_extra_*`
@@ -164,14 +179,14 @@ module.global_spawn_procedural_mshipentrance_turret = define_procedural_spawn("h
 module.global_spawn_procedural_spiderlair_webnest = define_procedural_spawn("hd_procedural_spiderlair_webnest", webballlib.create_webball, validlib.is_valid_webnest_spawn)
 
 module.global_spawn_procedural_powderkeg = define_procedural_spawn("hd_procedural_powderkeg", function(x, y, l) end, function(x, y, l) return false end)--throwaway method so we can define the chance in .lvl file and use `global_spawn_procedural_pushblock` to spawn it
-module.global_spawn_procedural_pushblock = define_procedural_spawn("hd_procedural_pushblock", createlib.create_pushblock_powderkeg, validlib.is_valid_pushblock_spawn)
+module.global_spawn_procedural_pushblock = define_trap_proc_spawn("hd_procedural_pushblock", createlib.create_pushblock_powderkeg, validlib.is_valid_pushblock_spawn)
 
-module.global_spawn_procedural_spikeball = define_procedural_spawn("hd_procedural_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
-module.global_spawn_procedural_yama_spikeball = define_procedural_spawn("hd_procedural_yama_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
+module.global_spawn_procedural_spikeball = define_trap_proc_spawn("hd_procedural_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
+module.global_spawn_procedural_yama_spikeball = define_trap_proc_spawn("hd_procedural_yama_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
 
-module.global_spawn_procedural_arrowtrap = define_procedural_spawn("hd_procedural_arrowtrap", arrowtraplib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
+module.global_spawn_procedural_arrowtrap = define_trap_proc_spawn("hd_procedural_arrowtrap", arrowtraplib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
 
-module.global_spawn_procedural_tikitrap = define_procedural_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
+module.global_spawn_procedural_tikitrap = define_trap_proc_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
 
 module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", crushtraplib.create_crushtrap, validlib.is_valid_crushtrap_spawn)
 
@@ -411,5 +426,25 @@ function module.set_chances(room_gen_ctx)
     end
 end
 
+function module.handle_trap_spawns()
+    local room_gen_ctx = PostRoomGenerationContext:new() --[[@as PostRoomGenerationContext]]
+    -- Custom trap spawn
+    local left, top, right, bottom = get_bounds()
+    left, top, right, bottom = math.floor(left + 0.5), math.floor(top - 0.5), math.floor(right - 0.5), math.floor(bottom + 0.5) 
+    for y = top, bottom, -1 do
+        for x = left, right do
+            for chance_id, info in pairs(trap_spawns) do
+                if info.is_valid(x, y, LAYER.FRONT) and prng:random_chance(get_procedural_spawn_chance(chance_id), PRNG_CLASS.PROCEDURAL_SPAWNS) then
+                    info.create(x, y, LAYER.FRONT)
+                    break
+                end
+            end
+        end
+    end
+    -- Prevent traps from spawning later
+    for chance_id, _ in pairs(trap_spawns) do
+        room_gen_ctx:set_procedural_spawn_chance(chance_id, 0)
+    end
+end
 
 return module

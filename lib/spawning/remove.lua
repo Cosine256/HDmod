@@ -62,11 +62,11 @@ function module.remove_embedded_at(x, y, l)
 	end
 end
 
-function module.remove_floor_and_embedded_at(x, y, l)
+function module.remove_floor_and_embedded_at(x, y, l, fix_neighbors)
   local uid = get_grid_entity_at(x, y, l)
-  if uid ~= -1 then
+	destroy_grid(x, y, l)
+  if fix_neighbors and uid ~= -1 then
 		module.remove_embedded_at(x, y, l)
-    local floor = get_entity(uid)
 		local neighbors = {
 			get_grid_entity_at(x, y+1, l),
 			get_grid_entity_at(x, y-1, l),
@@ -77,12 +77,6 @@ function module.remove_floor_and_embedded_at(x, y, l)
 			get_grid_entity_at(x+1, y-1, l),
 			get_grid_entity_at(x-1, y-1, l),
 		}
-		-- Move grid entity so the decorations can be fixed properly (ent:destroy doesn't update the grid immediately)
-		-- TODO: not a very good fix, but API changes or manually spawning decos might be neccesary for this
-		move_grid_entity(uid, x, y, LAYER.BACK)
-		-- liquid collisions also need to be updated
-		update_liquid_collision_at(x, y, false)
-		floor:destroy() -- kill_entity(uid)
 		for _, neighbor_uid in pairs(neighbors) do
 			if neighbor_uid ~= -1 then
 				local neighbor = get_entity(neighbor_uid) --[[@as Floor]]
