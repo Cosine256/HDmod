@@ -79,13 +79,16 @@ module.hideyhole_items_to_keep = {ENT_TYPE.ITEM_CURSEDPOT, ENT_TYPE.ITEM_LOCKEDC
 
 local valid_floors = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE, ENT_TYPE.FLOOR_ICE}
 
-local TEMPLE_PATH_EXIT_ROOMS = {
-	roomdeflib.HD_SUBCHUNKID.EXIT,
-	roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP,
+local TEMPLE_PATH_ROOMS = {
 	roomdeflib.HD_SUBCHUNKID.PATH,
 	roomdeflib.HD_SUBCHUNKID.PATH_DROP,
 	roomdeflib.HD_SUBCHUNKID.PATH_DROP_NOTOP,
-	roomdeflib.HD_SUBCHUNKID.PATH_NOTOP
+	roomdeflib.HD_SUBCHUNKID.PATH_NOTOP,
+}
+local TEMPLE_PATH_EXIT_ROOMS = {
+	roomdeflib.HD_SUBCHUNKID.EXIT,
+	roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP,
+	table.unpack(TEMPLE_PATH_ROOMS),
 }
 
 local function is_liquid_at(x, y)
@@ -119,7 +122,7 @@ local function check_empty_space(origin_x, origin_y, layer, width, height)
 end
 
 local function is_door_at(x, y, l)
-	return #get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, MASK.FLOOR, x, y, l, 0.5) ~= 0
+	return #get_entities_at({ENT_TYPE.FLOOR_DOOR_EXIT, ENT_TYPE.FLOOR_DOOR_COG}, MASK.FLOOR, x, y, l, 0.5) ~= 0
 end
 
 local shop_templates = {
@@ -181,8 +184,8 @@ local function detect_solid_nonshop_nontree(x, y, l)
 	return false
 end
 
-local function is_pushblock_at(x, y, l)
-	return #get_entities_overlapping_hitbox({ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+local function is_activefloor_at(x, y, l)
+	return #get_entities_overlapping_hitbox(0, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
 end
 
 local function is_non_grid_entity_at(x, y, l)
@@ -574,6 +577,7 @@ function module.is_valid_pushblock_spawn(x, y, l)
 	then
 		return false
 	end
+	-- debug_add_valid_space(x, y, DEBUG_RGB_GREEN)
     return true
 end
 
@@ -1009,6 +1013,16 @@ function module.is_valid_vlad_window_spawn(x, y, l)
 		)
 		and is_valid_window_spawn(x, y, l)
 	)
+end
+
+function module.is_valid_cog_door_spawn(x, y, layer)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return get_grid_entity_at(x, y, layer) == -1
+		and is_valid_monster_floor(x, y-1, layer)
+		and not is_liquid_at(x, y)
+		and not is_activefloor_at(x, y, layer)
+		and commonlib.has(TEMPLE_PATH_ROOMS, _subchunk_id)
 end
 
 return module

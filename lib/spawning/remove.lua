@@ -263,6 +263,18 @@ set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_COD
 set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.LOGICAL_DOOR)
 set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.LOGICAL_PLATFORM_SPAWNER)
 
+set_pre_entity_spawn(function (_, x, y, layer, _, spawn_flags)
+	if spawn_flags & SPAWN_TYPE.SCRIPT ~= 0 then
+		return
+	end
+	-- Destroy previous spawned logical entity
+	local logical_door = get_entity(state.next_entity_uid-1)
+	if logical_door.type.id == ENT_TYPE.LOGICAL_DOOR then
+		logical_door:destroy()
+	end
+	local uid = spawn_grid_entity(ENT_TYPE.FX_SHADOW, x, y, layer)
+	return uid
+end, SPAWN_TYPE.LEVEL_GEN_GENERAL, MASK.FLOOR, ENT_TYPE.FLOOR_DOOR_COG)
 
 
 
