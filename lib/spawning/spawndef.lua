@@ -28,6 +28,7 @@ local devillib = require 'lib.entities.devil'
 local windowlib = require 'lib.entities.window'
 local crushtraplib = require 'lib.entities.crushtrap'
 local critterfroglib = require 'lib.entities.critterfrog'
+local cogdoorlib = require "lib.entities.cog_door"
 
 local module = {}
 ---@class CustomSpawnInfo
@@ -61,6 +62,7 @@ module.global_spawn_extra_wormtongue = define_extra_spawn(wormtonguelib.create_w
 
 module.global_spawn_extra_anubis = define_extra_spawn(createlib.create_anubis, validlib.is_valid_anubis_spawn, 0, 0)
 
+module.global_spawn_extra_cog_door = define_extra_spawn(cogdoorlib.create_cog_door, validlib.is_valid_cog_door_spawn, 0, 0)
 -- cog door(?) -- # TOFIX: Currently using S2 COG door implementation. If it ends up spawning in lava, will need to manually prevent that and do it here.  
 
 
@@ -371,6 +373,12 @@ function module.set_chances(room_gen_ctx)
                 room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_anubis, 1, 0)
             else
                 room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_anubis, 0, 0)
+            end
+
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.COG_DOOR) then
+                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_cog_door, 1, 0)
+            else
+                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_cog_door, 0, 0)
             end
 
             if state.theme == THEME.VOLCANA then

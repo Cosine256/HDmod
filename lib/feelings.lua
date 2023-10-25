@@ -28,7 +28,8 @@ module.FEELING_ID = {
     SNOW = 19,
     ICE_CAVES_POOL = 20,
     ANUBIS = 21,
-    YAMA = 22
+    COG_DOOR = 22,
+    YAMA = 23,
 }
 
 module.HD_FEELING_DEFAULTS = {
@@ -149,6 +150,10 @@ module.HD_FEELING_DEFAULTS = {
 	[module.FEELING_ID.ANUBIS] = {
 		themes = { THEME.TEMPLE },
 		load = 1,
+	},
+	[module.FEELING_ID.COG_DOOR] = {
+		themes = { THEME.TEMPLE },
+		load = 2,
 	},
 }
 
