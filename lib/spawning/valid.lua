@@ -715,11 +715,11 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 		or is_anti_trap_at(x, y-1)
 	) then return false end
 
-	-- Doesn't work for some reason
-	-- if is_pushblock_at(x, y, l) 
-	-- or is_pushblock_at(x, y-1, l) then
-	-- 	return false
-	-- end
+	-- Prevent it spawning on pushblock, that causes the pushblock to move to the side and probably fall. The check at same pos probably isn't needed
+	if is_activefloor_at(x, y, l)
+	or is_activefloor_at(x, y+1, l) then
+		return false
+	end
 
 	if not is_valid_generic_trap_room(x, y) then
 		return false
