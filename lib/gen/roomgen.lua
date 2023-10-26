@@ -78,12 +78,6 @@ set_callback(function()
 	end
 end, ON.PRE_LEVEL_GENERATION)
 
-set_callback(function()
-	if state.screen == SCREEN.LEVEL and options.hd_debug_scripted_levelgen_disable == false then
-		assign_s2_level_height()
-	end
-end, ON.POST_ROOM_GENERATION)
-
 set_post_tile_code_callback(function(x, y, layer)
 	if options.hd_debug_scripted_levelgen_disable == false then
 		-- message("post-door: " .. tostring(state.time_level))
@@ -130,8 +124,7 @@ set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_LEPRECHAUN)
 ]]
 
-function assign_s2_level_height()
-	
+function module.assign_s2_level_height()
 	local new_width = 4
 	local new_height = 4
 
