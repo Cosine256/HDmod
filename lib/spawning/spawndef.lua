@@ -193,6 +193,7 @@ module.global_spawn_procedural_tikitrap = define_trap_proc_spawn("hd_procedural_
 -- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
 module.global_spawn_procedural_restless_tombstone = define_trap_proc_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone_common, validlib.is_valid_tombstone_spawn)
 
+local arrowtrap_idx = trap_spawns_idx
 module.global_spawn_procedural_arrowtrap = define_trap_proc_spawn("hd_procedural_arrowtrap", arrowtraplib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
 
 module.global_spawn_procedural_crushtrap = define_trap_proc_spawn("hd_procedural_crushtrap", crushtraplib.create_crushtrap, validlib.is_valid_crushtrap_spawn)
@@ -453,7 +454,22 @@ local NOSPAWN_TEMPLATES = {
     ROOM_TEMPLATE.VAULT
 }
 
+---@param custom_spawn_info CustomSpawnInfo
+---@param x any
+---@param y any
+---@param l any
+---@return boolean
+local function roll_custom_spawn(info, x, y, l)
+    if info.is_valid(x, y, l) and prng:random_chance(get_procedural_spawn_chance(info.chance_id), PRNG_CLASS.PROCEDURAL_SPAWNS) then
+        info.create(x, y, l)
+        return true
+    end
+    return false
+end
+
+module.is_trap_spawn = false
 function module.handle_trap_spawns()
+    module.is_trap_spawn = true
     local room_gen_ctx = PostRoomGenerationContext:new() --[[@as PostRoomGenerationContext]]
     -- Custom trap spawn
     local left, top, right, bottom = get_bounds()
@@ -461,14 +477,17 @@ function module.handle_trap_spawns()
     for y = top, bottom, -1 do
         for x = left, right do
             local rx, ry = get_room_index(x, y)
-            if commonlib.has(NOSPAWN_TEMPLATES, get_room_template(rx, ry, LAYER.FRONT)) then
+            local template = get_room_template(rx, ry, LAYER.FRONT)
+            if commonlib.has(NOSPAWN_TEMPLATES, template) then
+                -- Allow arrow traps on entrance
+                if template == ROOM_TEMPLATE.ENTRANCE or template == ROOM_TEMPLATE.ENTRANCE_DROP then
+                    local arrowtrap_info = trap_spawns[arrowtrap_idx]
+                    roll_custom_spawn(arrowtrap_info, x, y, LAYER.FRONT)
+                end
                 goto continue
             end
             for _, info in ipairs(trap_spawns) do
-                if info.is_valid(x, y, LAYER.FRONT) and prng:random_chance(get_procedural_spawn_chance(info.chance_id), PRNG_CLASS.PROCEDURAL_SPAWNS) then
-                    info.create(x, y, LAYER.FRONT)
-                    break
-                end
+                if roll_custom_spawn(info, x, y, LAYER.FRONT) then goto continue end
             end
             ::continue::
         end
@@ -477,6 +496,7 @@ function module.handle_trap_spawns()
     for _, info in pairs(trap_spawns) do
         room_gen_ctx:set_procedural_spawn_chance(info.chance_id, 0)
     end
+    module.is_trap_spawn = false
 end
 
 return module

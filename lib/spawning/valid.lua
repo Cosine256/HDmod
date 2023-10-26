@@ -3,15 +3,28 @@ local module = {}
 
 local debug_valid_spaces
 
+---@diagnostic disable unused-local
 local DEBUG_RGB_BROWN = rgba(204, 51, 0, 170)
 local DEBUG_RGB_ORANGE = rgba(255, 153, 0, 170)
 local DEBUG_RGB_GREEN = rgba(153, 196, 19, 170)
+---@diagnostic enable unused-local
 
 function module.debug_init()
 	debug_valid_spaces = {}
 end
 
-local function debug_add_valid_space(x, y, color)
+---@param x number
+---@param y number
+---@param color integer
+---@param is_trap_spawn boolean? @ Pass nil to allow any, false for procedural, true for traps
+---@diagnostic disable-next-line unused-local
+local function debug_add_valid_space(x, y, color, is_trap_spawn)
+	if is_trap_spawn == nil then
+	elseif is_trap_spawn == true and not spawndeflib.is_trap_spawn then
+		return
+	elseif is_trap_spawn == false and spawndeflib.is_trap_spawn then
+		return
+	end
 	debug_valid_spaces[#debug_valid_spaces+1] = {}
 	debug_valid_spaces[#debug_valid_spaces].x = x
 	debug_valid_spaces[#debug_valid_spaces].y = y
@@ -593,7 +606,8 @@ function module.is_valid_spikeball_spawn(x, y, l)
 		return false
 	end
 
-	if is_anti_trap_at(x, y) == true then return false end
+	local lvlcode = locatelib.get_levelcode_at_gpos(x, y)
+	if is_anti_trap_at(x, y) == true or lvlcode == "y" then return false end
 
 	local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
