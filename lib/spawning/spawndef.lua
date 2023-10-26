@@ -32,19 +32,23 @@ local cogdoorlib = require "lib.entities.cog_door"
 
 local module = {}
 ---@class CustomSpawnInfo
+---@field chance_id integer
 ---@field create fun(x: integer, y: integer, layer: LAYER)
 ---@field is_valid fun(x: integer, y: integer, layer: LAYER): boolean
 
----@type table<PROCEDURAL_CHANCE, CustomSpawnInfo>
+---@type CustomSpawnInfo[]
 local trap_spawns = {}
+local trap_spawns_idx = 1
 
 ---Define a procedural spawn that must spawn before floor decorations are spawned, mostly traps that replace floors
 local function define_trap_proc_spawn(name, create_fun, is_valid_fun)
     local chance_id = define_procedural_spawn(name, create_fun, is_valid_fun)
-    trap_spawns[chance_id] = {
+    trap_spawns[trap_spawns_idx] = {
+        chance_id = chance_id,
         create = create_fun,
         is_valid = is_valid_fun
     }
+    trap_spawns_idx = trap_spawns_idx + 1
     return chance_id
 end
 
@@ -180,20 +184,26 @@ module.global_spawn_procedural_mshipentrance_turret = define_procedural_spawn("h
 
 module.global_spawn_procedural_spiderlair_webnest = define_procedural_spawn("hd_procedural_spiderlair_webnest", webballlib.create_webball, validlib.is_valid_webnest_spawn)
 
+
+-- ## TRAP SPAWNS
+
+-- Not 1/1 to HD for now, since in HD they should loop through all tiles only for tikitrap, then loop the others. Since we do all at the same, a pushblock can spawn above, and when a tikitrap wants to spawn below, it can't
+module.global_spawn_procedural_tikitrap = define_trap_proc_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
+
+-- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
+module.global_spawn_procedural_restless_tombstone = define_trap_proc_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone_common, validlib.is_valid_tombstone_spawn)
+
+module.global_spawn_procedural_arrowtrap = define_trap_proc_spawn("hd_procedural_arrowtrap", arrowtraplib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
+
+module.global_spawn_procedural_crushtrap = define_trap_proc_spawn("hd_procedural_crushtrap", crushtraplib.create_crushtrap, validlib.is_valid_crushtrap_spawn)
+
 module.global_spawn_procedural_powderkeg = define_procedural_spawn("hd_procedural_powderkeg", function(x, y, l) end, function(x, y, l) return false end)--throwaway method so we can define the chance in .lvl file and use `global_spawn_procedural_pushblock` to spawn it
 module.global_spawn_procedural_pushblock = define_trap_proc_spawn("hd_procedural_pushblock", createlib.create_pushblock_powderkeg, validlib.is_valid_pushblock_spawn)
 
 module.global_spawn_procedural_spikeball = define_trap_proc_spawn("hd_procedural_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
 module.global_spawn_procedural_yama_spikeball = define_trap_proc_spawn("hd_procedural_yama_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
 
-module.global_spawn_procedural_arrowtrap = define_trap_proc_spawn("hd_procedural_arrowtrap", arrowtraplib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
-
-module.global_spawn_procedural_tikitrap = define_trap_proc_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
-
-module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", crushtraplib.create_crushtrap, validlib.is_valid_crushtrap_spawn)
-
--- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
-module.global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone_common, validlib.is_valid_tombstone_spawn)
+-- ## END TRAP SPAWNS
 
 module.global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", giantfroglib.create_giantfrog, validlib.is_valid_giantfrog_spawn)
 
@@ -434,6 +444,17 @@ function module.set_chances(room_gen_ctx)
     end
 end
 
+-- Rooms that don't spawn procedurals on vanilla (s2)
+local NOSPAWN_TEMPLATES = {
+    ROOM_TEMPLATE.SHOP,
+    ROOM_TEMPLATE.SHOP_LEFT,
+    ROOM_TEMPLATE.DICESHOP,
+    ROOM_TEMPLATE.DICESHOP_LEFT,
+    ROOM_TEMPLATE.ENTRANCE,
+    ROOM_TEMPLATE.ENTRANCE_DROP,
+    ROOM_TEMPLATE.VAULT
+}
+
 function module.handle_trap_spawns()
     local room_gen_ctx = PostRoomGenerationContext:new() --[[@as PostRoomGenerationContext]]
     -- Custom trap spawn
@@ -441,17 +462,22 @@ function module.handle_trap_spawns()
     left, top, right, bottom = math.floor(left + 0.5), math.floor(top - 0.5), math.floor(right - 0.5), math.floor(bottom + 0.5) 
     for y = top, bottom, -1 do
         for x = left, right do
-            for chance_id, info in pairs(trap_spawns) do
-                if info.is_valid(x, y, LAYER.FRONT) and prng:random_chance(get_procedural_spawn_chance(chance_id), PRNG_CLASS.PROCEDURAL_SPAWNS) then
+            local rx, ry = get_room_index(x, y)
+            if commonlib.has(NOSPAWN_TEMPLATES, get_room_template(rx, ry, LAYER.FRONT)) then
+                goto continue
+            end
+            for _, info in ipairs(trap_spawns) do
+                if info.is_valid(x, y, LAYER.FRONT) and prng:random_chance(get_procedural_spawn_chance(info.chance_id), PRNG_CLASS.PROCEDURAL_SPAWNS) then
                     info.create(x, y, LAYER.FRONT)
                     break
                 end
             end
+            ::continue::
         end
     end
     -- Prevent traps from spawning later
-    for chance_id, _ in pairs(trap_spawns) do
-        room_gen_ctx:set_procedural_spawn_chance(chance_id, 0)
+    for _, info in pairs(trap_spawns) do
+        room_gen_ctx:set_procedural_spawn_chance(info.chance_id, 0)
     end
 end
 
