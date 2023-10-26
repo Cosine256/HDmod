@@ -32,19 +32,23 @@ local cogdoorlib = require "lib.entities.cog_door"
 
 local module = {}
 ---@class CustomSpawnInfo
+---@field chance_id integer
 ---@field create fun(x: integer, y: integer, layer: LAYER)
 ---@field is_valid fun(x: integer, y: integer, layer: LAYER): boolean
 
----@type table<PROCEDURAL_CHANCE, CustomSpawnInfo>
+---@type CustomSpawnInfo[]
 local trap_spawns = {}
+local trap_spawns_idx = 1
 
 ---Define a procedural spawn that must spawn before floor decorations are spawned, mostly traps that replace floors
 local function define_trap_proc_spawn(name, create_fun, is_valid_fun)
     local chance_id = define_procedural_spawn(name, create_fun, is_valid_fun)
-    trap_spawns[chance_id] = {
+    trap_spawns[trap_spawns_idx] = {
+        chance_id = chance_id,
         create = create_fun,
         is_valid = is_valid_fun
     }
+    trap_spawns_idx = trap_spawns_idx + 1
     return chance_id
 end
 
@@ -180,20 +184,27 @@ module.global_spawn_procedural_mshipentrance_turret = define_procedural_spawn("h
 
 module.global_spawn_procedural_spiderlair_webnest = define_procedural_spawn("hd_procedural_spiderlair_webnest", webballlib.create_webball, validlib.is_valid_webnest_spawn)
 
+
+-- ## TRAP SPAWNS
+
+-- Not 1/1 to HD for now, since in HD they should loop through all tiles only for tikitrap, then loop the others. Since we do all at the same, a pushblock can spawn above, and when a tikitrap wants to spawn below, it can't
+module.global_spawn_procedural_tikitrap = define_trap_proc_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
+
+-- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
+module.global_spawn_procedural_restless_tombstone = define_trap_proc_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone_common, validlib.is_valid_tombstone_spawn)
+
+local arrowtrap_idx = trap_spawns_idx
+module.global_spawn_procedural_arrowtrap = define_trap_proc_spawn("hd_procedural_arrowtrap", arrowtraplib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
+
+module.global_spawn_procedural_crushtrap = define_trap_proc_spawn("hd_procedural_crushtrap", crushtraplib.create_crushtrap, validlib.is_valid_crushtrap_spawn)
+
 module.global_spawn_procedural_powderkeg = define_procedural_spawn("hd_procedural_powderkeg", function(x, y, l) end, function(x, y, l) return false end)--throwaway method so we can define the chance in .lvl file and use `global_spawn_procedural_pushblock` to spawn it
 module.global_spawn_procedural_pushblock = define_trap_proc_spawn("hd_procedural_pushblock", createlib.create_pushblock_powderkeg, validlib.is_valid_pushblock_spawn)
 
 module.global_spawn_procedural_spikeball = define_trap_proc_spawn("hd_procedural_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
 module.global_spawn_procedural_yama_spikeball = define_trap_proc_spawn("hd_procedural_yama_spikeball", createlib.create_spikeball, validlib.is_valid_spikeball_spawn)
 
-module.global_spawn_procedural_arrowtrap = define_trap_proc_spawn("hd_procedural_arrowtrap", arrowtraplib.create_arrowtrap, validlib.is_valid_arrowtrap_spawn)
-
-module.global_spawn_procedural_tikitrap = define_trap_proc_spawn("hd_procedural_tikitrap", tikitraplib.create_tikitrap_procedural, validlib.is_valid_tikitrap_spawn)
-
-module.global_spawn_procedural_crushtrap = define_procedural_spawn("hd_procedural_crushtrap", crushtraplib.create_crushtrap, validlib.is_valid_crushtrap_spawn)
-
--- ash tombstone shotgun -- log all tombstones in an array upon creation, then set a callback to select one of them for ASH skin and shotgun.
-module.global_spawn_procedural_restless_tombstone = define_procedural_spawn("hd_procedural_restless_tombstone", tombstonelib.create_tombstone_common, validlib.is_valid_tombstone_spawn)
+-- ## END TRAP SPAWNS
 
 module.global_spawn_procedural_giantfrog = define_procedural_spawn("hd_procedural_giantfrog", giantfroglib.create_giantfrog, validlib.is_valid_giantfrog_spawn)
 
@@ -231,228 +242,261 @@ module.global_spawn_procedural_vlad_window = define_procedural_spawn("hd_procedu
 ---comment
 ---@param room_gen_ctx PostRoomGenerationContext
 function module.set_chances(room_gen_ctx)
-    if options.hd_debug_scripted_levelgen_disable == false then
-        validlib.debug_init()
-        if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
-            local num_of_spawns = 0
-            if (
-                feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == false
-                and state.theme ~= THEME.OLMEC
-            ) then
-                if feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) then
-                    num_of_spawns = 3
-                elseif state.theme == THEME.VOLCANA then
-                    num_of_spawns = 2
-                else
-                    num_of_spawns = 1
-                end
-            end
-            room_gen_ctx:set_num_extra_spawns(module.global_spawn_hideyhole, num_of_spawns, 0)
-
-            
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) then
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_giantspider, 0)
+    validlib.debug_init()
+    if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.NORMAL then
+        local num_of_spawns = 0
+        if (
+            feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == false
+            and state.theme ~= THEME.OLMEC
+        ) then
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.UDJAT) then
+                num_of_spawns = 3
+            elseif state.theme == THEME.VOLCANA then
+                num_of_spawns = 2
             else
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spiderlair_hangspider, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spiderlair_spider, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spiderlair_webnest, 0)
+                num_of_spawns = 1
             end
+        end
+        room_gen_ctx:set_num_extra_spawns(module.global_spawn_hideyhole, num_of_spawns, 0)
 
-            if (
-                test_flag(state.level_flags, 18) == false
-                or state.theme ~= THEME.DWELLING
-            ) then
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_dark_lantern, 0)
-            end
-
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.WORMTONGUE) == true then
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_wormtongue, 1, 0)
-            else -- unset
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_wormtongue, 0, 0)
-            end
-
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true then
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_blackmarket, 1, 0)
-            else -- unset
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_blackmarket, 0, 0)
-            end
-
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_giantfrog, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_mantrap, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_caveman, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_tikiman, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_snail, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_firefrog, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_frog, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_monkey, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_critter_frog, 0)
-            else
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_restless_tombstone, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_restless_hangspider, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_restless_vampire, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_restless_jiangshi, 0)
-            end
-
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.HIVE) then
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_hive_queenbee, 1, 0)
-                --room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hive_bee, 2)
-            else
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_hive_queenbee, 0, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hive_bee, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hive_honey, 0)
-            end
-
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_piranha, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_giantfrog, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_mantrap, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_caveman, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_tikiman, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_snail, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_firefrog, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_frog, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_critter_frog, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_critter_fish, 0)
-            else
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_piranha, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_bat, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_hangspider, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_vampire, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_jiangshi, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_mantrap, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_greenknight, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_snail, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_firefrog, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_frog, 0)
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_window, 0)
-            end
-
-            if state.theme == THEME.EGGPLANT_WORLD then
-                if state.world ~= 2 then
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_bacterium, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_eggsac, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_mantrap, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_caveman, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_tikiman, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_snail, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_firefrog, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_frog, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_bat, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_monkey, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_critter_maggot, 0)
-                elseif state.world ~= 3 then
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_icecaves_bacterium, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_icecaves_eggsac, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_icecaves_yeti, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_icecaves_ufo, 0)
-                end
-            end
-            
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
-            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_landmine, 0)
-            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_bouncetrap, 0)
-            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yeti, 0)
-            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_critter_penguin, 0)
-            else
-            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_landmine, 0)
-            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_bouncetrap, 0)
-            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_yeti, 0)
-            	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_critter_penguin, 0)
-            end
-
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.UFO) == false then
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_ufofeeling_turret, 0)
-            end
-
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE) == false then
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_mshipentrance_turret, 0)
-            end
-            
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.ANUBIS) then
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_anubis, 1, 0)
-            else
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_anubis, 0, 0)
-            end
-
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.COG_DOOR) then
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_cog_door, 1, 0)
-            else
-                room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_cog_door, 0, 0)
-            end
-
-            if state.theme == THEME.VOLCANA then
-                if feelingslib.feeling_check(feelingslib.FEELING_ID.VLAD) == false then
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_vlad_window, 0)
-                end
-
-                if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true then
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_bat, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_imp, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_jiangshi, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_vampire, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_devil, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_tikitrap, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spikeball, 0)
-                else
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_bat, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_imp, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_jiangshi, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_vampire, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_devil, 0)
-                    -- room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_tikitrap, 0)
-                    room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_spikeball, 0)
-                end
-            end
-
-            --[[ procedural/extra spawn assign template
-            if feelingslib.feeling_check(feelingslib.FEELING_ID.) then
-                room_gen_ctx:set_num_extra_spawns(global_spawn_extra_, 0, 0)
-                room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
-            else
-            end
-            --]]
-        else -- remove every procedural/extra spawn that happends in world 1 for testing/tutorial
-            if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TESTING then
-                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_pushblock, 0)
-            end
-            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_arrowtrap, 0)
+        
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.SPIDERLAIR) then
             room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_giantspider, 0)
-            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hangspider, 0)
-            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_bat, 0)
-            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spider, 0)
-            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_caveman, 0)
-            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_scorpion, 0)
-            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_cobra, 0)
-            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_snake, 0)
-            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_critter_rat, 0)
+        else
             room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spiderlair_hangspider, 0)
             room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spiderlair_spider, 0)
             room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spiderlair_webnest, 0)
+        end
+
+        if (
+            test_flag(state.level_flags, 18) == false
+            or state.theme ~= THEME.DWELLING
+        ) then
             room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_dark_lantern, 0)
         end
+
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.WORMTONGUE) == true then
+            room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_wormtongue, 1, 0)
+        else -- unset
+            room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_wormtongue, 0, 0)
+        end
+
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET_ENTRANCE) == true then
+            room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_blackmarket, 1, 0)
+        else -- unset
+            room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_blackmarket, 0, 0)
+        end
+
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.RESTLESS) then
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_giantfrog, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_mantrap, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_caveman, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_tikiman, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_snail, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_firefrog, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_frog, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_monkey, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_critter_frog, 0)
+        else
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_restless_tombstone, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_restless_hangspider, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_restless_vampire, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_restless_jiangshi, 0)
+        end
+
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.HIVE) then
+            room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_hive_queenbee, 1, 0)
+            --room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hive_bee, 2)
+        else
+            room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_hive_queenbee, 0, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hive_bee, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hive_honey, 0)
+        end
+
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_piranha, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_giantfrog, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_mantrap, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_caveman, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_tikiman, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_snail, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_firefrog, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_frog, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_critter_frog, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_critter_fish, 0)
+        else
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_piranha, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_bat, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_hangspider, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_vampire, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_jiangshi, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_mantrap, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_greenknight, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_snail, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_firefrog, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_frog, 0)
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hcastle_window, 0)
+        end
+
+        if state.theme == THEME.EGGPLANT_WORLD then
+            if state.world ~= 2 then
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_bacterium, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_eggsac, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_mantrap, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_caveman, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_tikiman, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_snail, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_firefrog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_frog, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_bat, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_monkey, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_jungle_critter_maggot, 0)
+            elseif state.world ~= 3 then
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_icecaves_bacterium, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_icecaves_eggsac, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_icecaves_yeti, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_worm_icecaves_ufo, 0)
+            end
+        end
+        
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.YETIKINGDOM) then
+        	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_landmine, 0)
+        	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_bouncetrap, 0)
+        	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yeti, 0)
+        	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_critter_penguin, 0)
+        else
+        	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_landmine, 0)
+        	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_bouncetrap, 0)
+        	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_yeti, 0)
+        	room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_wetfur_critter_penguin, 0)
+        end
+
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.UFO) == false then
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_ufofeeling_turret, 0)
+        end
+
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.MOTHERSHIP_ENTRANCE) == false then
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_mshipentrance_turret, 0)
+        end
+        
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.ANUBIS) then
+            room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_anubis, 1, 0)
+        else
+            room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_anubis, 0, 0)
+        end
+
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.COG_DOOR) then
+            room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_cog_door, 1, 0)
+        else
+            room_gen_ctx:set_num_extra_spawns(module.global_spawn_extra_cog_door, 0, 0)
+        end
+
+        if state.theme == THEME.VOLCANA then
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.VLAD) == false then
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_vlad_window, 0)
+            end
+
+            if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) == true then
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_bat, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_imp, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_jiangshi, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_vampire, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_devil, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_tikitrap, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spikeball, 0)
+            else
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_bat, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_imp, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_jiangshi, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_vampire, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_devil, 0)
+                -- room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_yama_tikitrap, 0)
+                room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_yama_spikeball, 0)
+            end
+        end
+
+        --[[ procedural/extra spawn assign template
+        if feelingslib.feeling_check(feelingslib.FEELING_ID.) then
+            room_gen_ctx:set_num_extra_spawns(global_spawn_extra_, 0, 0)
+            room_gen_ctx:set_procedural_spawn_chance(global_spawn_procedural_, 0)
+        else
+        end
+        --]]
+    else -- remove every procedural/extra spawn that happends in world 1 for testing/tutorial
+        if worldlib.HD_WORLDSTATE_STATE == worldlib.HD_WORLDSTATE_STATUS.TESTING then
+            room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_pushblock, 0)
+        end
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_arrowtrap, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_giantspider, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_hangspider, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_bat, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spider, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_caveman, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_scorpion, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_cobra, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_snake, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_critter_rat, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spiderlair_hangspider, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spiderlair_spider, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_spiderlair_webnest, 0)
+        room_gen_ctx:set_procedural_spawn_chance(module.global_spawn_procedural_dark_lantern, 0)
     end
 end
 
+-- Rooms that don't spawn procedurals on vanilla (s2)
+local NOSPAWN_TEMPLATES = {
+    ROOM_TEMPLATE.SHOP,
+    ROOM_TEMPLATE.SHOP_LEFT,
+    ROOM_TEMPLATE.DICESHOP,
+    ROOM_TEMPLATE.DICESHOP_LEFT,
+    ROOM_TEMPLATE.ENTRANCE,
+    ROOM_TEMPLATE.ENTRANCE_DROP,
+    ROOM_TEMPLATE.VAULT
+}
+
+---@param custom_spawn_info CustomSpawnInfo
+---@param x any
+---@param y any
+---@param l any
+---@return boolean
+local function roll_custom_spawn(info, x, y, l)
+    if info.is_valid(x, y, l) and prng:random_chance(get_procedural_spawn_chance(info.chance_id), PRNG_CLASS.PROCEDURAL_SPAWNS) then
+        info.create(x, y, l)
+        return true
+    end
+    return false
+end
+
+module.is_trap_spawn = false
 function module.handle_trap_spawns()
+    module.is_trap_spawn = true
     local room_gen_ctx = PostRoomGenerationContext:new() --[[@as PostRoomGenerationContext]]
     -- Custom trap spawn
     local left, top, right, bottom = get_bounds()
     left, top, right, bottom = math.floor(left + 0.5), math.floor(top - 0.5), math.floor(right - 0.5), math.floor(bottom + 0.5) 
     for y = top, bottom, -1 do
         for x = left, right do
-            for chance_id, info in pairs(trap_spawns) do
-                if info.is_valid(x, y, LAYER.FRONT) and prng:random_chance(get_procedural_spawn_chance(chance_id), PRNG_CLASS.PROCEDURAL_SPAWNS) then
-                    info.create(x, y, LAYER.FRONT)
-                    break
+            local rx, ry = get_room_index(x, y)
+            local template = get_room_template(rx, ry, LAYER.FRONT)
+            if commonlib.has(NOSPAWN_TEMPLATES, template) then
+                -- Allow arrow traps on entrance
+                if template == ROOM_TEMPLATE.ENTRANCE or template == ROOM_TEMPLATE.ENTRANCE_DROP then
+                    local arrowtrap_info = trap_spawns[arrowtrap_idx]
+                    roll_custom_spawn(arrowtrap_info, x, y, LAYER.FRONT)
                 end
+                goto continue
             end
+            for _, info in ipairs(trap_spawns) do
+                if roll_custom_spawn(info, x, y, LAYER.FRONT) then goto continue end
+            end
+            ::continue::
         end
     end
     -- Prevent traps from spawning later
-    for chance_id, _ in pairs(trap_spawns) do
-        room_gen_ctx:set_procedural_spawn_chance(chance_id, 0)
+    for _, info in pairs(trap_spawns) do
+        room_gen_ctx:set_procedural_spawn_chance(info.chance_id, 0)
     end
+    module.is_trap_spawn = false
 end
 
 return module

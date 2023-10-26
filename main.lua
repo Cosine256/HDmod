@@ -70,7 +70,9 @@ set_callback(function(room_gen_ctx)
 		-- message(F'ON.POST_ROOM_GENERATION - ON.LEVEL: {state.time_level}')
 
 		if options.hd_debug_scripted_levelgen_disable == false then
-			
+
+			roomgenlib.assign_s2_level_height()
+
 			cooplib.detect_coop_coffin(room_gen_ctx)
 
 			s2roomctxlib.unmark_setrooms(room_gen_ctx)
@@ -85,11 +87,10 @@ set_callback(function(room_gen_ctx)
 			roomgenlib.onlevel_generation_execution_phase_one()
 			roomgenlib.onlevel_generation_execution_phase_two()
 
+			spawndeflib.set_chances(room_gen_ctx)
 		else
 			s2roomctxlib.assign_s2_room_templates(room_gen_ctx)
 		end
-
-		spawndeflib.set_chances(room_gen_ctx)
 
 	end
 end, ON.POST_ROOM_GENERATION)
