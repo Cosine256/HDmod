@@ -250,15 +250,15 @@ function module.feeling_check(feeling)
 	return false
 end
 -- If there is an already existing speechbubble or toast, these will override it instead of not displaying.
-function say_override(uid, message, sound, top)
+local function say_override(uid, message, sound, top)
     cancel_speechbubble()
-    set_timeout(function()    
+    set_timeout(function()
         say(uid, message, sound, top)
     end, 1)
 end
-function toast_override(message)
+local function toast_override(message)
     cancel_toast()
-    set_timeout(function()    
+    set_timeout(function()
         toast(message)
     end, 1)
 end
@@ -436,28 +436,20 @@ function module.onlevel_set_feelingToastMessage()
 	
 	local loadchecks = commonlib.TableCopy(global_feelings)
 	
-	local n = #loadchecks
-	for feelingname, loadcheck in pairs(loadchecks) do
+	for feelingid, _ in pairs(loadchecks) do
 		if (
-			-- detect_feeling_themes(feelingname) == false or
-			-- (
-				-- detect_feeling_themes(feelingname) == true and
-				-- (
-					-- (loadcheck.load == nil or loadcheck.message == nil) or
-					-- (module.feeling_check(feelingname))
-				-- )
-			-- )
-			module.feeling_check(feelingname) == false
-		) then loadchecks[feelingname] = nil end
+			module.feeling_check(feelingid) == false
+		) then loadchecks[feelingid] = nil end
 	end
-	loadchecks = commonlib.CompactList(loadchecks, n)
 	
 	MESSAGE_FEELING = nil
-	for feelingname, feeling in pairs(loadchecks) do
+	for feelingid, feeling in pairs(loadchecks) do
 		-- Message Overrides may happen here:
 		-- For example:
-			-- if feelingname == module.FEELING_ID.RUSHING_WATER and module.feeling_check(module.FEELING_ID.RESTLESS) == true then break end
-		MESSAGE_FEELING = feeling.message
+			-- if feelingid == module.FEELING_ID.RUSHING_WATER and module.feeling_check(module.FEELING_ID.RESTLESS) == true then break end
+		if feeling.message ~= nil then
+			MESSAGE_FEELING = feeling.message
+		end
 	end
 end
 
@@ -466,10 +458,7 @@ function module.onlevel_toastfeeling()
 		MESSAGE_FEELING ~= nil and
 		options.hd_debug_feelings_toast_disable == false
 	) then
-		cancel_toast()
-		set_timeout(function()
-			toast_override(MESSAGE_FEELING)
-		end, 1)
+		toast_override(MESSAGE_FEELING)
 	end
 end
 
