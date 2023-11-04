@@ -1,15 +1,15 @@
 --[[
-Custom Music Engine v1.2.1
+Custom Music Engine v1.2.2
 
 This module provides functions to replace vanilla music with custom music for levels, transitions, and the title screen.
 
 Custom music consists of a collection of sounds with instructions on the order and timings in which to play them. The order can be hard-coded or determined at runtime by callback functions. The custom music keeps track of when the current sound was started and starts the next sound when the correct amount of time has passed. The previous sound is not cut off when the next sound starts, so they can be designed to blend into each other.
 
 Custom music for levels and transitions will imitate the following vanilla music behaviors:
-    Mutes itself to allow back layer music, shop music, and vendor anger music to play.
-    Stops playing when vanilla music would stop playing, such as during the death screen or when changing worlds.
-    Lowers in volume when paused or in a level transition.
-    Lowers in pitch when the ghost is present.
+    Muting: back layer, shop, and angered vendor, etc.
+    Stopping: death screen, changing worlds, etc.
+    Changing volume: paused, level transition, etc.
+    Changing pitch: ghost
 
 Custom music limitations:
     Doesn't smoothly adjust volume and pitch like vanilla music.
@@ -22,6 +22,7 @@ This module should be loaded as early as possible because it needs to capture th
 ]]
 
 -- Naming convention: Variables named "sound" are CustomSound objects, and variables named "psound" are PlayingSound objects.
+-- Unless stated otherwise, all game state checks are designed to emulate vanilla music behavior, including vanilla bugs and anomalies.
 
 local module = {}
 
@@ -31,6 +32,16 @@ module.CUSTOM_MUSIC_MODE = {
     -- Replace the vanilla music played on the title screen.
     REPLACE_TITLE = 2
 }
+
+-- Volume while in a non-CO level transition. There is a muffling effect for vanilla music, but this volume sounds close.
+local VOLUME_TRANSITION = 0.25
+-- Volume while paused. There is a muffling effect for vanilla music, but this volume sounds close.
+local VOLUME_PAUSE = 0.4
+-- Volume while inside a sunken city pipe. There is a muffling effect for vanilla music, but this volume sounds close.
+local VOLUME_PIPE = 0.7
+
+-- Pitch while the ghost is present. I'm not sure if this is the exact effect applied to the vanilla music, but it sounds close. This number was obtained by recording ghost music from the game and comparing it with the raw music files. I don't know why it seems so arbitrary.
+local PITCH_GHOST = 0.90101
 
 module.debug_print = false
 
@@ -131,14 +142,49 @@ function Custom_Music:play_sound(sound, uid)
     psound:set_pause(false)
 end
 
--- Gets whether vanilla shop music would be currently playing. This does not check for vendor anger music, which takes priority over shop music.
+-- Gets whether vanilla shop music would be currently playing. This includes Tun shop music, but not the other layer's challenge music. This does not check for vendor anger music, which takes priority over shop music.
 local function is_shop_music_playing()
-    return state.screen == SCREEN.LEVEL
+    if state.screen == SCREEN.LEVEL
         -- Dark levels do not play shop music.
         and not test_flag(get_level_flags(), 18)
-        -- This shop check isn't totally accurate. The vanilla shop check is based on the position of the leader player, not the camera focus. If the last living player dies, then the check is still based on the position of their body. It only falls back to using the camera focus if their body is destroyed. The camera focus is typically the leader, but mods could change it to be something else. I'm using this slightly inaccurate check instead because I haven't found a reliable way to determine who is the leader.
-        and is_inside_active_shop_room(state.camera.focus_x, state.camera.focus_y, state.camera_layer)
-        and is_inside_shop_zone(state.camera.focus_x, state.camera.focus_y, state.camera_layer)
+    then
+        -- The shop music check is based on the position of the leader player.
+        -- Note: Online shop music is probably checked based on the client's focused player, but online is not currently supported.
+        local check_x, check_y, check_layer
+        local leader = get_player(state.items.leader, false)
+        if leader then
+            check_x, check_y, check_layer = get_position(leader.uid)
+        else
+            -- Fall back to the camera focus if the leader player does not exist.
+            check_x, check_y, check_layer = state.camera.calculated_focus_x, state.camera.calculated_focus_y, state.camera_layer
+        end
+        if is_inside_shop_zone(check_x, check_y, check_layer)
+            and is_inside_active_shop_room(check_x, check_y, check_layer)
+        then
+            -- A shop room still counts as "active" if the room owner generated in a hostile state due to prior vendor aggro. Shopkeeper and Tun shops can generate in this active hostile state. If one of these vendors is hostile and owns the current shop room, then shop music does not play.
+            local check_room_x, check_room_y = get_room_index(check_x, check_y)
+            local check_room_index = check_room_x + (check_room_y * 8)
+            for _, details in ipairs(state.room_owners.owned_rooms) do
+                if details.room_index == check_room_index and details.layer == check_layer then
+                    local room_owner = get_entity(details.owner_uid)
+                    if room_owner and ((state.shoppie_aggro_next > 0 and room_owner.type.id == ENT_TYPE.MONS_SHOPKEEPER)
+                        or (state.merchant_aggro > 0 and room_owner.type.id == ENT_TYPE.MONS_MERCHANT))
+                    then
+                        return false
+                    end
+                end
+            end
+            return true
+        end
+    end
+    return false
+end
+
+-- Gets whether sunken city pipe muffling is active. This also emulates a vanilla bug where pipe muffling occurs while ledge hanging on a pipe. The game only checks whether the player's overlay is a pipe entity, not whether they are actually inside a pipe.
+local function is_pipe_muffling_active()
+    -- Note: Online pipe detection is probably based on the client's focused player, but online is not currently supported.
+    local leader = get_player(state.items.leader, false)
+    return leader and leader.overlay and leader.overlay.type.id == ENT_TYPE.FLOOR_PIPE
 end
 
 -- Mutes or unmutes all playing custom music sounds.
@@ -207,25 +253,27 @@ function Custom_Music:modify_psounds()
     elseif not self.settings.play_over_shop_music and is_shop_music_playing() then
         -- Mute during shop music.
         mute = true
+    elseif state.pause & PAUSE.ANKH > 0 then
+        -- Mute during ankh cutscene.
+        mute = true
     end
     self:set_mute_psounds(mute)
 
     -- Check whether the custom music needs its volume changed.
     local volume = 1.0
     if state.screen == SCREEN.TRANSITION and state.theme ~= THEME.COSMIC_OCEAN then
-        -- Reduce volume while in a non-CO level transition. There is a muffling effect for vanilla music, but this change sounds reasonably close.
-        volume = 0.25
+        volume = VOLUME_TRANSITION
     elseif state.pause & PAUSE.MENU > 0 then
-        -- Reduce volume while paused. There is a muffling effect for vanilla music, but this change sounds reasonably close.
-        volume = 0.4
+        volume = VOLUME_PAUSE
+    elseif is_pipe_muffling_active() then
+        volume = VOLUME_PIPE
     end
     self:set_volume_psounds(volume)
 
     -- Check whether the custom music needs its pitch changed.
     local pitch = 1.0
     if self.bgm_master_psound and self.bgm_master_psound:get_parameter(VANILLA_SOUND_PARAM.GHOST) > 0 then
-        -- Lower pitch while the ghost is present. I'm not sure if this is the exact effect applied to the vanilla music, but it sounds reasonably close. This number was obtained by recording ghost music from the game and comparing it with the raw music files. I don't know why it seems so arbitrary.
-        pitch = 0.90101
+        pitch = PITCH_GHOST
     end
     self:set_pitch_psounds(pitch)
 end
