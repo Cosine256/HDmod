@@ -387,6 +387,16 @@ function module.postloadscreen_init_magmar_spawn_logic()
 	end
 end
 
+-- Prevent magmars from spawning inside Olmec. Instead of being crushed, they often get instantly warped up to the top of Olmec.
+set_pre_entity_spawn(function(_, x, y, layer, _, _)
+	if options.hd_debug_magmar_spawn_enable then
+		local olmec_id = get_entities_by(ENT_TYPE.ACTIVEFLOOR_OLMEC, MASK.ACTIVEFLOOR, layer)[1]
+		if olmec_id and get_hitbox(olmec_id, 0.4):is_point_inside(x, y) then
+			return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, layer, 0, 0)
+		end
+	end
+end, SPAWN_TYPE.ANY, MASK.MONSTER, ENT_TYPE.MONS_MAGMAMAN)
+
 function module.onlevel_touchups()
 	onlevel_remove_cursedpot()
 	onlevel_remove_mounts()
