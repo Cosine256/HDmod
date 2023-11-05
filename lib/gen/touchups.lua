@@ -664,4 +664,14 @@ set_pre_entity_spawn(function (entity_type, x, y, layer)
 	end
 end, SPAWN_TYPE.SYSTEMIC, MASK.ITEM, ENT_TYPE.ITEM_PICKUP_SKELETON_KEY)
 
+-- prevent beg from spawning
+set_pre_entity_spawn(function(ent_type, x, y, l, overlay, spawn_flags)
+    if spawn_flags & SPAWN_TYPE.SCRIPT == 0 then
+        return spawn_entity(ENT_TYPE.FX_SHADOW, x, y, l, 0, 0)
+    end
+end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_HUNDUNS_SERVANT)
+
+-- make altar monsters all spiders
+change_altar_damage_spawns({ENT_TYPE.MONS_SPIDER})
+
 return module
