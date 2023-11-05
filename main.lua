@@ -141,6 +141,10 @@ set_callback(function()
 end, ON.POST_LEVEL_GENERATION)
 
 set_callback(function()
+	touchupslib.postloadscreen_init_magmar_spawn_logic()
+end, ON.POST_LOAD_SCREEN)
+
+set_callback(function()
 	-- message(F'ON.LEVEL: {state.time_level}')
 	touchupslib.onlevel_touchups()
 

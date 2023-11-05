@@ -3,6 +3,7 @@ local removelib = require 'lib.spawning.remove'
 local module = {}
 
 optionslib.register_option_bool("hd_og_cursepot_enable", "OG: Enable curse pot spawning", nil, false) -- Defaults to HD
+optionslib.register_option_bool("hd_debug_magmar_spawn_enable", "Level gen - Initialize magmar spawn logic", nil, true, true)
 
 local function onlevel_create_impostorlake()
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.RUSHING_WATER) then
@@ -362,6 +363,29 @@ set_pre_entity_spawn(function (_, x, y, layer, _, spawn_flags)
 		return spawn_grid_entity(ENT_TYPE.FX_SHADOW, x, y, layer)
 	end
 end, SPAWN_TYPE.LEVEL_GEN_GENERAL, MASK.ITEM, ENT_TYPE.ITEM_WALLTORCH)
+
+-- Magmar spawn logic isn't normally created for most of the themes that need it. The logic does get created for volcana, but the game creates it before the custom level generation has added lava, so no spawn positions are added. This function will set up the logic and spawn positions for themes that need it.
+function module.postloadscreen_init_magmar_spawn_logic()
+	if options.hd_debug_magmar_spawn_enable and state.screen == SCREEN.LEVEL
+		and (state.theme == THEME.TEMPLE or state.theme == THEME.CITY_OF_GOLD or state.theme == THEME.OLMEC or state.theme == THEME.VOLCANA)
+	then
+		local logic = state.logic.magmaman_spawn
+		if not logic then
+			logic = state.logic:start_logic(LOGIC.MAGMAMAN_SPAWN)
+		end
+		local added_spawns = {}
+		for _, id in ipairs(get_entities_by({ ENT_TYPE.LIQUID_LAVA, ENT_TYPE.LIQUID_COARSE_LAVA }, MASK.LAVA, LAYER.FRONT)) do
+			local ent = get_entity(id)
+			local x = math.floor(ent.x + 0.5)
+			local y = math.floor(ent.y + 0.5)
+			local key = x..","..y
+			if not added_spawns[key] then
+				logic:add_spawn(x, y)
+				added_spawns[key] = true
+			end
+		end
+	end
+end
 
 function module.onlevel_touchups()
 	onlevel_remove_cursedpot()
