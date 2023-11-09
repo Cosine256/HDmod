@@ -88,6 +88,8 @@ set_callback(function(room_gen_ctx)
 			roomgenlib.onlevel_generation_execution_phase_two()
 
 			spawndeflib.set_chances(room_gen_ctx)
+
+			feelingslib.set_feeling_toast_message()
 		else
 			s2roomctxlib.assign_s2_room_templates(room_gen_ctx)
 		end
