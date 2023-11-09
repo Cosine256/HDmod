@@ -429,26 +429,62 @@ function module.onlevel_set_feelings()
 	end
 end
 
-function module.onlevel_set_feelingToastMessage()
-	-- theme message priorities are here (ie; rushingwater over restless)
-	-- NOTES:
-		-- Black Market, COG and Beehive are currently handled by the game
-	
-	local loadchecks = commonlib.TableCopy(global_feelings)
-	
-	for feelingid, _ in pairs(loadchecks) do
-		if (
-			module.feeling_check(feelingid) == false
-		) then loadchecks[feelingid] = nil end
-	end
-	
+-- HD original toasts order (latest has the highest priority since replaces the former ones)
+-- toast CEMETARY (DAR)
+-- toast MARKET
+-- toast CASTLE
+-- toast SNAKEPIT
+-- toast JULY
+-- toast SACPIT
+-- toast VLAD
+-- toast SPIDER
+-- toast LAKE
+-- toast YETICAVE
+-- toast ASHIP
+-- toast COG
+-- toast DARK
+
+local feeling_order = {
+	module.FEELING_ID.RESTLESS,
+	module.FEELING_ID.BLACKMARKET,
+	module.FEELING_ID.HAUNTEDCASTLE,
+	module.FEELING_ID.SNAKEPIT,
+	module.FEELING_ID.MOTHERSHIP_ENTRANCE,
+	module.FEELING_ID.SACRIFICIALPIT,
+	module.FEELING_ID.VLAD,
+	module.FEELING_ID.SPIDERLAIR,
+	module.FEELING_ID.RUSHING_WATER,
+	module.FEELING_ID.YETIKINGDOM,
+	module.FEELING_ID.UFO,
+}
+
+local feeling_priority_map = {}
+
+-- Set a hashmap with the priority level based on the ordered array
+for i, id in pairs(feeling_order) do
+	feeling_priority_map[id] = i
+end
+
+function module.set_feeling_toast_message()
+	-- NOTE: COG is currently handled by the game
 	MESSAGE_FEELING = nil
-	for feelingid, feeling in pairs(loadchecks) do
-		-- Message Overrides may happen here:
-		-- For example:
-			-- if feelingid == module.FEELING_ID.RUSHING_WATER and module.feeling_check(module.FEELING_ID.RESTLESS) == true then break end
-		if feeling.message ~= nil then
+	if test_flag(state.level_flags, 18) then -- dark level
+		return
+	end
+
+	local present_feelings = {}
+	for feelingid, feeling in pairs(global_feelings) do
+		if module.feeling_check(feelingid) then
+			present_feelings[feelingid] = feeling
+		end
+	end
+
+	local last_priority_val = -1
+	for feeling_id, feeling in pairs(present_feelings) do
+		local feeling_priority = feeling_priority_map[feeling_id]
+		if feeling.message ~= nil and feeling_priority > last_priority_val then
 			MESSAGE_FEELING = feeling.message
+			last_priority_val = feeling_priority
 		end
 	end
 end

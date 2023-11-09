@@ -62,7 +62,6 @@ local function levelcreation_init()
 		feelingslib.onlevel_set_feelings()
 	end
 	flagslib.clear_dark_level()
-	feelingslib.onlevel_set_feelingToastMessage()
 end
 
 local assign_s2_level_height
