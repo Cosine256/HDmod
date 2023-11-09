@@ -2,21 +2,27 @@ local module = {}
 
 module.music_debug_print = false
 
-local function playerInRange(player)
-    if player ~= nil then
-        local px, py, layer = get_position(player)
+local function leader_in_range()
+    local check_x, check_y, check_layer
+    local leader = get_player(state.items.leader, false)
 
-        for _, v in ipairs(get_entities_by({ENT_TYPE.MONS_AMMIT}, MASK.MONSTER, LAYER.PLAYER)) do
-            local mons = get_entity(v)
-            if type(mons.user_data) == "table" then
-                if mons.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HEAD then
-                    --[[
-                        Yama's hands decide if a player is in range by checking if the players y position is greater than
-                        their own - 6. We're checking from the y position of Yama's head so subtract an additional 1.15.
+    if leader then
+        check_x, check_y, check_layer = get_position(leader.uid)
+    else
+        -- Fall back to the camera focus if the leader player does not exist.
+        check_x, check_y, check_layer = state.camera.calculated_focus_x, state.camera.calculated_focus_y, state.camera_layer
+    end
+
+    for _, v in ipairs(get_entities_by({ENT_TYPE.MONS_AMMIT}, MASK.MONSTER, LAYER.PLAYER)) do
+        local mons = get_entity(v)
+        if type(mons.user_data) == "table" then
+            if mons.user_data.ent_type == HD_ENT_TYPE.MONS_YAMA_HEAD then
+                --[[
+                    Yama's hands decide if a player is in range by checking if the players y position is greater than
+                    their own - 6. We're checking from the y position of Yama's head so subtract an additional 1.15.
                     ]]
-                    if py > mons.y - 7.15 then
-                        return true
-                    end
+                if check_y > mons.y - 7.15 then
+                    return true
                 end
             end
         end
@@ -25,7 +31,7 @@ local function playerInRange(player)
     return false
 end
 
-local function isYamaPhaseTwo()
+local function check_yama_phase_two()
     for _, v in ipairs(get_entities_by({ENT_TYPE.MONS_AMMIT}, MASK.MONSTER, LAYER.PLAYER)) do
         local mons = get_entity(v)
         if type(mons.user_data) == "table" then
@@ -42,7 +48,7 @@ local function isYamaPhaseTwo()
     return false
 end
 
-local function isYamaDead()
+local function check_yama_dead()
     for _, v in ipairs(get_entities_by({ENT_TYPE.MONS_AMMIT}, MASK.MONSTER, LAYER.PLAYER)) do
         local mons = get_entity(v)
         if type(mons.user_data) == "table" then
@@ -100,7 +106,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_Intro.ogg"),
             length = 631,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -108,7 +114,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -116,7 +122,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "1p3"
                 end
 
-                if playerInRange(players[1].uid) then
+                if leader_in_range() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
@@ -132,7 +138,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_1P1.ogg"),
             length = 6315,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -140,7 +146,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -148,7 +154,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "1p1_2p3"
                 end
 
-                if playerInRange(players[1].uid) then
+                if leader_in_range() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
@@ -164,7 +170,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_1P2.ogg"),
             length = 8210,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -172,7 +178,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -188,7 +194,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_1P3.ogg"),
             length = 8210,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -204,7 +210,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_2P1.ogg"),
             length = 4736,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -212,7 +218,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -220,7 +226,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "2px_3p3"
                 end
 
-                if playerInRange(players[1].uid) then
+                if leader_in_range() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
@@ -236,7 +242,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_2P2.ogg"),
             length = 4736,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -244,7 +250,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -260,7 +266,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_2P3.ogg"),
             length = 4736,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -276,7 +282,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_3P1.ogg"),
             length = 5684,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -284,7 +290,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -292,7 +298,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "3p1_3p3"
                 end
 
-                if playerInRange(players[1].uid) then
+                if leader_in_range() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
@@ -308,7 +314,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_3P2.ogg"),
             length = 5684,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -316,7 +322,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -332,7 +338,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_3P3.ogg"),
             length = 5684,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -348,7 +354,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_4P1.ogg"),
             length = 6631,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -356,7 +362,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -364,7 +370,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "5p3"
                 end
 
-                if playerInRange(players[1].uid) then
+                if leader_in_range() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
@@ -380,7 +386,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_4P2.ogg"),
             length = 6631,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -388,7 +394,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -404,7 +410,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_4P3.ogg"),
             length = 6631,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -420,7 +426,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_5P1.ogg"),
             length = 6947,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -428,7 +434,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -436,7 +442,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "6p3"
                 end
 
-                if playerInRange(players[1].uid) then
+                if leader_in_range() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
@@ -452,7 +458,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_5P2.ogg"),
             length = 6947,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -460,7 +466,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -476,7 +482,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_5P3.ogg"),
             length = 6947,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -492,7 +498,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_6P1.ogg"),
             length = 6631,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -500,7 +506,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -508,7 +514,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "1p3"
                 end
 
-                if playerInRange(players[1].uid) then
+                if leader_in_range() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Player moved into Yama's attack range.")
                     end
@@ -524,7 +530,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_6P2.ogg"),
             length = 6631,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end
@@ -532,7 +538,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                     return "postmortem"
                 end
 
-                if isYamaPhaseTwo() then
+                if check_yama_phase_two() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] Yama phase2 = true.")
                     end
@@ -548,7 +554,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_6P3.ogg"),
             length = 6631,
             next_sound_id = function(ctx)
-                if isYamaDead() then
+                if check_yama_dead() then
                     if module.music_debug_print then
                         print("[Yama Music Debug] King Yama is dead.")
                     end

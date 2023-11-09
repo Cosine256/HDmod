@@ -18,20 +18,26 @@ local function is_difu_stem(stem_id)
     end
 end
 
-local function is_player_in_vlads(player)
+local function is_leader_in_vlads()
     if feelingslib.feeling_check(feelingslib.FEELING_ID.VLAD) then
-        if player ~= nil then
-            local px, py, layer = get_position(player)
+        local check_x, check_y, check_layer
+        local leader = get_player(state.items.leader, false)
 
-            local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(px, py)
-            local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
-            if (
-                    _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP
-                    or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
-                    or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
-            ) then
-                return true
-            end
+        if leader then
+            check_x, check_y, check_layer = get_position(leader.uid)
+        else
+            -- Fall back to the camera focus if the leader player does not exist.
+            check_x, check_y, check_layer = state.camera.calculated_focus_x, state.camera.calculated_focus_y, state.camera_layer
+        end
+
+        local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(check_x, check_y)
+        local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
+        if (
+                _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_TOP
+                or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_MIDSECTION
+                or _subchunk_id == roomdeflib.HD_SUBCHUNKID.VLAD_BOTTOM
+        ) then
+            return true
         end
     end
     return false
@@ -65,7 +71,7 @@ module.HELL_CUSTOM_MUSIC = {
                         end
                     end
 
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -85,7 +91,7 @@ module.HELL_CUSTOM_MUSIC = {
                 sound = create_sound("res/music/BGM_Hell_Abi_A.ogg"),
                 length = 8000,
                 next_sound_id = function(ctx)
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -109,7 +115,7 @@ module.HELL_CUSTOM_MUSIC = {
                 sound = create_sound("res/music/BGM_Hell_Abi_B.ogg"),
                 length = 8000,
                 next_sound_id = function(ctx)
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -141,7 +147,7 @@ module.HELL_CUSTOM_MUSIC = {
                         end
                     end
 
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -175,7 +181,7 @@ module.HELL_CUSTOM_MUSIC = {
                         end
                     end
 
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -209,7 +215,7 @@ module.HELL_CUSTOM_MUSIC = {
                         end
                     end
 
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -238,7 +244,7 @@ module.HELL_CUSTOM_MUSIC = {
                         end
                     end
 
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -266,7 +272,7 @@ module.HELL_CUSTOM_MUSIC = {
                         end
                     end
 
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         difu_count = 0
                         return "yaoguai_1"
                     end
@@ -312,7 +318,7 @@ module.HELL_CUSTOM_MUSIC = {
                         end
                     end
 
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         difu_count = 0
                         return "yaoguai_1"
                     end
@@ -358,7 +364,7 @@ module.HELL_CUSTOM_MUSIC = {
                         end
                     end
 
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         difu_count = 0
                         return "yaoguai_1"
                     end
@@ -396,7 +402,7 @@ module.HELL_CUSTOM_MUSIC = {
                 sound = create_sound("res/music/BGM_Hell_Idle_A.ogg"),
                 length = 6000,
                 next_sound_id = function(ctx)
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -416,7 +422,7 @@ module.HELL_CUSTOM_MUSIC = {
                 sound = create_sound("res/music/BGM_Hell_Idle_B.ogg"),
                 length = 6000,
                 next_sound_id = function(ctx)
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -436,7 +442,7 @@ module.HELL_CUSTOM_MUSIC = {
                 sound = create_sound("res/music/BGM_Hell_Idle_C.ogg"),
                 length = 6000,
                 next_sound_id = function(ctx)
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -456,7 +462,7 @@ module.HELL_CUSTOM_MUSIC = {
                 sound = create_sound("res/music/BGM_Hell_LOWHP_1.ogg"),
                 length = 13333,
                 next_sound_id = function(ctx)
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -476,7 +482,7 @@ module.HELL_CUSTOM_MUSIC = {
                 sound = create_sound("res/music/BGM_Hell_LOWHP_2.ogg"),
                 length = 13333,
                 next_sound_id = function(ctx)
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -496,7 +502,7 @@ module.HELL_CUSTOM_MUSIC = {
                 sound = create_sound("res/music/BGM_Hell_LOWHP_3.ogg"),
                 length = 13333,
                 next_sound_id = function(ctx)
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
@@ -516,7 +522,7 @@ module.HELL_CUSTOM_MUSIC = {
                 sound = create_sound("res/music/BGM_Hell_Yaoguai_1.ogg"),
                 length = 14666,
                 next_sound_id = function(ctx)
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_2"
                     end
 
@@ -536,7 +542,7 @@ module.HELL_CUSTOM_MUSIC = {
                 sound = create_sound("res/music/BGM_Hell_Yaoguai_2.ogg"),
                 length = 18333,
                 next_sound_id = function(ctx)
-                    if is_player_in_vlads(players[1].uid) then
+                    if is_leader_in_vlads() then
                         return "yaoguai_1"
                     end
 
