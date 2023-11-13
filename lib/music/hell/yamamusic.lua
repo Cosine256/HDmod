@@ -111,7 +111,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -143,7 +143,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -175,7 +175,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -199,7 +199,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 return "2p3"
@@ -215,7 +215,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -247,7 +247,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -271,7 +271,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 return "2px_3p3"
@@ -287,7 +287,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -319,7 +319,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -343,7 +343,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 return "3p3_4p3"
@@ -359,7 +359,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -391,7 +391,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -415,7 +415,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 return "5p3"
@@ -431,7 +431,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -463,7 +463,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -487,7 +487,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 return "6p3"
@@ -503,7 +503,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -535,7 +535,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 if check_yama_phase_two() then
@@ -559,7 +559,7 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
                         print("[Yama Music Debug] King Yama is dead.")
                     end
 
-                    return "postmortem"
+                    return "tran_postmortem"
                 end
 
                 return "1p3"
@@ -636,6 +636,12 @@ module.YAMA_BOSS_CUSTOM_MUSIC = {
             sound = create_sound("res/music/BGM_Yama_Tran_3P3_4P3.ogg"),
             length = 947,
             next_sound_id = "4p3"
+        },
+        {
+            id = "tran_postmortem",
+            sound = create_sound("res/music/BGM_Yama_Tran_Postmortem.ogg"),
+            length = 1751,
+            next_sound_id = "postmortem"
         },
         {
             id = "postmortem",
