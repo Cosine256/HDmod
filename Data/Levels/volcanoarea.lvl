@@ -84,7 +84,7 @@
 \+hd_procedural_vampire 30, 30, 30, 10
 \+hd_procedural_devil   40, 40, 40, 40
 \+hd_procedural_tikitrap 8, 8, 5, 0
-\+hd_procedural_spikeball 0//32, 32, 24, 32
+\+hd_procedural_spikeball 32, 32, 24, 32
 \+hd_procedural_yama_bat 35
 \+hd_procedural_yama_imp 45
 \+hd_procedural_yama_jiangshi 20
