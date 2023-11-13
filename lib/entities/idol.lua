@@ -3,8 +3,8 @@ local module = {}
 local IDOLTRAP_TRIGGER = false
 local IDOL_X = nil
 local IDOL_Y = nil
-local IDOL_UID = nil
-module.IDOL_OWNER = nil
+local IDOL_UID = -1
+module.IDOL_OWNER = -1
 
 local IDOLTRAP_JUNGLE_ACTIVATETIME = 10
 local idoltrap_timeout = 0

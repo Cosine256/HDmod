@@ -81,7 +81,9 @@ local function mammoth_update(ent)
       ent.price = 90
     end
     --mammoth stun texture
-    if ent.price == 4 then --create attack hitbox
+    if ent.stun_timer == 0
+    and ent.frozen_timer == 0
+    and ent.price == 4 then --create attack hitbox
         local x, y, l = get_position(ent.uid)
         commonlib.play_vanilla_sound(VANILLA_SOUND.ITEMS_FREEZE_RAY, ent.uid, 1, false)
         if test_flag(ent.flags, ENT_FLAG.FACING_LEFT) then

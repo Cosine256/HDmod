@@ -267,7 +267,7 @@ set_post_entity_spawn(function(ent)
                             -- message("SHAKE")
                         end
                         if TIMEOUT_WIN == TIMEOUT_FLOW_START then
-                            commonlib.play_custom_sound(inside_lavalaunch_sound, lavastream_sndsrc.uid, 0.5, false)
+                            commonlib.play_custom_sound(inside_lavalaunch_sound, lavastream_sndsrc.uid, 1, false)
                             state.camera.shake_multiplier_x = 0.35
                             state.camera.shake_multiplier_y = 0.35
                             -- message("SHAKIER")

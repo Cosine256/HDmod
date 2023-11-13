@@ -62,11 +62,11 @@ function module.remove_embedded_at(x, y, l)
 	end
 end
 
-function module.remove_floor_and_embedded_at(x, y, l)
+function module.remove_floor_and_embedded_at(x, y, l, fix_neighbors)
   local uid = get_grid_entity_at(x, y, l)
-  if uid ~= -1 then
+	destroy_grid(x, y, l)
+  if fix_neighbors and uid ~= -1 then
 		module.remove_embedded_at(x, y, l)
-    local floor = get_entity(uid)
 		local neighbors = {
 			get_grid_entity_at(x, y+1, l),
 			get_grid_entity_at(x, y-1, l),
@@ -77,12 +77,6 @@ function module.remove_floor_and_embedded_at(x, y, l)
 			get_grid_entity_at(x+1, y-1, l),
 			get_grid_entity_at(x-1, y-1, l),
 		}
-		-- Move grid entity so the decorations can be fixed properly (ent:destroy doesn't update the grid immediately)
-		-- TODO: not a very good fix, but API changes or manually spawning decos might be neccesary for this
-		move_grid_entity(uid, x, y, LAYER.BACK)
-		-- liquid collisions also need to be updated
-		update_liquid_collision_at(x, y, false)
-		floor:destroy() -- kill_entity(uid)
 		for _, neighbor_uid in pairs(neighbors) do
 			if neighbor_uid ~= -1 then
 				local neighbor = get_entity(neighbor_uid) --[[@as Floor]]
@@ -269,6 +263,18 @@ set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_COD
 set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.LOGICAL_DOOR)
 set_post_entity_spawn(remove_entrance_door_entity, SPAWN_TYPE.LEVEL_GEN_TILE_CODE, 0, ENT_TYPE.LOGICAL_PLATFORM_SPAWNER)
 
+set_pre_entity_spawn(function (_, x, y, layer, _, spawn_flags)
+	if spawn_flags & SPAWN_TYPE.SCRIPT ~= 0 then
+		return
+	end
+	-- Destroy previous spawned logical entity
+	local logical_door = get_entity(state.next_entity_uid-1)
+	if logical_door.type.id == ENT_TYPE.LOGICAL_DOOR then
+		logical_door:destroy()
+	end
+	local uid = spawn_grid_entity(ENT_TYPE.FX_SHADOW, x, y, layer)
+	return uid
+end, SPAWN_TYPE.LEVEL_GEN_GENERAL, MASK.FLOOR, ENT_TYPE.FLOOR_DOOR_COG)
 
 
 

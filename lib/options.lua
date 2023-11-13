@@ -144,7 +144,7 @@ end
 
 local function draw_credits_button(ctx, name, win_state)
     if ctx:win_button(name) then
-        reset_run()
+        warp_effects()
         worldlib.HD_WORLDSTATE_STATE = worldlib.HD_WORLDSTATE_STATUS.NORMAL
         warp(1, 1, 1)
         -- # TODO: Fix warping from the main menu. It loads in without the player.

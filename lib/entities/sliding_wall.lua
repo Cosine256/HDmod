@@ -2,7 +2,6 @@ local idollib = require 'lib.entities.idol'
 local feelingslib = require 'lib.feelings'
 
 local module = {}
-local hc_sliding_wall_ceiling = nil
 local temple_slidingdoor_stone_texture_id
 local temple_chain_texture_id
 local temple_slidingdoor_texture_id
@@ -62,9 +61,7 @@ function module.spawn_slidingwall(x, y, layer, up)
     if feelingslib.feeling_check(feelingslib.FEELING_ID.HAUNTEDCASTLE) then
         wall:set_texture(hc_texture_id)
 
-        hc_sliding_wall_ceiling = ceiling.uid
-
-        set_callback(function()
+        ceiling:set_post_update_state_machine(function (self)
             local overlapping_players = get_entities_overlapping_hitbox(
                 0, MASK.PLAYER,
                 AABB:new(
@@ -76,13 +73,10 @@ function module.spawn_slidingwall(x, y, layer, up)
                 layer
             )
             if #overlapping_players > 0 then
-                local ent = get_entity(hc_sliding_wall_ceiling)
-                if ent ~= nil then
-                    ent.state = 0
-                end
+                self.state = 0
                 clear_callback()
             end
-        end, ON.FRAME)
+        end)
     end
 end
 
