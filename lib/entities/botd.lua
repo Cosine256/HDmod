@@ -154,7 +154,7 @@ local function botd_pickup_get(_, player)
   if not OBTAINED_BOOKOFDEAD then
     local x, y, layer = get_position(player.uid)
     anubis2lib.create_anubis2(x, y+3, layer)
-    toast_override("Death to the defiler!")
+    feelingslib.toast_override("Death to the defiler!")
   end
   celib.do_pickup_effect(player.uid, texture_id, 0)
   botd_players[player.inventory.player_slot] = true

@@ -250,13 +250,13 @@ function module.feeling_check(feeling)
 	return false
 end
 -- If there is an already existing speechbubble or toast, these will override it instead of not displaying.
-local function say_override(uid, message, sound, top)
+function module.say_override(uid, message, sound, top)
     cancel_speechbubble()
     set_timeout(function()
         say(uid, message, sound, top)
     end, 1)
 end
-local function toast_override(message)
+function module.toast_override(message)
     cancel_toast()
     set_timeout(function()
         toast(message)
@@ -494,7 +494,7 @@ function module.onlevel_toastfeeling()
 		MESSAGE_FEELING ~= nil and
 		options.hd_debug_feelings_toast_disable == false
 	) then
-		toast_override(MESSAGE_FEELING)
+		module.toast_override(MESSAGE_FEELING)
 	end
 end
 
