@@ -155,4 +155,6 @@ set_callback(function()
 	feelingslib.onlevel_toastfeeling()
 
 	liquidlib.spawn_liquid_illumination()
+
+	shopslib.onlevel_fix_bm_diceshop_owner()
 end, ON.LEVEL)
