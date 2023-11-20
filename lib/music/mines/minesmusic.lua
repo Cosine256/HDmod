@@ -61,6 +61,8 @@ local function is_mystery_stem(stem_id)
     end
 end
 
+local fill_enabled = false
+
 --[[
     The type of Fill we will use
     - One Fill
@@ -335,16 +337,20 @@ module.MINES_CUSTOM_MUSIC = {
 
                     -- Keep track of what stem will play after the Fill
                     stem_after_fill = pick_random({ "cobra_a", "cobra_a1", "mystery_a", "mystery_a1" })
-
-                    -- Pick a random Fill type
-                    fill_type[prng:random(4)]()
+                    if fill_enabled then
+                        -- Pick a random Fill type
+                        fill_type[prng:random(4)]()
+                    end
 
                     -- Check if we have any Fills to play, otherwise select a random Cap
                     if num_fills > 0 then
                         return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    else
+                    end
+                    if fill_cap then
                         return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
                     end
+
+                    return stem_after_fill
                 end
             },
             {
@@ -361,13 +367,18 @@ module.MINES_CUSTOM_MUSIC = {
                     end
 
                     stem_after_fill = pick_random({ "cobra_a", "cobra_a1", "mystery_a", "mystery_a1" })
-                    fill_type[prng:random(4)]()
+                    if fill_enabled then
+                        fill_type[prng:random(4)]()
+                    end
 
                     if num_fills > 0 then
                         return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    else
+                    end
+                    if fill_cap then
                         return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
                     end
+
+                    return stem_after_fill
                 end
             },
             {
@@ -422,13 +433,18 @@ module.MINES_CUSTOM_MUSIC = {
                     end
 
                     stem_after_fill = next_stem
-                    fill_type[prng:random(4)]()
+                    if fill_enabled then
+                        fill_type[prng:random(4)]()
+                    end
 
                     if num_fills > 0 then
                         return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    else
+                    end
+                    if fill_cap then
                         return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
                     end
+
+                    return stem_after_fill
                 end
             },
             {
@@ -481,13 +497,18 @@ module.MINES_CUSTOM_MUSIC = {
                     end
 
                     stem_after_fill = next_stem
-                    fill_type[prng:random(4)]()
+                    if fill_enabled then
+                        fill_type[prng:random(4)]()
+                    end
 
                     if num_fills > 0 then
                         return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    else
+                    end
+                    if fill_cap then
                         return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
                     end
+
+                    return stem_after_fill
                 end
             },
             {
@@ -540,13 +561,18 @@ module.MINES_CUSTOM_MUSIC = {
                     end
 
                     stem_after_fill = next_stem
-                    fill_type[prng:random(4)]()
+                    if fill_enabled then
+                        fill_type[prng:random(4)]()
+                    end
 
                     if num_fills > 0 then
                         return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    else
+                    end
+                    if fill_cap then
                         return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
                     end
+
+                    return stem_after_fill
                 end
             },
             {
@@ -599,13 +625,18 @@ module.MINES_CUSTOM_MUSIC = {
                     end
 
                     stem_after_fill = next_stem
-                    fill_type[prng:random(4)]()
+                    if fill_enabled then
+                        fill_type[prng:random(4)]()
+                    end
 
                     if num_fills > 0 then
                         return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    else
+                    end
+                    if fill_cap then
                         return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
                     end
+
+                    return stem_after_fill
                 end
             },
             {
@@ -718,13 +749,18 @@ module.MINES_CUSTOM_MUSIC = {
                     end
 
                     stem_after_fill = pick_random({ "explore_a", "mattock_a", "cobra_a", "cobra_a1", "mystery_a", "mystery_a1" })
-                    fill_type[prng:random(4)]()
+                    if fill_enabled then
+                        fill_type[prng:random(4)]()
+                    end
 
                     if num_fills > 0 then
                         return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    else
+                    end
+                    if fill_cap then
                         return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
                     end
+
+                    return stem_after_fill
                 end
             },
             {
@@ -741,13 +777,18 @@ module.MINES_CUSTOM_MUSIC = {
                     end
 
                     stem_after_fill = pick_random({ "explore_a", "mattock_a", "cobra_a", "cobra_a1", "mystery_a", "mystery_a1" })
-                    fill_type[prng:random(4)]()
+                    if fill_enabled then
+                        fill_type[prng:random(4)]()
+                    end
 
                     if num_fills > 0 then
                         return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    else
+                    end
+                    if fill_cap then
                         return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
                     end
+
+                    return stem_after_fill
                 end
             },
             {
