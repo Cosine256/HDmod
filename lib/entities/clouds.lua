@@ -55,10 +55,12 @@ local function render_cloud(render_ctx, x)
     dest.bottom_right_x = w/2
     dest.bottom_right_y = -h/2
     -- local x, y = screen_position(decorlib.SURFACE_BG_CENTER, state.screen == SCREEN.CREDITS and 113.6 or 103.6)
-    if x >= 63 then
-        x = x - 119.97
-    else
-        x = x + 0.0025
+    if state.pause == 0 then
+        if x >= 63 then
+            x = x - 119.97
+        else
+            x = x + 0.0025
+        end
     end
     local x_off = 0
     if sun_uid ~= -1 then

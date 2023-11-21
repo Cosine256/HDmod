@@ -162,29 +162,35 @@ function module.add_shop_decorations()
 				end
 			end
 		end
-		--temporarily put bords over black market dice shop until we can fix it
-		local board1 = get_entity(spawn_entity(ENT_TYPE.BG_SHOP_DICEPOSTER, 27, 101.500, LAYER.FRONT, 0, 0))
-		local board2 = get_entity(spawn_entity(ENT_TYPE.BG_SHOP_DICEPOSTER, 27, 101.500, LAYER.FRONT, 0, 0))
-		local bm_diceshop_board_texture_def = get_texture_definition(TEXTURE.DATA_TEXTURES_MENU_HEADER_0)
-		bm_diceshop_board_texture_def.width = 1280
-		bm_diceshop_board_texture_def.height = 1280
-		bm_diceshop_board_texture_def.tile_width = 128
-		bm_diceshop_board_texture_def.tile_height = 128
-		bm_diceshop_board_texture_def.sub_image_offset_x = 768
-		bm_diceshop_board_texture_def.sub_image_offset_y = 896
-		bm_diceshop_board_texture_def.sub_image_width = 128
-		bm_diceshop_board_texture_def.sub_image_height = 128
-		local bm_diceshop_board_texture_id = define_texture(bm_diceshop_board_texture_def)
-		board1:set_texture(bm_diceshop_board_texture_id)
-		board2:set_texture(bm_diceshop_board_texture_id)
-		board1:set_draw_depth(43)
-		board2:set_draw_depth(43)
-		flip_entity(board2.uid)
 
-		local diceitems_uids = get_entities_at({ENT_TYPE.ITEM_DIE, ENT_TYPE.ITEM_DICE_BET}, MASK.ITEM, 27, 96, LAYER.FRONT, 9)
-		for _, uid in pairs(diceitems_uids) do
-			get_entity(uid):destroy()
+		local bets = get_entities_by(ENT_TYPE.ITEM_DICE_BET, MASK.ITEM, LAYER.FRONT)
+		for i, uid in ipairs(bets) do
+			if i == 1 then
+				local bet_ent = get_entity(uid)
+				bet_ent.price = 2500
+				bet_ent.x, bet_ent.y = 26.0, 99.95
+				bet_ent.flags = set_flag(bet_ent.flags, ENT_FLAG.FACING_LEFT)
+				if state.shoppie_aggro_next > 0 then return end
+
+				bet_ent.flags = set_flag(bet_ent.flags, ENT_FLAG.SHOP_ITEM)
+				bet_ent.flags = set_flag(bet_ent.flags, ENT_FLAG.ENABLE_BUTTON_PROMPT)
+				spawn_over(ENT_TYPE.FX_SALEDIALOG_CONTAINER, uid, 0, 0)
+			else
+				get_entity(uid):destroy()
+			end
 		end
+	end
+end
+
+function module.onlevel_fix_bm_diceshop_owner()
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
+		set_timeout(function()
+			if not state.logic.diceshop then return end
+
+			local room_x, room_y = get_room_pos(2, 2)
+			local room_aabb = AABB:new(room_x, room_y, room_x+CONST.ROOM_WIDTH, room_y-CONST.ROOM_HEIGHT)
+			state.logic.diceshop.boss_uid = get_entities_overlapping_hitbox(ENT_TYPE.MONS_SHOPKEEPER, MASK.MONSTER, room_aabb, LAYER.FRONT)[1] or -1
+		end, 1)
 	end
 end
 

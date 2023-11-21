@@ -3,15 +3,28 @@ local module = {}
 
 local debug_valid_spaces
 
+---@diagnostic disable unused-local
 local DEBUG_RGB_BROWN = rgba(204, 51, 0, 170)
 local DEBUG_RGB_ORANGE = rgba(255, 153, 0, 170)
 local DEBUG_RGB_GREEN = rgba(153, 196, 19, 170)
+---@diagnostic enable unused-local
 
 function module.debug_init()
 	debug_valid_spaces = {}
 end
 
-local function debug_add_valid_space(x, y, color)
+---@param x number
+---@param y number
+---@param color integer
+---@param is_trap_spawn boolean? @ Pass nil to allow any, false for procedural, true for traps
+---@diagnostic disable-next-line unused-local
+local function debug_add_valid_space(x, y, color, is_trap_spawn)
+	if is_trap_spawn == nil then
+	elseif is_trap_spawn == true and not spawndeflib.is_trap_spawn then
+		return
+	elseif is_trap_spawn == false and spawndeflib.is_trap_spawn then
+		return
+	end
 	debug_valid_spaces[#debug_valid_spaces+1] = {}
 	debug_valid_spaces[#debug_valid_spaces].x = x
 	debug_valid_spaces[#debug_valid_spaces].y = y
@@ -79,13 +92,16 @@ module.hideyhole_items_to_keep = {ENT_TYPE.ITEM_CURSEDPOT, ENT_TYPE.ITEM_LOCKEDC
 
 local valid_floors = {ENT_TYPE.FLOOR_GENERIC, ENT_TYPE.FLOOR_JUNGLE, ENT_TYPE.FLOORSTYLED_MINEWOOD, ENT_TYPE.FLOORSTYLED_STONE, ENT_TYPE.FLOORSTYLED_TEMPLE, ENT_TYPE.FLOORSTYLED_COG, ENT_TYPE.FLOORSTYLED_PAGODA, ENT_TYPE.FLOORSTYLED_BABYLON, ENT_TYPE.FLOORSTYLED_SUNKEN, ENT_TYPE.FLOORSTYLED_BEEHIVE, ENT_TYPE.FLOORSTYLED_VLAD, ENT_TYPE.FLOORSTYLED_MOTHERSHIP, ENT_TYPE.FLOORSTYLED_DUAT, ENT_TYPE.FLOORSTYLED_PALACE, ENT_TYPE.FLOORSTYLED_GUTS, ENT_TYPE.FLOOR_SURFACE, ENT_TYPE.FLOOR_ICE}
 
-local TEMPLE_PATH_EXIT_ROOMS = {
-	roomdeflib.HD_SUBCHUNKID.EXIT,
-	roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP,
+local TEMPLE_PATH_ROOMS = {
 	roomdeflib.HD_SUBCHUNKID.PATH,
 	roomdeflib.HD_SUBCHUNKID.PATH_DROP,
 	roomdeflib.HD_SUBCHUNKID.PATH_DROP_NOTOP,
-	roomdeflib.HD_SUBCHUNKID.PATH_NOTOP
+	roomdeflib.HD_SUBCHUNKID.PATH_NOTOP,
+}
+local TEMPLE_PATH_EXIT_ROOMS = {
+	roomdeflib.HD_SUBCHUNKID.EXIT,
+	roomdeflib.HD_SUBCHUNKID.EXIT_NOTOP,
+	table.unpack(TEMPLE_PATH_ROOMS),
 }
 
 local function is_liquid_at(x, y)
@@ -119,7 +135,7 @@ local function check_empty_space(origin_x, origin_y, layer, width, height)
 end
 
 local function is_door_at(x, y, l)
-	return #get_entities_at(ENT_TYPE.FLOOR_DOOR_EXIT, MASK.FLOOR, x, y, l, 0.5) ~= 0
+	return #get_entities_at({ENT_TYPE.FLOOR_DOOR_EXIT, ENT_TYPE.FLOOR_DOOR_COG}, MASK.FLOOR, x, y, l, 0.5) ~= 0
 end
 
 local shop_templates = {
@@ -181,8 +197,8 @@ local function detect_solid_nonshop_nontree(x, y, l)
 	return false
 end
 
-local function is_pushblock_at(x, y, l)
-	return #get_entities_overlapping_hitbox({ENT_TYPE.ACTIVEFLOOR_PUSHBLOCK}, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
+local function is_activefloor_at(x, y, l)
+	return #get_entities_overlapping_hitbox(0, MASK.ACTIVEFLOOR, AABB:new(x-0.5, y+0.5, x+0.5, y-0.5), l) ~= 0
 end
 
 local function is_non_grid_entity_at(x, y, l)
@@ -389,7 +405,9 @@ local blackmarket_invalid_floors = {
 	ENT_TYPE.FLOOR_TREE_BASE,
 	ENT_TYPE.FLOOR_TREE_TRUNK,
 	ENT_TYPE.FLOOR_TREE_TOP,
-	ENT_TYPE.FLOOR_ALTAR
+	ENT_TYPE.FLOOR_ALTAR,
+	ENT_TYPE.FLOOR_EGGPLANT_ALTAR, -- Tombstones
+	ENT_TYPE.FLOOR_TOTEM_TRAP,
 }
 function module.is_valid_blackmarket_spawn(x, y, l)
 	local floor_uid = get_grid_entity_at(x, y, l)
@@ -574,6 +592,7 @@ function module.is_valid_pushblock_spawn(x, y, l)
 	then
 		return false
 	end
+	-- debug_add_valid_space(x, y, DEBUG_RGB_GREEN)
     return true
 end
 
@@ -589,7 +608,8 @@ function module.is_valid_spikeball_spawn(x, y, l)
 		return false
 	end
 
-	if is_anti_trap_at(x, y) == true then return false end
+	local lvlcode = locatelib.get_levelcode_at_gpos(x, y)
+	if is_anti_trap_at(x, y) == true or lvlcode == "y" then return false end
 
 	local above = get_grid_entity_at(x, y+1, l)
 	if above ~= -1 then
@@ -711,11 +731,11 @@ function module.is_valid_tikitrap_spawn(x, y, l)
 		or is_anti_trap_at(x, y-1)
 	) then return false end
 
-	-- Doesn't work for some reason
-	-- if is_pushblock_at(x, y, l) 
-	-- or is_pushblock_at(x, y-1, l) then
-	-- 	return false
-	-- end
+	-- Prevent it spawning on pushblock, that causes the pushblock to move to the side and probably fall. The check at same pos probably isn't needed
+	if is_activefloor_at(x, y, l)
+	or is_activefloor_at(x, y+1, l) then
+		return false
+	end
 
 	if not is_valid_generic_trap_room(x, y) then
 		return false
@@ -1009,6 +1029,16 @@ function module.is_valid_vlad_window_spawn(x, y, l)
 		)
 		and is_valid_window_spawn(x, y, l)
 	)
+end
+
+function module.is_valid_cog_door_spawn(x, y, layer)
+	local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
+	local _subchunk_id = locatelib.get_levelroom_at(roomx, roomy)
+	return get_grid_entity_at(x, y, layer) == -1
+		and is_valid_monster_floor(x, y-1, layer)
+		and not is_liquid_at(x, y)
+		and not is_activefloor_at(x, y, layer)
+		and commonlib.has(TEMPLE_PATH_ROOMS, _subchunk_id)
 end
 
 return module

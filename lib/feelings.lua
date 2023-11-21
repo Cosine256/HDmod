@@ -28,7 +28,8 @@ module.FEELING_ID = {
     SNOW = 19,
     ICE_CAVES_POOL = 20,
     ANUBIS = 21,
-    YAMA = 22
+    COG_DOOR = 22,
+    YAMA = 23,
 }
 
 module.HD_FEELING_DEFAULTS = {
@@ -150,6 +151,10 @@ module.HD_FEELING_DEFAULTS = {
 		themes = { THEME.TEMPLE },
 		load = 1,
 	},
+	[module.FEELING_ID.COG_DOOR] = {
+		themes = { THEME.TEMPLE },
+		load = 2,
+	},
 }
 
 local global_feelings = nil
@@ -245,15 +250,15 @@ function module.feeling_check(feeling)
 	return false
 end
 -- If there is an already existing speechbubble or toast, these will override it instead of not displaying.
-function say_override(uid, message, sound, top)
+function module.say_override(uid, message, sound, top)
     cancel_speechbubble()
-    set_timeout(function()    
+    set_timeout(function()
         say(uid, message, sound, top)
     end, 1)
 end
-function toast_override(message)
+function module.toast_override(message)
     cancel_toast()
-    set_timeout(function()    
+    set_timeout(function()
         toast(message)
     end, 1)
 end
@@ -424,35 +429,63 @@ function module.onlevel_set_feelings()
 	end
 end
 
-function module.onlevel_set_feelingToastMessage()
-	-- theme message priorities are here (ie; rushingwater over restless)
-	-- NOTES:
-		-- Black Market, COG and Beehive are currently handled by the game
-	
-	local loadchecks = commonlib.TableCopy(global_feelings)
-	
-	local n = #loadchecks
-	for feelingname, loadcheck in pairs(loadchecks) do
-		if (
-			-- detect_feeling_themes(feelingname) == false or
-			-- (
-				-- detect_feeling_themes(feelingname) == true and
-				-- (
-					-- (loadcheck.load == nil or loadcheck.message == nil) or
-					-- (module.feeling_check(feelingname))
-				-- )
-			-- )
-			module.feeling_check(feelingname) == false
-		) then loadchecks[feelingname] = nil end
-	end
-	loadchecks = commonlib.CompactList(loadchecks, n)
-	
+-- HD original toasts order (latest has the highest priority since replaces the former ones)
+-- toast CEMETARY (DAR)
+-- toast MARKET
+-- toast CASTLE
+-- toast SNAKEPIT
+-- toast JULY
+-- toast SACPIT
+-- toast VLAD
+-- toast SPIDER
+-- toast LAKE
+-- toast YETICAVE
+-- toast ASHIP
+-- toast COG
+-- toast DARK
+
+local feeling_order = {
+	module.FEELING_ID.RESTLESS,
+	module.FEELING_ID.BLACKMARKET,
+	module.FEELING_ID.HAUNTEDCASTLE,
+	module.FEELING_ID.SNAKEPIT,
+	module.FEELING_ID.MOTHERSHIP_ENTRANCE,
+	module.FEELING_ID.SACRIFICIALPIT,
+	module.FEELING_ID.VLAD,
+	module.FEELING_ID.SPIDERLAIR,
+	module.FEELING_ID.RUSHING_WATER,
+	module.FEELING_ID.YETIKINGDOM,
+	module.FEELING_ID.UFO,
+}
+
+local feeling_priority_map = {}
+
+-- Set a hashmap with the priority level based on the ordered array
+for i, id in pairs(feeling_order) do
+	feeling_priority_map[id] = i
+end
+
+function module.set_feeling_toast_message()
+	-- NOTE: COG is currently handled by the game
 	MESSAGE_FEELING = nil
-	for feelingname, feeling in pairs(loadchecks) do
-		-- Message Overrides may happen here:
-		-- For example:
-			-- if feelingname == module.FEELING_ID.RUSHING_WATER and module.feeling_check(module.FEELING_ID.RESTLESS) == true then break end
-		MESSAGE_FEELING = feeling.message
+	if test_flag(state.level_flags, 18) then -- dark level
+		return
+	end
+
+	local present_feelings = {}
+	for feelingid, feeling in pairs(global_feelings) do
+		if module.feeling_check(feelingid) then
+			present_feelings[feelingid] = feeling
+		end
+	end
+
+	local last_priority_val = -1
+	for feeling_id, feeling in pairs(present_feelings) do
+		local feeling_priority = feeling_priority_map[feeling_id]
+		if feeling.message ~= nil and feeling_priority > last_priority_val then
+			MESSAGE_FEELING = feeling.message
+			last_priority_val = feeling_priority
+		end
 	end
 end
 
@@ -461,10 +494,7 @@ function module.onlevel_toastfeeling()
 		MESSAGE_FEELING ~= nil and
 		options.hd_debug_feelings_toast_disable == false
 	) then
-		cancel_toast()
-		set_timeout(function()
-			toast_override(MESSAGE_FEELING)
-		end, 1)
+		module.toast_override(MESSAGE_FEELING)
 	end
 end
 

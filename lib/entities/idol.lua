@@ -3,8 +3,8 @@ local module = {}
 local IDOLTRAP_TRIGGER = false
 local IDOL_X = nil
 local IDOL_Y = nil
-local IDOL_UID = nil
-module.IDOL_OWNER = nil
+local IDOL_UID = -1
+module.IDOL_OWNER = -1
 
 local IDOLTRAP_JUNGLE_ACTIVATETIME = 10
 local idoltrap_timeout = 0
@@ -132,7 +132,7 @@ local function create_ghost_at_border()
 		if p_x > bx_mid then gx = xmax+5 else gx = xmin-5 end
 		spawn(ENT_TYPE.MONS_GHOST, gx, gy, p_l, 0, 0)
         if get_setting(GAME_SETTING.GHOST_TEXT) == 1 then
-            toast_override("A terrible chill runs up your spine!")
+            feelingslib.toast_override("A terrible chill runs up your spine!")
         end
 	-- else
 		-- toast("A terrible chill r- ...wait, where are the players?!?")

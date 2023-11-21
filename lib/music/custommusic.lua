@@ -3,6 +3,7 @@
 local custom_music_engine = require "lib.music.custom_music_engine"
 local minesmusic = require "lib.music.mines.minesmusic"
 local hellmusic = require "lib.music.hell.hellmusic"
+local yamamusic = require "lib.music.hell.yamamusic"
 local hdmusic = require "lib.music.hdmusic"
 
 local module = {}
@@ -15,7 +16,8 @@ optionslib.register_option_bool("hd_debug_custom_title_music_disable", "Custom m
 local CUSTOM_LEVEL_MUSICS = {
     minesmusic.MINES_DARK_CUSTOM_MUSIC,
     minesmusic.MINES_CUSTOM_MUSIC,
-    hellmusic.HELL_CUSTOM_MUSIC
+    hellmusic.HELL_CUSTOM_MUSIC,
+    yamamusic.YAMA_CUTSCENE_CUSTOM_MUSIC
 }
 
 local WORM_LOOP_SOUND = create_sound("../../Extracted/soundbank/ogg/BGM_Frog_Belly.ogg")
@@ -159,8 +161,13 @@ function module.play_boss_music()
                 custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, hdmusic.OLMEC_BOSS_CUSTOM_MUSIC)
                 current_custom_level_music = hdmusic.OLMEC_BOSS_CUSTOM_MUSIC
             elseif state.theme == THEME.VOLCANA and feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
-                custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, hdmusic.YAMA_BOSS_CUSTOM_MUSIC)
+                custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, hdmusic.YAMA_HD_BOSS_CUSTOM_MUSIC)
                 current_custom_level_music = hdmusic.YAMA_BOSS_CUSTOM_MUSIC
+            end
+        else
+            if state.theme == THEME.VOLCANA and feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
+                custom_music_engine.set_custom_music(custom_music_engine.CUSTOM_MUSIC_MODE.REPLACE_LEVEL, yamamusic.YAMA_BOSS_CUSTOM_MUSIC)
+                current_custom_level_music = yamamusic.YAMA_BOSS_CUSTOM_MUSIC
             end
         end
     end

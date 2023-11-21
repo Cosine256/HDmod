@@ -70,7 +70,9 @@ set_callback(function(room_gen_ctx)
 		-- message(F'ON.POST_ROOM_GENERATION - ON.LEVEL: {state.time_level}')
 
 		if options.hd_debug_scripted_levelgen_disable == false then
-			
+
+			roomgenlib.assign_s2_level_height()
+
 			cooplib.detect_coop_coffin(room_gen_ctx)
 
 			s2roomctxlib.unmark_setrooms(room_gen_ctx)
@@ -85,14 +87,22 @@ set_callback(function(room_gen_ctx)
 			roomgenlib.onlevel_generation_execution_phase_one()
 			roomgenlib.onlevel_generation_execution_phase_two()
 
+			spawndeflib.set_chances(room_gen_ctx)
+
+			feelingslib.set_feeling_toast_message()
 		else
 			s2roomctxlib.assign_s2_room_templates(room_gen_ctx)
 		end
 
-		spawndeflib.set_chances(room_gen_ctx)
-
 	end
 end, ON.POST_ROOM_GENERATION)
+
+--On post_spawn_traps because it's after borders spawned, maybe could work anyway if checking for out of bounds
+for _, theme in pairs(THEME) do
+	if not commonlib.has({THEME.ARENA, THEME.BASE_CAMP}, theme) then
+		state.level_gen.themes[theme]:set_post_spawn_traps(spawndeflib.handle_trap_spawns)
+	end
+end
 
 set_callback(function()
 	if state.screen == SCREEN.LEVEL then
@@ -133,6 +143,10 @@ set_callback(function()
 end, ON.POST_LEVEL_GENERATION)
 
 set_callback(function()
+	touchupslib.postloadscreen_init_magmar_spawn_logic()
+end, ON.POST_LOAD_SCREEN)
+
+set_callback(function()
 	-- message(F'ON.LEVEL: {state.time_level}')
 	touchupslib.onlevel_touchups()
 
@@ -141,4 +155,6 @@ set_callback(function()
 	feelingslib.onlevel_toastfeeling()
 
 	liquidlib.spawn_liquid_illumination()
+
+	shopslib.onlevel_fix_bm_diceshop_owner()
 end, ON.LEVEL)

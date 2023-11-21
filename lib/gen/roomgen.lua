@@ -62,7 +62,6 @@ local function levelcreation_init()
 		feelingslib.onlevel_set_feelings()
 	end
 	flagslib.clear_dark_level()
-	feelingslib.onlevel_set_feelingToastMessage()
 end
 
 local assign_s2_level_height
@@ -77,12 +76,6 @@ set_callback(function()
 		end
 	end
 end, ON.PRE_LEVEL_GENERATION)
-
-set_callback(function()
-	if state.screen == SCREEN.LEVEL and options.hd_debug_scripted_levelgen_disable == false then
-		assign_s2_level_height()
-	end
-end, ON.POST_ROOM_GENERATION)
 
 set_post_tile_code_callback(function(x, y, layer)
 	if options.hd_debug_scripted_levelgen_disable == false then
@@ -130,8 +123,7 @@ set_pre_entity_spawn(function(ent_type, x, y, l, overlay)
 end, SPAWN_TYPE.ANY, 0, ENT_TYPE.MONS_LEPRECHAUN)
 ]]
 
-function assign_s2_level_height()
-	
+function module.assign_s2_level_height()
 	local new_width = 4
 	local new_height = 4
 

@@ -81,7 +81,6 @@ end
 local function hawkman_set(uid)
     ---@type Movable
     local ent = get_entity(uid)
-    local x, y, l = get_position(uid)
 
     ent:set_texture(hawkman_texture_id)
 
@@ -103,6 +102,13 @@ local function hawkman_set(uid)
         drop(ent.uid, held_item.uid)
         held_item:destroy()
     end
+
+    --prevent tikiman pickup behaviors
+    --from Dregu. Thanks Dregu!
+    ent:set_pre_on_collision2(function(e, o)
+        -- if standing on ground and saw an interesting item, no you didn't
+        return e.state == 1 and (o.type.id == ENT_TYPE.ITEM_BOOMERANG or o.type.id == ENT_TYPE.ITEM_TORCH)
+    end)
 end
 
 local function hawkman_update(ent)

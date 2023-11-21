@@ -117,11 +117,9 @@ local function acid_update()
 end
 
 set_callback(function ()
-	if state.loading == 1 and state.screen_next ~= SCREEN.DEATH then
-    	water_emitters = {}
-    	water_index = 1
-	end
-end, ON.LOADING)
+	water_emitters = {}
+	water_index = 1
+end, ON.PRE_LEVEL_DESTRUCTION)
 
 function module.spawn_liquid_illumination()
 	clear_callback(gameframe_cb)
