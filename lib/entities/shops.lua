@@ -187,7 +187,7 @@ function module.onlevel_fix_bm_diceshop_owner()
 	end
 end
 
-function module.postlevelgen_fix_customshop_sign()
+function module.postlevelgen_blackmarket_touchups()
 	if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
 		state.presence_flags = set_flag(state.presence_flags, 2) -- black market flag, to disable zoom and shopkeeper messages
 
@@ -204,6 +204,9 @@ function module.postlevelgen_fix_customshop_sign()
 			end
 		end
 	end
+end
+
+function module.postlevelgen_fix_customshop_sign()
 	local shopsigns = get_entities_by(ENT_TYPE.DECORATION_SHOPSIGNICON, MASK.DECORATION, LAYER.FRONT)
 	for _, uid in pairs(shopsigns) do
 		local x, y = get_position(uid)
