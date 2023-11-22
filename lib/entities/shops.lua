@@ -73,33 +73,26 @@ function module.set_blackmarket_shoprooms(room_gen_ctx)
 end
 
 -- black market shopkeepers
-set_pre_tile_code_callback(function(x, y, layer)
+set_post_tile_code_callback(function(x, y, layer)
     if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
+		local shopkeeper_uid = state.next_entity_uid-1
+		-- In case a shotgun spawns with shopkeeper, or smth else I guess
+		for try = 1, 4 do
+			if get_entity_type(shopkeeper_uid) == ENT_TYPE.MONS_SHOPKEEPER then
+				break
+			end
+			shopkeeper_uid = shopkeeper_uid - 1
+		end
+		get_entity(shopkeeper_uid).has_key = false
 		local ctx = PostRoomGenerationContext:new()
+		local rx, ry = get_room_index(x, y)
 		local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 		local roomid = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
-        ---@type Shopkeeper
-        local s = get_entity(spawn_shopkeeper(x, y, layer, ROOM_TEMPLATE.SIDE))
-		set_global_timeout(function()
-			local c_ox, c_oy = -0.1, 0.89
-			if not test_flag(s.flags, ENT_FLAG.FACING_LEFT) then
-				flip_entity(s.uid)
-			end
-			if (
-				roomid ~= roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT
-			) then
-				local floor = get_entity(get_grid_entity_at(x, y-1, layer))
-				if floor then
-					local c = get_entity(spawn_entity_over(ENT_TYPE.DECORATION_SHOPFORE, floor.uid, c_ox, c_oy))
-					c.animation_frame = 74
-				end
-			end
-		end, 1)
 		if (
 			roomid == roomdeflib.HD_SUBCHUNKID.BLACKMARKET_ANKH
 		) then
 			local ankh_uid = spawn_grid_entity(ENT_TYPE.ITEM_PICKUP_ANKH, x-3, y, layer)
-			add_item_to_shop(ankh_uid, s.uid)
+			add_item_to_shop(ankh_uid, shopkeeper_uid)
 			add_custom_name(ankh_uid, "Ankh")
 			local ankh_mov = get_entity(ankh_uid)
 			ankh_mov.flags = set_flag(ankh_mov.flags, ENT_FLAG.SHOP_ITEM)
@@ -107,11 +100,11 @@ set_pre_tile_code_callback(function(x, y, layer)
 			spawn_entity_over(ENT_TYPE.FX_SALEICON, ankh_uid, 0, 0)
 			spawn_entity_over(ENT_TYPE.FX_SALEDIALOG_CONTAINER, ankh_uid, 0, 0)
 			ankh_mov.price = 50000
+			ctx:set_room_template(rx, ry, layer, ROOM_TEMPLATE.SHOP_BASEMENT)
+		else
+			ctx:set_room_template(rx, ry, layer, roomid == roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT and ROOM_TEMPLATE.DICESHOP_LEFT or ROOM_TEMPLATE.SHOP)
 		end
 
-		local rx, ry = get_room_index(x, y)
-        ctx:set_room_template(rx, ry, layer, roomid == roomdeflib.HD_SUBCHUNKID.SHOP_PRIZE_LEFT and ROOM_TEMPLATE.DICESHOP_LEFT or ROOM_TEMPLATE.SHOP)
-        return true
     end
     return false
 end, "shopkeeper")
@@ -195,6 +188,22 @@ function module.onlevel_fix_bm_diceshop_owner()
 end
 
 function module.postlevelgen_fix_customshop_sign()
+	if feelingslib.feeling_check(feelingslib.FEELING_ID.BLACKMARKET) then
+		state.presence_flags = set_flag(state.presence_flags, 2) -- black market flag, to disable zoom and shopkeeper messages
+
+		-- Spawn the deco foreground on shopkeepers because the game thinks all shops are dice shops
+		local shopkeepers = get_entities_by(ENT_TYPE.MONS_SHOPKEEPER, MASK.MONSTER, LAYER.FRONT)
+		for _, uid in pairs(shopkeepers) do
+			local x, y, layer = get_position(uid)
+			x, y = math.floor(x), math.floor(y)
+			local rx, ry = get_room_index(x, y)
+			-- x-2 because ankh shopkeeper is outside zone
+			if is_inside_shop_zone(x-2, y, layer) and get_room_template(rx, ry, layer) ~= ROOM_TEMPLATE.DICESHOP_LEFT then
+				local below_uid = get_grid_entity_at(x, y-1, layer)
+				get_entity(spawn_over(ENT_TYPE.DECORATION_SHOPFORE, below_uid, -0.1, 0.89)).animation_frame = 74
+			end
+		end
+	end
 	local shopsigns = get_entities_by(ENT_TYPE.DECORATION_SHOPSIGNICON, MASK.DECORATION, LAYER.FRONT)
 	for _, uid in pairs(shopsigns) do
 		local x, y = get_position(uid)
