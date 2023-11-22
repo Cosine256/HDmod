@@ -156,6 +156,15 @@ function module.add_shop_decorations()
 			end
 		end
 
+		-- Ankh shop extra walls and shelves
+		get_entity(spawn(ENT_TYPE.BG_SHOP, 37, 107, LAYER.FRONT, 0, 0)).animation_frame = 7
+		get_entity(spawn(ENT_TYPE.BG_SHOP, 36, 107, LAYER.FRONT, 0, 0)).animation_frame = 7
+		for x = 36, 37 do
+			local shelf = get_entity(spawn(ENT_TYPE.BG_SHOP, x, 106, LAYER.FRONT, 0, 0))
+			shelf.animation_frame = 17
+			shelf:set_draw_depth(44)
+		end
+
 		local bets = get_entities_by(ENT_TYPE.ITEM_DICE_BET, MASK.ITEM, LAYER.FRONT)
 		for i, uid in ipairs(bets) do
 			if i == 1 then
