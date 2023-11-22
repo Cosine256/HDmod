@@ -159,9 +159,11 @@ function module.add_shop_decorations()
 		-- Ankh shop extra walls and shelves
 		get_entity(spawn(ENT_TYPE.BG_SHOP, 37, 107, LAYER.FRONT, 0, 0)).animation_frame = 7
 		get_entity(spawn(ENT_TYPE.BG_SHOP, 36, 107, LAYER.FRONT, 0, 0)).animation_frame = 7
+		get_entity(spawn(ENT_TYPE.BG_SHOP, 38, 107, LAYER.FRONT, 0, 0)).animation_frame = 8
+		get_entity(spawn(ENT_TYPE.BG_SHOP, 35, 107, LAYER.FRONT, 0, 0)).animation_frame = 6
 		for x = 36, 37 do
 			local shelf = get_entity(spawn(ENT_TYPE.BG_SHOP, x, 106, LAYER.FRONT, 0, 0))
-			shelf.animation_frame = 17
+			shelf.animation_frame = x == 36 and 16 or 18
 			shelf:set_draw_depth(44)
 		end
 
