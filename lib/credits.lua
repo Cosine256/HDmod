@@ -99,29 +99,14 @@ set_callback(function ()
 
 end, ON.CREDITS)
 
-local normal_credits_end
+set_callback(function()
+    if state.screen == SCREEN.CREDITS then
+        -- Suppress the menu input that exits the credits screen.
+        game_manager.game_props.input_menu = game_manager.game_props.input_menu & ~MENU_INPUT.SELECT
+    end
+end, ON.POST_PROCESS_INPUT)
 
 set_callback(function()
-    --[[
-        prevent fading out of the credits screen (when pressing jump or credits end)
-    ]]
-    if state.screen == SCREEN.CREDITS
-    and state.loading == 1
-    then
-        normal_credits_end = true
-        for _, player in pairs(players) do
-            local input = read_input(player.uid)
-            if test_flag(input, INPUT_FLAG.JUMP)
-            or test_flag(input, INPUT_FLAG.UP) then
-                normal_credits_end = false
-            end
-        end
-        if not normal_credits_end then
-            -- stop loading next scene
-            state.loading = 0
-        end
-    end
-
     if state.screen == SCREEN.SCORES
     and state.loading == 3
     then
