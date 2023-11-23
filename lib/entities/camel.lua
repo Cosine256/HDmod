@@ -432,9 +432,6 @@ local function camel_set(ent, cannon_uid)
                 if test_mask(player.input.buttons_gameplay, INPUTS.UP) then
                     player.input.buttons_gameplay = clr_mask(player.input.buttons_gameplay, INPUTS.JUMP)
                 end
-                if test_mask(player.input.buttons_gameplay, INPUTS.ROPE) then
-                    state.loading = 1
-                end
 
                 if ent.user_data.state == MINIGAME_STATE.PRE_MINIGAME then
                     if (

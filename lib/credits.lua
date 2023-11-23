@@ -100,11 +100,27 @@ set_callback(function ()
 end, ON.CREDITS)
 
 set_callback(function()
-    if state.screen == SCREEN.CREDITS then
-        -- Suppress the menu input that exits the credits screen.
+    if state.screen ~= SCREEN.CREDITS then
+        return
+    end
+
+    -- Use a "rope" player input instead of a "select" menu input to exit the credits screen.
+    local exit_credits = false
+    for i = 1, state.items.player_count do
+        local slot = state.player_inputs.player_slots[i]
+        if slot.buttons_gameplay & INPUTS.ROPE > 0 then
+            exit_credits = true
+            -- Suppress the rope input to prevent a clicking sound.
+            slot.buttons_gameplay = slot.buttons_gameplay & ~INPUTS.ROPE
+            slot.buttons = slot.buttons & ~INPUTS.ROPE
+        end
+    end
+    if exit_credits then
+        game_manager.game_props.input_menu = game_manager.game_props.input_menu | MENU_INPUT.SELECT
+    else
         game_manager.game_props.input_menu = game_manager.game_props.input_menu & ~MENU_INPUT.SELECT
     end
-end, ON.POST_PROCESS_INPUT)
+end, ON.PRE_UPDATE)
 
 set_callback(function()
     if state.screen == SCREEN.SCORES
