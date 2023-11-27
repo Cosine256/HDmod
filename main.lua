@@ -137,6 +137,8 @@ set_callback(function()
 				touchupslib.postlevelgen_spawn_walltorches()
 
 				shopslib.postlevelgen_fix_customshop_sign()
+
+				shopslib.postlevelgen_blackmarket_touchups()
 			end
 		end
 	end
