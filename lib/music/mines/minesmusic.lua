@@ -7,10 +7,6 @@ local has_seen_mystery_this_cycle = false
 local cobra_count = 0
 local mystery_count = 0
 
-local num_fills = 0
-local fill_cap = false
-local stem_after_fill
-
 local function pick_random(table)
     return table[prng:random(#table)]
 end
@@ -58,26 +54,6 @@ local function is_mystery_stem(stem_id)
         return true
     else
         return false
-    end
-end
-
-local fill_enabled = true
-
---[[
-    The type of Fill we will use
-    - One Fill
-    - One Cap
-    - One Fill then one Cap
-]]
-local fill_type = {
-    [1] = function() num_fills = 1 end,
-    [2] = function() fill_cap = true end,
-    [3] = function() num_fills = 1 fill_cap = true end
-}
-
-local function select_fill_type()
-    if fill_enabled then
-        fill_type[prng:random(#fill_type)]()
     end
 end
 
@@ -339,20 +315,7 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b", "idle_c" })
                     end
 
-                    -- Keep track of what stem will play after the Fill
-                    stem_after_fill = pick_random({ "cobra_a", "cobra_a1", "mystery_a", "mystery_a1" })
-                    -- Pick a random Fill type
-                    select_fill_type()
-
-                    -- Check if we have any Fills to play, otherwise select a random Cap
-                    if num_fills > 0 then
-                        return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    end
-                    if fill_cap then
-                        return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                    end
-
-                    return stem_after_fill
+                    return pick_random({ "cobra_a", "cobra_a1", "mystery_a", "mystery_a1" })
                 end
             },
             {
@@ -368,17 +331,7 @@ module.MINES_CUSTOM_MUSIC = {
                         return pick_random({ "idle_a", "idle_b", "idle_c" })
                     end
 
-                    stem_after_fill = pick_random({ "cobra_a", "cobra_a1", "mystery_a", "mystery_a1" })
-                    select_fill_type()
-
-                    if num_fills > 0 then
-                        return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    end
-                    if fill_cap then
-                        return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                    end
-
-                    return stem_after_fill
+                    return pick_random({ "cobra_a", "cobra_a1", "mystery_a", "mystery_a1" })
                 end
             },
             {
@@ -413,8 +366,6 @@ module.MINES_CUSTOM_MUSIC = {
                             next_stem = pick_random({ "mystery_a", "mystery_a1", "cobra_a1" })
                         end
 
-                        -- Fills/Caps should only play when moving between stem groups
-                        -- If we play from the same stem group, we shouldn't play any Fills/Caps
                         if is_cobra_stem(next_stem) then
                             cobra_count = cobra_count + 1
                             return next_stem
@@ -432,17 +383,7 @@ module.MINES_CUSTOM_MUSIC = {
                         end
                     end
 
-                    stem_after_fill = next_stem
-                    select_fill_type()
-
-                    if num_fills > 0 then
-                        return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    end
-                    if fill_cap then
-                        return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                    end
-
-                    return stem_after_fill
+                    return next_stem
                 end
             },
             {
@@ -494,17 +435,7 @@ module.MINES_CUSTOM_MUSIC = {
                         end
                     end
 
-                    stem_after_fill = next_stem
-                    select_fill_type()
-
-                    if num_fills > 0 then
-                        return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    end
-                    if fill_cap then
-                        return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                    end
-
-                    return stem_after_fill
+                    return next_stem
                 end
             },
             {
@@ -556,17 +487,7 @@ module.MINES_CUSTOM_MUSIC = {
                         end
                     end
 
-                    stem_after_fill = next_stem
-                    select_fill_type()
-
-                    if num_fills > 0 then
-                        return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    end
-                    if fill_cap then
-                        return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                    end
-
-                    return stem_after_fill
+                    return next_stem
                 end
             },
             {
@@ -618,17 +539,7 @@ module.MINES_CUSTOM_MUSIC = {
                         end
                     end
 
-                    stem_after_fill = next_stem
-                    select_fill_type()
-
-                    if num_fills > 0 then
-                        return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4", "fill_a5" })
-                    end
-                    if fill_cap then
-                        return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                    end
-
-                    return stem_after_fill
+                    return next_stem
                 end
             },
             {
@@ -757,269 +668,6 @@ module.MINES_CUSTOM_MUSIC = {
                     end
 
                     return pick_random({ "explore_a", "mattock_a", "cobra_a", "cobra_a1", "mystery_a", "mystery_a1" })
-                end
-            },
-            {
-                id = "fill_a1",
-                sound = create_sound("res/music/BGM_Mines_Fill_A1.ogg"),
-                length = 8000,
-                next_sound_id = function(ctx)
-                    if num_fills > 0 then
-                        num_fills = num_fills - 1
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        num_fills = 0
-                        fill_cap = false
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        num_fills = 0
-                        fill_cap = false
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    if num_fills > 0 then
-                        return pick_random({ "fill_a1", "fill_a2", "fill_a4", "fill_a5" })
-                    end
-                    if fill_cap then
-                        return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                    end
-
-                    return stem_after_fill
-                end
-            },
-            {
-                id = "fill_a2",
-                sound = create_sound("res/music/BGM_Mines_Fill_A2.ogg"),
-                length = 8000,
-                next_sound_id = function(ctx)
-                    if num_fills > 0 then
-                        num_fills = num_fills - 1
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        num_fills = 0
-                        fill_cap = false
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        num_fills = 0
-                        fill_cap = false
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    if num_fills > 0 then
-                        return pick_random({ "fill_a1", "fill_a2", "fill_a4", "fill_a5" })
-                    end
-                    if fill_cap then
-                        return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                    end
-
-                    return stem_after_fill
-                end
-            },
-            {
-                id = "fill_a3",
-                sound = create_sound("res/music/BGM_Mines_Fill_A3.ogg"),
-                length = 8000,
-                next_sound_id = function(ctx)
-                    if num_fills > 0 then
-                        num_fills = num_fills - 1
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        num_fills = 0
-                        fill_cap = false
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        num_fills = 0
-                        fill_cap = false
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    if num_fills > 0 then
-                        return pick_random({ "fill_a1", "fill_a2", "fill_a4", "fill_a5" })
-                    end
-                    if fill_cap then
-                        return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                    end
-
-                    return stem_after_fill
-                end
-            },
-            {
-                id = "fill_a4",
-                sound = create_sound("res/music/BGM_Mines_Fill_A4.ogg"),
-                length = 8000,
-                next_sound_id = function(ctx)
-                    if num_fills > 0 then
-                        num_fills = num_fills - 1
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        num_fills = 0
-                        fill_cap = false
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        num_fills = 0
-                        fill_cap = false
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    if num_fills > 0 then
-                        return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a5" })
-                    end
-                    if fill_cap then
-                        return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                    end
-
-                    return stem_after_fill
-                end
-            },
-            {
-                id = "fill_a5",
-                sound = create_sound("res/music/BGM_Mines_Fill_A5.ogg"),
-                length = 8000,
-                next_sound_id = function(ctx)
-                    if num_fills > 0 then
-                        num_fills = num_fills - 1
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        num_fills = 0
-                        fill_cap = false
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        num_fills = 0
-                        fill_cap = false
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    if num_fills > 0 then
-                        return pick_random({ "fill_a1", "fill_a2", "fill_a3", "fill_a4" })
-                    end
-                    if fill_cap then
-                        return pick_random({ "cap_a1", "cap_a2", "cap_a3", "cap_a4", "cap_a5", "cap_a6" })
-                    end
-
-                    return stem_after_fill
-                end
-            },
-            {
-                id = "cap_a1",
-                sound = create_sound("res/music/BGM_Mines_Cap_A1.ogg"),
-                length = 2000,
-                next_sound_id = function(ctx)
-                    fill_cap = false
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    return stem_after_fill
-                end
-            },
-            {
-                id = "cap_a2",
-                sound = create_sound("res/music/BGM_Mines_Cap_A2.ogg"),
-                length = 2000,
-                next_sound_id = function(ctx)
-                    fill_cap = false
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    return stem_after_fill
-                end
-            },
-            {
-                id = "cap_a3",
-                sound = create_sound("res/music/BGM_Mines_Cap_A3.ogg"),
-                length = 1000,
-                next_sound_id = function(ctx)
-                    fill_cap = false
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    return stem_after_fill
-                end
-            },
-            {
-                id = "cap_a4",
-                sound = create_sound("res/music/BGM_Mines_Cap_A4.ogg"),
-                length = 2000,
-                next_sound_id = function(ctx)
-                    fill_cap = false
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    return stem_after_fill
-                end
-            },
-            {
-                id = "cap_a5",
-                sound = create_sound("res/music/BGM_Mines_Cap_A5.ogg"),
-                length = 2000,
-                next_sound_id = function(ctx)
-                    fill_cap = false
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    return stem_after_fill
-                end
-            },
-            {
-                id = "cap_a6",
-                sound = create_sound("res/music/BGM_Mines_Cap_A6.ogg"),
-                length = 2000,
-                next_sound_id = function(ctx)
-                    fill_cap = false
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_LIFE) == 1 then
-                        return pick_random({ "lowhp_1", "lowhp_2" })
-                    end
-
-                    if ctx.bgm_master:get_parameter(VANILLA_SOUND_PARAM.PLAYER_ACTIVITY) == 0 then
-                        return pick_random({ "idle_a", "idle_b", "idle_c" })
-                    end
-
-                    return stem_after_fill
                 end
             },
             {
