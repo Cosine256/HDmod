@@ -68,21 +68,28 @@ do
 end
 
 
-local WORMTONGUE_UID = nil
-local WORMTONGUE_BG_UID = nil
-local WORM_UID = nil
+local wormtongue_uid = nil
+local wormtongue_bg_uid = nil
+local worm_uid = nil
 local TONGUE_ACCEPTTIME = 200
 local tongue_tick = TONGUE_ACCEPTTIME
-local TONGUE_SEQUENCE = { ["READY"] = 1, ["RUMBLE"] = 2, ["EMERGE"] = 3, ["SWALLOW"] = 4 , ["GONE"] = 5 }
-local TONGUE_STATE = nil
+local TONGUE_SEQUENCE = {
+	READY = 1,
+	RUMBLE = 2,
+	EMERGE = 3,
+	RECEDE = 4,
+	FINISH_RUMBLE = 5,
+	GONE = 6
+}
+local tongue_state = nil
 local TONGUE_STATECOMPLETE = false
-local WORMTONGUE_RUMBLE_SOUND = nil -- Refers to a looped sound that we need to stop either on a new screen or shortly after the worm leaves
+local wormtongue_rumble_sound = nil -- Refers to a looped sound that we need to stop either on a new screen or shortly after the worm leaves
 
 function module.init()
-	WORMTONGUE_UID = nil
-	WORMTONGUE_BG_UID = nil
-	WORM_UID = nil
-	TONGUE_STATE = nil
+	wormtongue_uid = nil
+	wormtongue_bg_uid = nil
+	worm_uid = nil
+	tongue_state = nil
 	TONGUE_STATECOMPLETE = false
 	tongue_tick = TONGUE_ACCEPTTIME
 end
@@ -93,13 +100,13 @@ local function tongue_idle()
 			state.theme == THEME.JUNGLE
 			or state.theme == THEME.ICE_CAVES
 		)
-		and WORMTONGUE_UID ~= nil
+		and wormtongue_uid ~= nil
 		and (
-			TONGUE_STATE == TONGUE_SEQUENCE.READY
-			or TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE
+			tongue_state == TONGUE_SEQUENCE.READY
+			or tongue_state == TONGUE_SEQUENCE.RUMBLE
 		)
 	) then
-		local x, y, l = get_position(WORMTONGUE_UID)
+		local x, y, l = get_position(wormtongue_uid)
 		for _ = 1, 3, 1 do
 			if prng:random_chance(2, PRNG_CLASS.PARTICLES) then spawn_entity(ENT_TYPE.FX_WATER_DROP, x+((prng:random_float(PRNG_CLASS.PARTICLES)*1.5)-1), y+((prng:random_float(PRNG_CLASS.PARTICLES)*1.5)-1), l, 0, 0) end
 		end
@@ -108,7 +115,7 @@ end
 
 
 local function tongue_exit()
-	local x, y, l = get_position(WORMTONGUE_UID)
+	local x, y, l = get_position(wormtongue_uid)
 	local checkradius = 1.5
 	local damsels = get_entities_at({ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_HAMSTER}, 0, x, y, l, checkradius)
 	local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
@@ -193,7 +200,7 @@ local function tongue_exit()
 	end
 	
 	-- hide worm tongue
-	local tongue = get_entity(WORMTONGUE_UID)
+	local tongue = get_entity(wormtongue_uid)
 	if options.hd_debug_scripted_enemies_show == false then
 		tongue.flags = set_flag(tongue.flags, ENT_FLAG.INVISIBLE)
 	end
@@ -201,13 +208,13 @@ local function tongue_exit()
 end
 
 local function onframe_tonguetimeout()
-	if WORMTONGUE_UID ~= nil and TONGUE_STATE ~= TONGUE_SEQUENCE.GONE then
-		local tongue = get_entity(WORMTONGUE_UID)
-		local x, y, l = get_position(WORMTONGUE_UID)
+	if wormtongue_uid ~= nil and tongue_state ~= TONGUE_SEQUENCE.GONE then
+		local tongue = get_entity(wormtongue_uid)
+		local x, y, l = get_position(wormtongue_uid)
 		local checkradius = 1.5
 		
 		if tongue ~= nil and TONGUE_STATECOMPLETE == false then
-			if TONGUE_STATE == TONGUE_SEQUENCE.READY then
+			if tongue_state == TONGUE_SEQUENCE.READY then
 				local damsels = get_entities_at({ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_HAMSTER}, 0, x, y, l, checkradius)
 				if #damsels > 0 then
 					local damsel = get_entity(damsels[1])
@@ -216,7 +223,7 @@ local function onframe_tonguetimeout()
 						(stuck_in_web == true)
 					) then
 						if tongue_tick <= 0 then
-							TONGUE_STATE = TONGUE_SEQUENCE.RUMBLE
+							tongue_state = TONGUE_SEQUENCE.RUMBLE
 						else
 							tongue_tick = tongue_tick - 1
 						end
@@ -224,19 +231,19 @@ local function onframe_tonguetimeout()
 						tongue_tick = TONGUE_ACCEPTTIME
 					end
 				end
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE then
+			elseif tongue_state == TONGUE_SEQUENCE.RUMBLE then
 				-- Start the rumble sound and shake screen
-				if WORMTONGUE_RUMBLE_SOUND == nil then
+				if wormtongue_rumble_sound == nil then
 					commonlib.shake_camera(180, 180, 3, 3, 3, false)
-					WORMTONGUE_RUMBLE_SOUND = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, WORMTONGUE_UID, 1, false)
+					wormtongue_rumble_sound = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, wormtongue_uid, 1, false)
 				end
 				set_timeout(function()
-					if WORMTONGUE_BG_UID ~= nil and get_entity(WORMTONGUE_BG_UID) ~= nil then
-						local worm_background = get_entity(WORMTONGUE_BG_UID)
+					if wormtongue_bg_uid ~= nil and get_entity(wormtongue_bg_uid) ~= nil then
+						local worm_background = get_entity(wormtongue_bg_uid)
 						worm_background:set_texture(state.theme == THEME.JUNGLE and hole_jungle_texture_id or hole_ice_texture_id)
 						worm_background.width, worm_background.height = 4, 4
 						worm_background.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_HOLE][1]
-					else message("WORMTONGUE_BG_UID is nil :(") end
+					else message("wormtongue_bg_uid is nil :(") end
 					
 					for _ = 1, 45, 1 do
 						local rubble = get_entity(spawn_entity(ENT_TYPE.ITEM_RUBBLE,
@@ -269,17 +276,17 @@ local function onframe_tonguetimeout()
 
 					local worm = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0))
 					worm:set_texture(worm_texture_id)
-					WORM_UID = worm.uid
+					worm_uid = worm.uid
 
-					commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, WORM_UID, 1, false)
+					commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, worm_uid, 1, false)
 					commonlib.shake_camera(20, 20, 12, 12, 12, false)
 
 					-- animate worm
 					worm.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][4]
 					worm.width, worm.height = 2, 2
 					set_interval(function()
-						if WORM_UID ~= nil then
-							local worm = get_entity(WORM_UID)
+						if worm_uid ~= nil then
+							local worm = get_entity(worm_uid)
 							if worm ~= nil then
 								if worm.width >= 4 then
 									if worm.animation_frame == ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][4] then
@@ -298,18 +305,18 @@ local function onframe_tonguetimeout()
 						end
 					end, 1)
 
-					TONGUE_STATE = TONGUE_SEQUENCE.EMERGE
+					tongue_state = TONGUE_SEQUENCE.EMERGE
 					TONGUE_STATECOMPLETE = false
 				end, 65)
 				TONGUE_STATECOMPLETE = true
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.EMERGE then
+			elseif tongue_state == TONGUE_SEQUENCE.EMERGE then
 				set_timeout(function() -- level exit should activate here
 					tongue_exit()
 					
 					-- animate worm
 					set_interval(function()
-						if WORM_UID ~= nil then
-							local worm = get_entity(WORM_UID)
+						if worm_uid ~= nil then
+							local worm = get_entity(worm_uid)
 							if worm ~= nil then
 								if worm.animation_frame == ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][1] then
 									worm.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.WORM][2]
@@ -321,8 +328,8 @@ local function onframe_tonguetimeout()
 									if worm.width > 2 then
 										worm.width, worm.height = worm.width - 0.1, worm.height - 0.1
 									else
-										kill_entity(WORM_UID)
-										WORM_UID = nil
+										kill_entity(worm_uid)
+										worm_uid = nil
 										return false
 									end
 								end
@@ -331,11 +338,11 @@ local function onframe_tonguetimeout()
 					end, 1)
 					
 
-					TONGUE_STATE = TONGUE_SEQUENCE.SWALLOW
+					tongue_state = TONGUE_SEQUENCE.RECEDE
 					TONGUE_STATECOMPLETE = false
 				end, 40)
 				TONGUE_STATECOMPLETE = true
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.SWALLOW then
+			elseif tongue_state == TONGUE_SEQUENCE.RECEDE then
 				-- Quick fix: the player can become visible again during this sequence if they have iFrames during it, so let's keep setting them to invisible to avoid this
 				local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, checkradius)
 				if #ensnaredplayers > 0 then
@@ -357,20 +364,20 @@ local function onframe_tonguetimeout()
 				end
 				set_timeout(function()
 					
-					local wormtongue = get_entity(WORMTONGUE_UID)
+					local wormtongue = get_entity(wormtongue_uid)
 					wormtongue.flags = set_flag(wormtongue.flags, ENT_FLAG.DEAD)
 					wormtongue:destroy()
-					-- kill_entity(WORMTONGUE_UID)
-					WORMTONGUE_UID = nil
+					-- kill_entity(wormtongue_uid)
+					wormtongue_uid = nil
 
-					TONGUE_STATE = TONGUE_SEQUENCE.GONE
+					tongue_state = TONGUE_SEQUENCE.GONE
 				end, 40)
 				set_timeout(function()
 					-- Stop the rumble grumble
-					if WORMTONGUE_RUMBLE_SOUND ~= nil then
-						WORMTONGUE_RUMBLE_SOUND:stop()
+					if wormtongue_rumble_sound ~= nil then
+						wormtongue_rumble_sound:stop()
 					end			
-					WORMTONGUE_RUMBLE_SOUND = nil
+					wormtongue_rumble_sound = nil
 				end, 50)
 
 				TONGUE_STATECOMPLETE = true
@@ -382,10 +389,10 @@ local function onframe_tonguetimeout()
 end
 -- If we don't stop the rumble sound in the timeout, we need to stop it here
 set_callback(function()
-	if WORMTONGUE_RUMBLE_SOUND ~= nil then
-		WORMTONGUE_RUMBLE_SOUND:stop()
+	if wormtongue_rumble_sound ~= nil then
+		wormtongue_rumble_sound:stop()
 	end
-	WORMTONGUE_RUMBLE_SOUND = nil
+	wormtongue_rumble_sound = nil
 end, ON.SCREEN)
 -- Fix having the wrong tileset on transition
 set_callback(function()
@@ -432,7 +439,7 @@ function module.create_wormtongue(x, y, l)
 	if ball_uid == -1 then
 		message("No STICKYTRAP_BALL found, no tongue generated.")
 		kill_entity(stickytrap_uid)
-		TONGUE_STATE = TONGUE_SEQUENCE.GONE
+		tongue_state = TONGUE_SEQUENCE.GONE
 		return
 	end
 	local ballstem_uid = get_entities_by(ENT_TYPE.ITEM_STICKYTRAP_LASTPIECE, MASK.ITEM, LAYER.FRONT)[1]
@@ -494,7 +501,7 @@ function module.create_wormtongue(x, y, l)
 	ball.height = 1.35
 	ball.hitboxx = 0.3375
 	ball.hitboxy = 0.3375
-	WORMTONGUE_UID = ball.uid -- HAHA tongue and balls
+	wormtongue_uid = ball.uid -- HAHA tongue and balls
 
 	local worm_background = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0))
 	worm_background:set_texture(state.theme == THEME.JUNGLE and wormtongue_jungle_texture_id or wormtongue_ice_texture_id)
@@ -502,12 +509,12 @@ function module.create_wormtongue(x, y, l)
 	worm_background.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_TONGUE][1]
 	-- Change type to BG_DOOR to prevent it getting removed by beehive, not spawn it as BG_DOOR directly due do draw_depth problems (I've tried changing it later)
 	worm_background.type = get_type(ENT_TYPE.BG_DOOR)
-	WORMTONGUE_BG_UID = worm_background.uid
+	wormtongue_bg_uid = worm_background.uid
 
 	local balltriggers = get_entities_by_type(ENT_TYPE.LOGICAL_SPIKEBALL_TRIGGER)
 	for _, balltrigger in ipairs(balltriggers) do kill_entity(balltrigger) end
 
-	TONGUE_STATE = TONGUE_SEQUENCE.READY
+	tongue_state = TONGUE_SEQUENCE.READY
 end
 
 
@@ -520,18 +527,18 @@ set_callback(function(draw_ctx)
 			local text_y = -0.45
 			local white = rgba(255, 255, 255, 255)
 			
-			-- TONGUE_SEQUENCE = { ["READY"] = 1, ["RUMBLE"] = 2, ["EMERGE"] = 3, ["SWALLOW"] = 4 , ["GONE"] = 5 }
 			local tongue_debugtext_sequence = "UNKNOWN"
-			if TONGUE_STATE == TONGUE_SEQUENCE.READY then tongue_debugtext_sequence = "READY"
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.RUMBLE then tongue_debugtext_sequence = "RUMBLE"
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.EMERGE then tongue_debugtext_sequence = "EMERGE"
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.SWALLOW then tongue_debugtext_sequence = "SWALLOW"
-			elseif TONGUE_STATE == TONGUE_SEQUENCE.GONE then tongue_debugtext_sequence = "GONE" end
+			if tongue_state == TONGUE_SEQUENCE.READY then tongue_debugtext_sequence = "READY"
+			elseif tongue_state == TONGUE_SEQUENCE.RUMBLE then tongue_debugtext_sequence = "RUMBLE"
+			elseif tongue_state == TONGUE_SEQUENCE.EMERGE then tongue_debugtext_sequence = "EMERGE"
+			elseif tongue_state == TONGUE_SEQUENCE.RECEDE then tongue_debugtext_sequence = "RECEDE"
+			elseif tongue_state == TONGUE_SEQUENCE.FINISH_RUMBLE then tongue_debugtext_sequence = "FINISH_RUMBLE"
+			elseif tongue_state == TONGUE_SEQUENCE.GONE then tongue_debugtext_sequence = "GONE" end
 			draw_ctx:draw_text(text_x, text_y, 0, "Worm Tongue State: " .. tongue_debugtext_sequence, white)
 			text_y = text_y-0.1
 			
-			local tongue_debugtext_uid = tostring(WORMTONGUE_UID)
-			if WORMTONGUE_UID == nil then tongue_debugtext_uid = "nil" end
+			local tongue_debugtext_uid = tostring(wormtongue_uid)
+			if wormtongue_uid == nil then tongue_debugtext_uid = "nil" end
 			draw_ctx:draw_text(text_x, text_y, 0, "Worm Tongue UID: " .. tongue_debugtext_uid, white)
 			text_y = text_y-0.1
 			
