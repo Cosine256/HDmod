@@ -96,6 +96,10 @@ local function area_specific()
         bg.height = 7
         bg.hitboxx = 2.8
         bg.hitboxy = 3.5
+        for _, uid in ipairs(
+            get_entities_overlapping_hitbox(ENT_TYPE.BG_LEVEL_DECO, MASK.BG, AABB:new(22.5-2.8, 103+3.5, 22.5+2.8, 103-3.5), LAYER.FRONT)) do
+            get_entity(uid):destroy()
+        end
     end
 
     if feelingslib.feeling_check(feelingslib.FEELING_ID.YAMA) then
