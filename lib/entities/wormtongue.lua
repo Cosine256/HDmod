@@ -473,25 +473,31 @@ set_callback(function()
 end, ON.POST_LOAD_SCREEN)
 
 function module.create_wormtongue(x, y, l)
-	-- currently using level generation to place stickytraps
-	local stickytrap_uid = spawn_entity(ENT_TYPE.FLOOR_STICKYTRAP_CEILING, x, y, l, 0, 0)
-	local sticky = get_entity(stickytrap_uid)
-	sticky.flags = set_flag(sticky.flags, ENT_FLAG.INVISIBLE)
-	sticky.flags = clr_flag(sticky.flags, ENT_FLAG.SOLID)
-	move_entity(stickytrap_uid, x, y+1.15, 0, 0) -- avoids breaking surfaces by spawning trap on top of them
+	local piece_uid = spawn_entity(ENT_TYPE.ITEM_STICKYTRAP_PIECE, x, y, l, 0, 0)
+	local piece = get_entity(piece_uid)
+    piece.flags = set_flag(piece.flags, ENT_FLAG.INVISIBLE)
+	piece.flags = clr_flag(piece.flags, ENT_FLAG.INTERACT_WITH_WEBS)
+	piece.flags = clr_flag(piece.flags, ENT_FLAG.CLIMBABLE)
+    piece.flags = set_flag(piece.flags, ENT_FLAG.NO_GRAVITY)
 
-	local ball_uid = get_entities_by_type(ENT_TYPE.ITEM_STICKYTRAP_BALL)[1] -- HAH ball
-	if ball_uid == -1 then
-		message("No STICKYTRAP_BALL found, no tongue generated.")
-		kill_entity(stickytrap_uid)
-		tongue_state = TONGUE_SEQUENCE.GONE
-		return
-	end
-	local ballstem_uid = get_entities_by(ENT_TYPE.ITEM_STICKYTRAP_LASTPIECE, MASK.ITEM, LAYER.FRONT)[1]
-	local ballstem = get_entity(ballstem_uid)
-	ballstem.flags = set_flag(ballstem.flags, ENT_FLAG.INVISIBLE)
-	ballstem.flags = clr_flag(ballstem.flags, ENT_FLAG.CLIMBABLE)
-	ballstem.user_data = {
+	local lastpiece_uid = spawn_over(ENT_TYPE.ITEM_STICKYTRAP_LASTPIECE, piece.uid, 0, 0)
+	local lastpiece = get_entity(lastpiece_uid)
+    lastpiece.flags = set_flag(lastpiece.flags, ENT_FLAG.INVISIBLE)
+	lastpiece.flags = clr_flag(lastpiece.flags, ENT_FLAG.INTERACT_WITH_WEBS)
+	lastpiece.flags = clr_flag(lastpiece.flags, ENT_FLAG.CLIMBABLE)
+    lastpiece.flags = set_flag(lastpiece.flags, ENT_FLAG.NO_GRAVITY)
+
+	-- sticky part creation
+	wormtongue_uid = spawn_over(ENT_TYPE.ITEM_STICKYTRAP_BALL, lastpiece.uid, 0, 0)
+	local ball = get_entity(wormtongue_uid)
+	ball.width = 1.35
+	ball.height = 1.35
+	ball.hitboxx = 0.3375
+	ball.hitboxy = 0.3375
+
+	lastpiece.flags = set_flag(lastpiece.flags, ENT_FLAG.INVISIBLE)
+	lastpiece.flags = clr_flag(lastpiece.flags, ENT_FLAG.CLIMBABLE)
+	lastpiece.user_data = {
 		orig_x = 0; -- Original x position
 		orig_y = -0.15; -- Original y position
 		xelas = 0; -- A multiplier for the jiggle effect
@@ -499,11 +505,13 @@ function module.create_wormtongue(x, y, l)
 		counter = 0; -- Counts up, used for cos and sin functions
 	}
 	-- Cool elastic effect when an entity sticks onto the tongue
-	ballstem:set_post_update_state_machine(function(self --[[@as Movable]])
+	lastpiece:set_post_update_state_machine(function(self --[[@as Movable]])
 		--check if an entity is in the tongue
 		local d = self.user_data
-		for _, v in ipairs(get_entities_overlapping_hitbox(0, MASK.PLAYER | MASK.MONSTER | MASK.ITEM, get_hitbox(ball_uid), self.layer)) do
-			if v ~= ball_uid then
+		for _, v in ipairs(get_entities_overlapping_hitbox(0, MASK.PLAYER | MASK.MONSTER | MASK.ITEM, get_hitbox(wormtongue_uid), self.layer)) do
+			if v ~= wormtongue_uid
+			and v ~= piece.uid
+			and v ~= lastpiece.uid then
 				local mons = get_entity(v) --[[@as Movable]]
 				d.xelas = d.xelas + math.abs(mons.velocityx)*1.1
 				d.yelas = d.yelas + math.abs(mons.velocityy)
@@ -535,26 +543,18 @@ function module.create_wormtongue(x, y, l)
 		local target_y = d.orig_y+math.sin(d.counter)*d.yelas
 		local diff_x, diff_y = target_x - self.x, target_y - self.y
 		self.velocityx, self.velocityy = diff_x, diff_y
-		local ball = get_entity(ball_uid)
+		local ball = get_entity(wormtongue_uid)
 		if ball then
 			ball.velocityx, ball.velocityy = diff_x, diff_y --By applying velocity to the ball, it applies velocity to the entities on it, though it doesn't move, so move the last piece (overlay)
 		end
 	end)
-	-- sticky part creation
-	local ball = get_entity(ball_uid)
-	ball.width = 1.35
-	ball.height = 1.35
-	ball.hitboxx = 0.3375
-	ball.hitboxy = 0.3375
-	wormtongue_uid = ball.uid -- HAHA tongue and balls
-
-	local worm_background = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0))
+	bg_uid = spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0)
+	local worm_background = get_entity(bg_uid)
 	worm_background:set_texture(state.theme == THEME.JUNGLE and wormtongue_jungle_texture_id or wormtongue_ice_texture_id)
 	worm_background.width, worm_background.height = 2, 2
 	worm_background.animation_frame = ANIMATION_FRAMES_RES[ANIMATION_FRAMES_ENUM.DECO_TONGUE][1]
 	-- Change type to BG_DOOR to prevent it getting removed by beehive, not spawn it as BG_DOOR directly due do draw_depth problems (I've tried changing it later)
 	worm_background.type = get_type(ENT_TYPE.BG_DOOR)
-	bg_uid = worm_background.uid
 
 	local balltriggers = get_entities_by_type(ENT_TYPE.LOGICAL_SPIKEBALL_TRIGGER)
 	for _, balltrigger in ipairs(balltriggers) do kill_entity(balltrigger) end
