@@ -79,6 +79,7 @@ local bg_uid = nil
 local worm_uid = nil
 local TONGUE_ACCEPTTIME = 200
 local IDLE_TICK_TIMEOUT = 15
+local RUMBLE_TICK_TIMEOUT = 30
 local tongue_tick = TONGUE_ACCEPTTIME
 local idle_tick = IDLE_TICK_TIMEOUT
 local CHECK_RADIUS = 1.5
@@ -192,7 +193,7 @@ local function tongue_exit()
 		end, 146)
 	end
 	
-	-- -- hide worm tongue
+	--hide worm tongue
 	-- local tongue = get_entity(wormtongue_uid)
 	-- if options.hd_debug_scripted_enemies_show == false then
 	-- 	tongue.flags = set_flag(tongue.flags, ENT_FLAG.INVISIBLE)
@@ -366,13 +367,17 @@ local function onframe_tonguetimeout()
 				kill_entity(worm_uid)
 				worm_uid = -1
 				tongue_state = TONGUE_SEQUENCE.FINISH_RUMBLE
-				tongue_tick = 10
+				tongue_tick = RUMBLE_TICK_TIMEOUT
 			end
 		end
 	end
 
 	if tongue_state == TONGUE_SEQUENCE.FINISH_RUMBLE then
 		if tongue_tick > 0 then
+			-- # TODO: fix rumble sound fade
+			-- local volume = 1*tongue_tick/RUMBLE_TICK_TIMEOUT
+			-- message(string.format("rumble volume: %s", volume))
+			-- rumble_sound:set_parameter(VANILLA_SOUND_PARAM.DIST_PLAYER, volume)
 			tongue_tick = tongue_tick - 1
 		else
 			-- Stop the rumble grumble
@@ -387,7 +392,8 @@ local function onframe_tonguetimeout()
 
 	--create particle effects on wormtongue during the states it exists in
 	if tongue_state == TONGUE_SEQUENCE.READY
-	or tongue_state == TONGUE_SEQUENCE.RUMBLE then
+	or tongue_state == TONGUE_SEQUENCE.RUMBLE
+	or tongue_state == TONGUE_SEQUENCE.EMERGE then
 		if wormtongue_uid == -1 then
 			message("wormtongue_uid is not expected to be -1 at this point!")
 			return
