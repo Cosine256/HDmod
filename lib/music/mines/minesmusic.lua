@@ -998,7 +998,7 @@ module.MINES_CUSTOM_MUSIC = {
             {
                 id = "cap_a6",
                 sound = create_sound("res/music/BGM_Mines_Cap_A6.ogg"),
-                length = 2000,
+                length = 1000,
                 next_sound_id = function(ctx)
                     fill_cap = false
 
