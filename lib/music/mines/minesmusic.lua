@@ -368,7 +368,6 @@ module.MINES_CUSTOM_MUSIC = {
 
                         if is_cobra_stem(next_stem) then
                             cobra_count = cobra_count + 1
-                            return next_stem
                         end
                     else
                         if module.music_debug_print then
@@ -420,7 +419,6 @@ module.MINES_CUSTOM_MUSIC = {
 
                         if is_cobra_stem(next_stem) then
                             cobra_count = cobra_count + 1
-                            return next_stem
                         end
                     else
                         if module.music_debug_print then
@@ -472,7 +470,6 @@ module.MINES_CUSTOM_MUSIC = {
 
                         if is_mystery_stem(next_stem) then
                             mystery_count = mystery_count + 1
-                            return next_stem
                         end
                     else
                         if module.music_debug_print then
@@ -524,7 +521,6 @@ module.MINES_CUSTOM_MUSIC = {
 
                         if is_mystery_stem(next_stem) then
                             mystery_count = mystery_count + 1
-                            return next_stem
                         end
                     else
                         if module.music_debug_print then
