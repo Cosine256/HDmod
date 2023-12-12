@@ -625,14 +625,23 @@ module.HD_TILENAME = {
 	},
 	["I"] = {
 		phases = {
+			[3] = {
+				alternate = {
+					[THEME.DWELLING] = {
+						function(x, y, l)
+							spawn_entity(ENT_TYPE.BG_BOULDER_STATUE, x+0.5, y+2.5, l, 0, 0)
+							for _, uid in ipairs(get_entities_overlapping_hitbox(ENT_TYPE.BG_LEVEL_DECO, MASK.BG, AABB:new(x-1.0, y+5.0, x+2.0, y), LAYER.FRONT)) do
+								get_entity(uid):destroy()
+							end
+						end
+					}
+				}
+			},
 			[2] = {
 				default = {
 					function(x, y, l)
 						-- Idol trap variants
-						if state.theme == THEME.DWELLING then
-							spawn_entity(ENT_TYPE.BG_BOULDER_STATUE, x+0.5, y+2.5, l, 0, 0)
-						end
-						
+
 						-- need subchunkid of what room we're in
 						local roomx, roomy = locatelib.locate_levelrooms_position_from_game_position(x, y)
 						local _subchunk_id = roomgenlib.global_levelassembly.modification.levelrooms[roomy][roomx]
