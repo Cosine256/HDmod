@@ -213,7 +213,7 @@ local function onframe_tonguetimeout()
 	-- Wormtongue existence states
 	if tongue_state == TONGUE_SEQUENCE.READY then
 		if wormtongue_uid == -1 then
-			message("wormtongue_uid is not expected to be -1 at this point!")
+			message(string.format("wormtongue_uid is not expected to be -1 during state %s!", tongue_state))
 			return
 		end
 		local x, y, l = get_position(wormtongue_uid)
@@ -249,7 +249,7 @@ local function onframe_tonguetimeout()
 		end
 	elseif tongue_state == TONGUE_SEQUENCE.RUMBLE then
 		if wormtongue_uid == -1 then
-			message("wormtongue_uid is not expected to be -1 at this point!")
+			message(string.format("wormtongue_uid is not expected to be -1 during state %s!", tongue_state))
 			return
 		end
 		local x, y, l = get_position(wormtongue_uid)
@@ -392,10 +392,9 @@ local function onframe_tonguetimeout()
 
 	--create particle effects on wormtongue during the states it exists in
 	if tongue_state == TONGUE_SEQUENCE.READY
-	or tongue_state == TONGUE_SEQUENCE.RUMBLE
-	or tongue_state == TONGUE_SEQUENCE.EMERGE then
+	or tongue_state == TONGUE_SEQUENCE.RUMBLE then
 		if wormtongue_uid == -1 then
-			message("wormtongue_uid is not expected to be -1 at this point!")
+			message(string.format("wormtongue_uid is not expected to be -1 during state %s and particles!", tongue_state))
 			return
 		end
 		local x, y, l = get_position(wormtongue_uid)
@@ -414,7 +413,7 @@ local function onframe_tonguetimeout()
 	if tongue_state == TONGUE_SEQUENCE.EMERGE
 	or tongue_state == TONGUE_SEQUENCE.RECEDE then
 		if worm_uid == -1 then
-			message("worm_uid not expected to be -1 at this point!")
+			message(string.format("worm_uid is not expected to be -1 during state %s animation!", tongue_state))
 			return
 		end
 		local worm = get_entity(worm_uid)
@@ -433,7 +432,7 @@ end
 set_callback(function()
     if state.screen == SCREEN.TRANSITION then
         if state.theme_next == THEME.EGGPLANT_WORLD then
-            for _, v in ipairs(get_entities_by({ENT_TYPE.FLOOR_TUNNEL_NEXT, ENT_TYPE.FLOOR_TUNNEL_CURRENT}, MASK.ANY, LAYER.BOTH)) do
+            for _, v in ipairs(get_entities_by({ENT_TYPE.FLOOR_TUNNEL_NEXT, ENT_TYPE.FLOOR_TUNNEL_CURRENT, ENT_TYPE.FLOORSTYLED_STONE}, MASK.ANY, LAYER.BOTH)) do
                 local fx, fy, fl = get_position(v)
                 local old_floor = get_entity(v)
                 old_floor:remove()
@@ -451,7 +450,23 @@ set_callback(function()
 				local ent = get_entity(v)
 				ent:set_texture(TEXTURE.DATA_TEXTURES_BG_EGGPLANT_0)
 			end
-			for _, v in ipairs(get_entities_by({ENT_TYPE.MIDBG}, MASK.ANY, LAYER.BOTH)) do
+			for _, v in ipairs(get_entities_by({ENT_TYPE.MIDBG, ENT_TYPE.DECORATION_BG_TRANSITIONCOVER}, MASK.ANY, LAYER.BOTH)) do
+				local ent = get_entity(v)
+				ent:destroy()
+			end
+        end
+        if state.theme == THEME.EGGPLANT_WORLD then
+            for _, v in ipairs(get_entities_by({ENT_TYPE.FLOOR_TUNNEL_CURRENT, ENT_TYPE.FLOORSTYLED_PAGODA}, MASK.ANY, LAYER.BOTH)) do
+                local fx, fy, fl = get_position(v)
+                local old_floor = get_entity(v)
+                old_floor:remove()
+                local new_floor = get_entity(spawn_on_floor(ENT_TYPE.FLOORSTYLED_GUTS, fx, fy, fl))
+				new_floor.animation_frame = 31
+				set_global_timeout(function()
+					new_floor:decorate_internal()
+				end, 1)
+            end
+			for _, v in ipairs(get_entities_by({ENT_TYPE.MIDBG, ENT_TYPE.MIDBG_STYLEDDECORATION, ENT_TYPE.DECORATION_PAGODA_POLE, ENT_TYPE.BG_LEVEL_DECO}, MASK.ANY, LAYER.BOTH)) do
 				local ent = get_entity(v)
 				ent:destroy()
 			end
