@@ -1,4 +1,5 @@
 local module = {}
+local animationlib = require('lib.entities.animation')
 
 optionslib.register_option_bool("hd_debug_worm_tongue_info", "Worm tongue - Show info", nil, false, true)
 
@@ -90,19 +91,20 @@ local TONGUE_SEQUENCE = {
 	GONE = 6
 }
 local tongue_state = nil
-local animation_state
-local animation_timer
+local data = nil
 local rumble_sound = nil -- Refers to a looped sound that we need to stop either on a new screen or shortly after the worm leaves
 
 function module.init()
+	data = {
+		animation_state = ANIMATIONS.EMERGE_OR_RECEDING,
+		animation_timer = 0
+	}
 	wormtongue_uid = -1
 	bg_uid = -1
 	worm_uid = -1
 	tongue_state = nil
 	tongue_tick = TONGUE_ACCEPTTIME
 	idle_tick = IDLE_TICK_TIMEOUT
-	animation_state = nil
-	animation_timer = 0
 end
 
 local function tongue_exit()
@@ -214,29 +216,29 @@ local function onframe_tonguetimeout()
 			return
 		end
 		local x, y, l = get_position(wormtongue_uid)
-		message(string.format("%s: %s, %s", wormtongue_uid, x, y))
+		-- message(string.format("%s: %s, %s", wormtongue_uid, x, y))
 		local damsels = get_entities_at({ENT_TYPE.MONS_PET_DOG, ENT_TYPE.MONS_PET_CAT, ENT_TYPE.MONS_PET_HAMSTER}, 0, x, y, l, CHECK_RADIUS)
 		if #damsels > 0 then
-			message(string.format("damsel: %s", damsels[1]))
+			-- message(string.format("damsel: %s", damsels[1]))
 			local damsel = get_entity(damsels[1])
 			if damsel ~= nil and test_flag(damsel.more_flags, 8) then
-				message(string.format("damsel is_caught: %s", test_flag(damsel.more_flags, 8)))
+				-- message(string.format("damsel is_caught: %s", test_flag(damsel.more_flags, 8)))
 				if tongue_tick <= 0 then
 					tongue_state = TONGUE_SEQUENCE.RUMBLE
 					tongue_tick = 65
-					if rumble_sound == nil then
-						commonlib.shake_camera(180, 180, 3, 3, 3, false)
-						local rumble_sound = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, wormtongue_uid, 1, false)
-						-- If we don't stop the rumble sound in the timeout, we need to stop it here
-						set_callback(function()
-							if rumble_sound then
-								rumble_sound:stop()
-								rumble_sound = nil
-							end
-							clear_callback()
-						end, ON.SCREEN)
-						rumble_sound = rumble_sound
-					end
+					
+					commonlib.shake_camera(180, 180, 3, 3, 3, false)
+					local rumble_sound_local = commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_WARN_LOOP, wormtongue_uid, 1, false)
+					-- If we don't stop the rumble sound in the timeout, we need to stop it here
+					set_callback(function()
+						if rumble_sound_local then
+							rumble_sound_local:stop()
+							rumble_sound_local = nil
+						end
+						clear_callback()
+					end, ON.SCREEN)
+
+					rumble_sound = rumble_sound_local
 				else
 					tongue_tick = tongue_tick - 1
 				end
@@ -290,9 +292,7 @@ local function onframe_tonguetimeout()
 			local worm = get_entity(spawn_entity(ENT_TYPE.BG_LEVEL_DECO, x, y, l, 0, 0))
 			worm:set_texture(worm_texture_id)
 			worm.width, worm.height = 2, 2
-			animation_state = ANIMATIONS.EMERGE_OR_RECEDING
-			animation_timer = ANIMATIONS.EMERGE_OR_RECEDING.frames * ANIMATIONS.EMERGE_OR_RECEDING.frame_time
-			-- # TODO: If animations break, try setting the animation_timer like this every time you change animation_state, or removing this.
+			animationlib.set_animation(data, ANIMATIONS.EMERGE_OR_RECEDING)
 			worm_uid = worm.uid
 
 			commonlib.play_vanilla_sound(VANILLA_SOUND.TRAPS_BOULDER_EMERGE, worm_uid, 1, false)
@@ -307,47 +307,43 @@ local function onframe_tonguetimeout()
 			return
 		end
 		if worm.width >= 4 then
-			if animation_state == ANIMATIONS.EMERGE_OR_RECEDING then
-				message("PRE SET OPENING")
-				animation_state = ANIMATIONS.OPENING
-				animation_timer = ANIMATIONS.OPENING.frames * ANIMATIONS.OPENING.frame_time
-			elseif animation_state == ANIMATIONS.OPENING
-			and animation_timer == 0 then
-				message("PRE SET OPEN")
-				animation_state = ANIMATIONS.OPEN
-				animation_timer = ANIMATIONS.OPEN.frames * ANIMATIONS.OPEN.frame_time
-			elseif animation_state == ANIMATIONS.OPEN
-			and animation_timer == 0 then
-				tongue_exit()
-
-				local x, y, l = get_position(wormtongue_uid)
-
-				kill_wormtongue()
-
-				-- # TODO: Improve this iFrames quick fix
-				-- Quick fix: the player can become visible again during this sequence if they have iFrames during it, so let's keep setting them to invisible to avoid this
-				local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, CHECK_RADIUS)
-				if #ensnaredplayers > 0 then
-					for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
-						local ensnaredplayer = get_entity(ensnaredplayer_uid)
-						if options.hd_debug_scripted_enemies_show == false then
-							ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.INVISIBLE)-- make each player invisible
-							-- Also make the players back item and held items invisible
-							if get_entity(ensnaredplayer.holding_uid) ~= nil then
-								local item = get_entity(ensnaredplayer.holding_uid)
-								item.flags = set_flag(item.flags, ENT_FLAG.INVISIBLE)
-							end
-							if get_entity(ensnaredplayer:worn_backitem()) ~= nil then
-								local item = get_entity(ensnaredplayer:worn_backitem())
-								item:remove()
+			if data.animation_state == ANIMATIONS.EMERGE_OR_RECEDING then
+				animationlib.set_animation(data, ANIMATIONS.OPENING)
+			elseif data.animation_state == ANIMATIONS.OPENING
+			and data.animation_timer == 0 then
+				animationlib.set_animation(data, ANIMATIONS.OPEN)
+			elseif data.animation_state == ANIMATIONS.OPEN then
+				if data.animation_timer == 4 then
+					tongue_exit()
+	
+					local x, y, l = get_position(wormtongue_uid)
+	
+					kill_wormtongue()
+	
+					-- # TODO: Improve this iFrames quick fix
+					-- Quick fix: the player can become visible again during this sequence if they have iFrames during it, so let's keep setting them to invisible to avoid this
+					local ensnaredplayers = get_entities_at(0, 0x1, x, y, l, CHECK_RADIUS)
+					if #ensnaredplayers > 0 then
+						for _, ensnaredplayer_uid in ipairs(ensnaredplayers) do
+							local ensnaredplayer = get_entity(ensnaredplayer_uid)
+							if options.hd_debug_scripted_enemies_show == false then
+								ensnaredplayer.flags = set_flag(ensnaredplayer.flags, ENT_FLAG.INVISIBLE)-- make each player invisible
+								-- Also make the players back item and held items invisible
+								if get_entity(ensnaredplayer.holding_uid) ~= nil then
+									local item = get_entity(ensnaredplayer.holding_uid)
+									item.flags = set_flag(item.flags, ENT_FLAG.INVISIBLE)
+								end
+								if get_entity(ensnaredplayer:worn_backitem()) ~= nil then
+									local item = get_entity(ensnaredplayer:worn_backitem())
+									item:remove()
+								end
 							end
 						end
 					end
+				elseif data.animation_timer == 0 then
+					tongue_state = TONGUE_SEQUENCE.RECEDE
+					animationlib.set_animation(data, ANIMATIONS.CLOSING)
 				end
-	
-				tongue_state = TONGUE_SEQUENCE.RECEDE
-				animation_state = ANIMATIONS.CLOSING
-				animation_timer = ANIMATIONS.CLOSING.frames * ANIMATIONS.CLOSING.frame_time
 			end
 		else
 			--grow worm
@@ -360,11 +356,10 @@ local function onframe_tonguetimeout()
 			return
 		end
 
-		if animation_state == ANIMATIONS.CLOSING
-		and animation_timer == 0 then
-			animation_state = ANIMATIONS.EMERGE_OR_RECEDING
-			animation_timer = ANIMATIONS.EMERGE_OR_RECEDING.frames * ANIMATIONS.EMERGE_OR_RECEDING.frame_time
-		elseif animation_state == ANIMATIONS.EMERGE_OR_RECEDING then
+		if data.animation_state == ANIMATIONS.CLOSING
+		and data.animation_timer == 0 then
+			animationlib.set_animation(data, ANIMATIONS.EMERGE_OR_RECEDING)
+		elseif data.animation_state == ANIMATIONS.EMERGE_OR_RECEDING then
 			if worm.width > 2 then
 				worm.width, worm.height = worm.width - 0.1, worm.height - 0.1
 			else
@@ -419,29 +414,15 @@ local function onframe_tonguetimeout()
 		local worm = get_entity(worm_uid)
 		if worm == nil
 		or worm.animation_frame == nil
-		or animation_state == nil
-		or animation_timer == nil then
+		or data == nil
+		or data.animation_state == nil
+		or data.animation_timer == nil then
 			return
 		end
-		local index = math.ceil(animation_timer / animation_state.frame_time)
-		-- After the loop runs out it goes to index 0, which is wrong in lua
-		message(string.format("Setting animation_frame %s using index %s", animation_state[index], index))
-		worm.animation_frame = animation_state[index]
-		animation_timer =
-			animation_timer > 1
-			and animation_timer - 1
-			or animation_state.loop
-				and animation_state.frames * animation_state.frame_time
-				or 0
+		worm.animation_frame = animationlib.get_animation_frame(data)
+		animationlib.update_timer(data)
 	end
 end
--- If we don't stop the rumble sound in the timeout, we need to stop it here
-set_callback(function()
-	if rumble_sound ~= nil then
-		rumble_sound:stop()
-	end
-	rumble_sound = nil
-end, ON.SCREEN)
 -- Fix having the wrong tileset on transition
 set_callback(function()
     if state.screen == SCREEN.TRANSITION then
@@ -559,8 +540,7 @@ function module.create_wormtongue(x, y, l)
 	local balltriggers = get_entities_by_type(ENT_TYPE.LOGICAL_SPIKEBALL_TRIGGER)
 	for _, balltrigger in ipairs(balltriggers) do kill_entity(balltrigger) end
 	
-    animation_state = ANIMATIONS.EMERGE_OR_RECEDING
-    animation_timer = ANIMATIONS.EMERGE_OR_RECEDING.frames * ANIMATIONS.EMERGE_OR_RECEDING.frame_time
+	animationlib.set_animation(data, ANIMATIONS.EMERGE_OR_RECEDING)
 
 	tongue_state = TONGUE_SEQUENCE.READY
 
