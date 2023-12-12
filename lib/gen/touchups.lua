@@ -531,7 +531,7 @@ function module.replace_s2_crust_items()
 			local tospawn = HD_CRUST_ITEMS[prng:random_index(HD_CRUST_ITEMS_NUM, PRNG_CLASS.LEVEL_GEN)]
 			local spawned_uid = spawn_entity_over(tospawn, overlay.uid, 0, 0)
 			embedlib.embed_item(spawned_uid, overlay.uid, crust_items_visible)
-			messpect("embedded at", enum_get_name(ENT_TYPE, ent.type.id), enum_get_name(ENT_TYPE, tospawn), get_position(uid))
+			-- messpect("embedded at", enum_get_name(ENT_TYPE, ent.type.id), enum_get_name(ENT_TYPE, tospawn), get_position(uid))
 		end
 	end
 end
